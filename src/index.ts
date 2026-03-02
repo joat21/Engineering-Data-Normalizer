@@ -1,11 +1,20 @@
 import "dotenv/config";
 import express, { Express } from "express";
 
-import * as CategoryController from './controllers/CategoryController';
+import { upload } from "./middleware/upload";
+import * as CategoryController from "./controllers/CategoryController";
+import * as ImportController from "./controllers/ImportController";
 
-const PORT = 8080;
+const PORT = Number(process.env.PORT) || 8080;
 
 const app: Express = express();
+app.use(express.json());
+
+app.post(
+  "/api/import/init",
+  upload.single("file"),
+  ImportController.initImport,
+);
 
 app.get("/api/equipment/categories", CategoryController.getAll);
 
