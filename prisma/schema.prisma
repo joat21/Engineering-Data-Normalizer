@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String      @id @default(uuid())
+  email        String
+  passwordHash String
+  name         String
+  comparison   Comparison?
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  description String
+  isArchived  Boolean
+  items       ProjectItem[]
+}
+
+model ProjectItem {
+  id          String    @id @default(uuid())
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+  equipmentId String
+  amount      Int       @db.SmallInt
+  updatedAt   DateTime  @default(now()) @db.Timestamptz()
+}
+
+model Equipment {
+  id           String        @id @default(uuid())
+  category     Category      @relation(fields: [categoryId], references: [id])
+  categoryId   String
+  source       Source        @relation(fields: [sourceId], references: [id])
+  sourceId     String
+  name         String?
+  manufacter   String?
+  article      String?
+  model        String?
+  externalCode String?
+  price        Decimal       @db.Decimal(12, 2)
+  attributes   Json
+  projectItems ProjectItem[]
+}
+
+model Category {
+  id             String              @id @default(uuid())
+  name           String
+  equipment      Equipment[]
+  attributes     CategoryAttribute[]
+  importSessions ImportSession[]
+  filters        CategoryFilter[]
+}
+
+model CategoryAttribute {
+  id           String           @id @default(uuid())
+  category     Category         @relation(fields: [categoryId], references: [id])
+  categoryId   String
+  key          String
+  label        String
+  unit         String
+  dataType     DataType
+  isFilterable Boolean
+  filters      CategoryFilter[]
+}
+
+model Source {
+  id             String          @id @default(uuid())
+  fileName       String
+  url            String
+  uploadedAt     DateTime
+  type           SourceType
+  equipment      Equipment[]
+  importSessions ImportSession[]
+}
+
+model Comparison {
+  id     String           @id @default(uuid())
+  user   User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?          @unique
+  items  ComparisonItem[]
+}
+
+model ComparisonItem {
+  id           String     @id @default(uuid())
+  comparison   Comparison @relation(fields: [comparisonId], references: [id], onDelete: Cascade)
+  comparisonId String
+}
+
+model ImportSession {
+  id         String              @id @default(uuid())
+  source     Source              @relation(fields: [sourceId], references: [id])
+  sourceId   String
+  category   Category            @relation(fields: [categoryId], references: [id])
+  categoryId String
+  createdAt  DateTime
+  status     ImportStatus
+  items      StagingImportItem[]
+}
+
+model StagingImportItem {
+  id             String        @id @default(uuid())
+  session        ImportSession @relation(fields: [sessionId], references: [id])
+  sessionId      String
+  rowIndex       Int
+  rawRow         Json
+  transformedRow Json
+  status         String // нужен Enum
+}
+
+model CategoryFilter {
+  id          String            @id @default(uuid())
+  category    Category          @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  attribure   CategoryAttribute @relation(fields: [attribureId], references: [id])
+  attribureId String
+}
+
+enum DataType {
+  STRING
+  NUMBER
+  BOOLEAN
+}
+
+enum SourceType {
+  CATALOG
+  SINGLE_ITEM
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}

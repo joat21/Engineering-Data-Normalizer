@@ -10,11 +10,18 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@prisma/client": "^7.4.2",
     "express": "^5.2.1",
     "nodemon": "^3.1.14"
   },
   "devDependencies": {
+    "@prisma/adapter-pg": "^7.4.2",
     "@types/express": "^5.0.6",
+    "@types/node": "^25.3.2",
+    "@types/pg": "^8.18.0",
+    "dotenv": "^17.3.1",
+    "pg": "^8.19.0",
+    "prisma": "^7.4.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
