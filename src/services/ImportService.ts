@@ -32,3 +32,22 @@ export const createSession = async (data: {
 
   return session.id;
 };
+
+export const addItemsToStaging = async (data: {
+  sessionId: string;
+  rows: (string | number)[][];
+}) => {
+  const session = await prisma.importSession.findUnique({
+    where: { id: data.sessionId },
+  });
+
+  if (!session) throw new Error("Session not found");
+
+  await prisma.stagingImportItem.createMany({
+    data: data.rows.map((row, index) => ({
+      sessionId: data.sessionId,
+      rowIndex: index,
+      rawRow: row,
+    })),
+  });
+};

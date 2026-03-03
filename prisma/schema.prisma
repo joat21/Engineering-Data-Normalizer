@@ -106,13 +106,13 @@ model ImportSession {
 }
 
 model StagingImportItem {
-  id             String        @id @default(uuid())
-  session        ImportSession @relation(fields: [sessionId], references: [id])
+  id             String           @id @default(uuid())
+  session        ImportSession    @relation(fields: [sessionId], references: [id])
   sessionId      String
   rowIndex       Int
   rawRow         Json
-  transformedRow Json
-  status         String // нужен Enum
+  transformedRow Json?
+  status         ImportItemStatus @default(PENDING)
 }
 
 model CategoryFilter {
@@ -139,4 +139,10 @@ enum ImportStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+enum ImportItemStatus {
+  PENDING
+  TRANSFORMED
+  EDITED_MANUALLY
 }

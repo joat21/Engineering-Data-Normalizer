@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { createSession } from "../services/ImportService";
+import { addItemsToStaging, createSession } from "../services/ImportService";
 
 interface InitImportBody {
   categoryId: string;
@@ -24,6 +24,25 @@ export const initImport: RequestHandler<any, any, InitImportBody> = async (
     });
 
     res.json({ sessionId });
+  } catch (error) {
+    next(error);
+  }
+};
+
+interface ImportRowsBody {
+  sessionId: string;
+  rows: (string | number)[][];
+}
+
+export const importRows: RequestHandler<any, any, ImportRowsBody> = async (
+  req,
+  res,
+  next,
+) => {
+  try {
+    await addItemsToStaging(req.body);
+
+    res.sendStatus(201);
   } catch (error) {
     next(error);
   }

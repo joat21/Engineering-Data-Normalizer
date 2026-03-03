@@ -5,5 +5,6 @@ import * as ImportController from "../controllers/ImportController";
 const router = Router();
 
 router.post("/init", upload.single("file"), ImportController.initImport);
+router.post("/staging", ImportController.importRows);
 
 export default router;
