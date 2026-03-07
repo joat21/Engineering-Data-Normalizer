@@ -3,10 +3,11 @@ import { prisma } from "../../prisma/prisma";
 import * as TransformUtils from "../helpers/transformers";
 import { TransformConfig } from "../schemas/normalization";
 import {
-  normalizer,
+  applyNormalizationByType,
   TransformedColumn,
   TransformedRow,
 } from "../helpers/normalizers";
+import { DataType } from "../generated/prisma/enums";
 
 export type TransformType = TransformConfig["type"];
 
@@ -63,36 +64,38 @@ export const applyColumnTransformation = async (params: {
   transform: TransformConfig;
   attributesOrder: string[];
 }) =>
-  processColumnUpdate(params.sessionId, params.colIndex, (rawValue) => {
-    const results = applyTransform(rawValue, params.transform);
-
-    return params.attributesOrder.map((attrId, i) => ({
-      attributeId: attrId,
-      rawValue: String(rawValue),
-      normalized: normalizer(String(results[i])),
-    }));
-  });
+  processColumnUpdate(
+    params.sessionId,
+    params.colIndex,
+    params.attributesOrder,
+    (rawValue) => applyTransform(rawValue, params.transform),
+  );
 
 export const mapColumnToAttribute = async (params: {
   sessionId: string;
   colIndex: number;
   attributeId: string;
 }) =>
-  processColumnUpdate(params.sessionId, params.colIndex, (rawValue) => {
-    return [
-      {
-        attributeId: params.attributeId,
-        rawValue: String(rawValue),
-        normalized: normalizer(String(rawValue)),
-      },
-    ];
-  });
+  processColumnUpdate(
+    params.sessionId,
+    params.colIndex,
+    [params.attributeId],
+    (rawValue) => [rawValue],
+  );
 
 const processColumnUpdate = async (
   sessionId: string,
   colIndex: number,
-  getColumnData: (rawValue: any) => TransformedColumn[],
+  attributeIds: string[],
+  getUpdatedData: (rawValue: any) => any[],
 ) => {
+  const attributes = await prisma.categoryAttribute.findMany({
+    where: { id: { in: attributeIds } },
+    select: { id: true, dataType: true },
+  });
+
+  const typeMap = new Map(attributes.map((a) => [a.id, a.dataType]));
+
   const items = await prisma.stagingImportItem.findMany({
     where: { sessionId },
     select: { id: true, rawRow: true, transformedRow: true },
@@ -100,11 +103,22 @@ const processColumnUpdate = async (
 
   const dataToUpdate = items.map((item) => {
     const rawValue = getRawValue(item.rawRow, colIndex);
+    const updatedData = getUpdatedData(rawValue);
 
-    const columnMappings = getColumnData(rawValue);
+    const columnMappings = attributeIds.map((attrId, i) => {
+      const valueToNormalize = String(updatedData[i]) ?? "";
+      const attrType = typeMap.get(attrId) || "STRING";
+
+      return {
+        attributeId: attrId,
+        rawValue: String(rawValue),
+        normalized: applyNormalizationByType(valueToNormalize, attrType),
+      };
+    });
 
     const existingRow =
       (item.transformedRow as unknown as TransformedRow) || {};
+
     const newData: TransformedRow = {
       ...existingRow,
       [colIndex.toString()]: columnMappings,

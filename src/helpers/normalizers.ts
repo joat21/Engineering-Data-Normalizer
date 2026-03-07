@@ -1,3 +1,4 @@
+import { DataType } from "../generated/prisma/enums";
 import { parseNumbers } from "./transformers";
 
 export interface NormalizedValue {
@@ -16,9 +17,9 @@ export interface TransformedColumn {
 
 export type TransformedRow = Record<string, TransformedColumn[]>;
 
-export const normalizer = (rawValue: string): NormalizedValue => {
+const normalizeNumeric = (rawValue: string): NormalizedValue => {
   const result: NormalizedValue = {
-    valueString: rawValue,
+    valueString: rawValue.trim(),
   };
 
   const nums = parseNumbers(rawValue);
@@ -33,4 +34,35 @@ export const normalizer = (rawValue: string): NormalizedValue => {
   }
 
   return result;
+};
+
+const normalizeString = (rawValue: string): NormalizedValue => ({
+  valueString: rawValue.trim(),
+});
+
+const normalizeBoolean = (rawValue: string): NormalizedValue => {
+  const clean = rawValue.toLowerCase().trim();
+  // TODO: подумать над списком true значений
+  const positive = ["да", "yes", "true", "1", "есть", "вкл", "+", "v"];
+  const isTrue = positive.includes(clean);
+
+  return {
+    valueString: isTrue ? "Да" : "Нет",
+    valueBoolean: isTrue,
+  };
+};
+
+export const applyNormalizationByType = (
+  rawValue: string,
+  type: DataType,
+): NormalizedValue => {
+  switch (type) {
+    case "NUMBER":
+      return normalizeNumeric(rawValue);
+    case "BOOLEAN":
+      return normalizeBoolean(rawValue);
+    case "STRING":
+    default:
+      return normalizeString(rawValue);
+  }
 };
