@@ -78,6 +78,7 @@ async function main() {
         ],
       },
     },
+    include: { attributes: true },
   });
 
   const valves = await prisma.category.create({
@@ -123,9 +124,61 @@ async function main() {
         ],
       },
     },
+    include: { attributes: true },
   });
 
-  console.log({ pumps, valves });
+  const pumpDnAttr = pumps.attributes.find((a) => a.key === "dn")!;
+  const valveMaterialAttr = valves.attributes.find(
+    (a) => a.key === "material",
+  )!;
+
+  console.log("Seeding NormalizationCache...");
+
+  const cacheData = [
+    // Дюймы для насосов (Трубная резьба G)
+    {
+      attributeId: pumpDnAttr.id,
+      rawValue: 'G1½"',
+      normalized: {
+        valueMin: 40,
+        valueMax: 40,
+        valueString: '40 мм (G1½")',
+      },
+    },
+    {
+      attributeId: pumpDnAttr.id,
+      rawValue: '1½"',
+      normalized: { valueMin: 32, valueMax: 32, valueString: '32 мм (1½")' },
+    },
+    // Материалы для задвижек
+    {
+      attributeId: valveMaterialAttr.id,
+      rawValue: "Чугун СЧ20",
+      normalized: { valueString: "Чугун" },
+    },
+    {
+      attributeId: valveMaterialAttr.id,
+      rawValue: "GG25",
+      normalized: { valueString: "Чугун" },
+    },
+    {
+      attributeId: valveMaterialAttr.id,
+      rawValue: "Чугун",
+      normalized: { valueString: "Чугун" },
+    },
+  ];
+
+  for (const item of cacheData) {
+    await prisma.normalizationCache.create({
+      data: {
+        attributeId: item.attributeId,
+        rawValue: item.rawValue,
+        cleanedValue: item.rawValue.toLowerCase().trim(),
+        normalized: item.normalized as any,
+      },
+    });
+  }
+
   console.log("Seeding finished");
 }
 

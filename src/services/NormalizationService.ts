@@ -3,11 +3,10 @@ import { prisma } from "../../prisma/prisma";
 import * as TransformUtils from "../helpers/transformers";
 import { TransformConfig } from "../schemas/normalization";
 import {
-  applyNormalizationByType,
-  TransformedColumn,
+  normalizeValue,
+  isSimpleNumeric,
   TransformedRow,
 } from "../helpers/normalizers";
-import { DataType } from "../generated/prisma/enums";
 
 export type TransformType = TransformConfig["type"];
 
@@ -34,7 +33,8 @@ const TRANSFORM_STRATEGIES: TransformStrategyMap = {
   SPLIT_BY: (val, payload) =>
     TransformUtils.splitBySeparator(String(val), payload.separator),
 
-  MULTIPLY: (val, payload) => TransformUtils.multiply(val, payload.factor),
+  MULTIPLY: (val, payload) =>
+    TransformUtils.multiplyNumbersInString(val, payload.factor),
 };
 
 const applyTransform = (
@@ -93,7 +93,6 @@ const processColumnUpdate = async (
     where: { id: { in: attributeIds } },
     select: { id: true, dataType: true },
   });
-
   const typeMap = new Map(attributes.map((a) => [a.id, a.dataType]));
 
   const items = await prisma.stagingImportItem.findMany({
@@ -101,18 +100,64 @@ const processColumnUpdate = async (
     select: { id: true, rawRow: true, transformedRow: true },
   });
 
+  const cacheLookupSet = new Set<string>();
+
+  items.forEach((item) => {
+    const rawValue = getRawValue(item.rawRow, colIndex);
+    const updatedData = getUpdatedData(rawValue);
+
+    attributeIds.forEach((attrId, i) => {
+      const val = String(updatedData[i] ?? "")
+        .toLowerCase()
+        .trim();
+      const attrType = typeMap.get(attrId);
+
+      if (attrType !== "NUMBER") {
+        cacheLookupSet.add(`${attrId}:${val}`);
+      } else {
+        const parts = val.split(/[\s]*[xх×][\s]*/).filter((p) => p.length > 0);
+        parts.forEach((p) => {
+          if (!isSimpleNumeric(p)) {
+            cacheLookupSet.add(`${attrId}:${p.trim()}`);
+          }
+        });
+      }
+    });
+  });
+
+  const cacheEntries = await prisma.normalizationCache.findMany({
+    where: {
+      OR: Array.from(cacheLookupSet).map((pair) => {
+        const [attrId, clean] = pair.split(":");
+        return { attributeId: attrId, cleanedValue: clean };
+      }),
+    },
+  });
+
+  const cacheMap = new Map(
+    cacheEntries.map((e) => [
+      `${e.attributeId}:${e.cleanedValue}`,
+      e.normalized,
+    ]),
+  );
+
   const dataToUpdate = items.map((item) => {
     const rawValue = getRawValue(item.rawRow, colIndex);
     const updatedData = getUpdatedData(rawValue);
 
     const columnMappings = attributeIds.map((attrId, i) => {
-      const valueToNormalize = String(updatedData[i]) ?? "";
+      const valueToNormalize = String(updatedData[i] ?? "");
       const attrType = typeMap.get(attrId) || "STRING";
 
       return {
         attributeId: attrId,
         rawValue: String(rawValue),
-        normalized: applyNormalizationByType(valueToNormalize, attrType),
+        normalized: normalizeValue(
+          valueToNormalize,
+          attrType,
+          attrId,
+          cacheMap,
+        ),
       };
     });
 

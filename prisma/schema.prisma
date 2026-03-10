@@ -136,6 +136,17 @@ model CategoryFilter {
   attributeId String            @db.Uuid
 }
 
+model NormalizationCache {
+  id           String @id @default(uuid()) @db.Uuid
+  attributeId  String @db.Uuid
+  cleanedValue String
+  rawValue     String
+  normalized   Json
+
+  @@unique([attributeId, cleanedValue])
+  @@index([cleanedValue])
+}
+
 enum DataType {
   STRING
   NUMBER

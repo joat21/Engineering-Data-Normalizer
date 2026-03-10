@@ -2,6 +2,8 @@ node_modules/
 dist/
 .env
 .vscode/
+
 prisma/migration_lock.toml
 prisma/scripts
 /src/generated/prisma
+clear.sql
