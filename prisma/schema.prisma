@@ -40,7 +40,7 @@ model Equipment {
   source       Source                    @relation(fields: [sourceId], references: [id])
   sourceId     String                    @db.Uuid
   name         String?
-  manufacter   String?
+  manufacturer String?
   article      String?
   model        String?
   externalCode String?
