@@ -1,45 +1,17 @@
 import { JsonValue } from "@prisma/client/runtime/client";
-import { DataType } from "../generated/prisma/enums";
 import { parseNumbers } from "./transformers";
+import { NormalizedValue, UnnormalizedValue } from "./types";
+import { DataType } from "../../generated/prisma/enums";
 
-export interface NormalizedValue {
-  valueString: string;
-  valueMin?: number;
-  valueMax?: number;
-  valueArray?: number[];
-  valueBoolean?: boolean;
-}
-
-export interface UnnormalizedValue {
-  valueString: string;
-  needsCheck: true;
-}
-
-export interface TransformedColumn {
-  attributeId: string;
-  rawValue: string;
-  normalized: NormalizedValue;
-}
-
-export type TransformedRow = Record<string, TransformedColumn[]>;
-
-export const isSimpleNumeric = (val: string): boolean => {
-  if (!val) return true;
-
-  // Убираем всё, что считаем "нормальным" для числовой колонки:
-  // - Числа, точки, запятые
-  // - Разделители: /, |, ~, ;, - и прочие разновидности дефисов и тире
-  // - Буквы: a-z, A-Z, а-я, А-Я (очистка единиц измерения)
-  // - Понятные спецсимволы: °, %, ³, ², Δ, △, μ, Ω
-  const residual = val
-    .replace(/[0-9.,\s\-\/|~—‐‑‐;]/g, "")
-    .replace(/[a-zA-Zа-яА-Я°%³²Δ△μΩ]/g, "");
-
-  // Если осталась пустая строка, значит число "простое":
-  // содержит только те символы, которые можно обработать регулярками
-  // Если что-то осталось (например, ½, ¼, кавычки и тд) - число "сложное"
-  return residual.length === 0;
-};
+export const normalizeValue = (
+  rawValue: string,
+  type: DataType,
+  attributeId: string,
+  cacheMap: Map<string, JsonValue>,
+): NormalizedValue | UnnormalizedValue =>
+  type === "NUMBER"
+    ? normalizeNumeric(rawValue, attributeId, cacheMap)
+    : normalizeStringOrBoolean(rawValue, attributeId, cacheMap);
 
 const normalizeNumeric = (
   rawValue: string,
@@ -109,12 +81,20 @@ const normalizeStringOrBoolean = (
       };
 };
 
-export const normalizeValue = (
-  rawValue: string,
-  type: DataType,
-  attributeId: string,
-  cacheMap: Map<string, JsonValue>,
-): NormalizedValue | UnnormalizedValue =>
-  type === "NUMBER"
-    ? normalizeNumeric(rawValue, attributeId, cacheMap)
-    : normalizeStringOrBoolean(rawValue, attributeId, cacheMap);
+export const isSimpleNumeric = (val: string): boolean => {
+  if (!val) return true;
+
+  // Убираем всё, что считаем "нормальным" для числовой колонки:
+  // - Числа, точки, запятые
+  // - Разделители: /, |, ~, ;, - и прочие разновидности дефисов и тире
+  // - Буквы: a-z, A-Z, а-я, А-Я (очистка единиц измерения)
+  // - Понятные спецсимволы: °, %, ³, ², Δ, △, μ, Ω
+  const residual = val
+    .replace(/[0-9.,\s\-\/|~—‐‑‐;]/g, "")
+    .replace(/[a-zA-Zа-яА-Я°%³²Δ△μΩ]/g, "");
+
+  // Если осталась пустая строка, значит число "простое":
+  // содержит только те символы, которые можно обработать регулярками
+  // Если что-то осталось (например, ½, ¼, кавычки и тд) - число "сложное"
+  return residual.length === 0;
+};

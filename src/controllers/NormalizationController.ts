@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import {
   applyColumnTransformation,
   mapColumnToAttribute,
-} from "../services/NormalizationService";
+} from "../services/NormalizationService/service";
 import {
   applyTransformSchema,
   transformSchema,

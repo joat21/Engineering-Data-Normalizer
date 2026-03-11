@@ -1,12 +1,35 @@
-export type TransformPayload = string | number | null;
+import { TransformPayload } from "./types";
+import { TransformConfig } from "../../schemas/normalization";
 
 const numberRegex = /-?\d+(?:[.,]\d+)?/g;
+
+export const applyTransform = (
+  value: TransformPayload,
+  transform: TransformConfig,
+) => {
+  switch (transform.type) {
+    case "EXTRACT_NUMBERS":
+      return parseNumbers(String(value));
+
+    case "SPLIT_BY":
+      return splitBySeparator(String(value), transform.payload.separator);
+
+    case "MULTIPLY":
+      return multiplyNumbersInString(String(value), transform.payload.factor);
+
+    default: {
+      const _exhaustive: never = transform;
+      return _exhaustive;
+    }
+  }
+};
 
 export const parseNumbers = (input: TransformPayload): number[] => {
   if (!input) return [];
 
-  const str = typeof input === "string" ? input : String(input);
-  return (str.match(numberRegex) || []).map((n) => Number(n.replace(",", ".")));
+  return (String(input).match(numberRegex) || []).map((n) =>
+    Number(n.replace(",", ".")),
+  );
 };
 
 export const splitBySeparator = (

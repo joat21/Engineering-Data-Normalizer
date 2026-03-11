@@ -1,62 +1,21 @@
-import { JsonValue } from "@prisma/client/runtime/client";
-import { prisma } from "../../prisma/prisma";
-import * as TransformUtils from "../helpers/transformers";
-import { TransformConfig } from "../schemas/normalization";
-import {
-  normalizeValue,
-  isSimpleNumeric,
-  TransformedRow,
-} from "../helpers/normalizers";
+import { getRawValue } from "./helpers";
+import { normalizeValue, isSimpleNumeric } from "./normalizers";
+import { applyTransform } from "./transformers";
+import { TransformedRow } from "./types";
+import { TransformConfig } from "../../schemas/normalization";
+import { prisma } from "../../../prisma/prisma";
 
-export type TransformType = TransformConfig["type"];
-
-type TransformPayloadMap = {
-  [T in TransformType]: Extract<TransformConfig, { type: T }> extends {
-    payload: infer P;
-  }
-    ? P
-    : undefined;
-};
-
-type TransformStrategyMap = {
-  [T in TransformType]: TransformPayloadMap[T] extends undefined
-    ? (val: TransformUtils.TransformPayload) => (string | number | null)[]
-    : (
-        val: TransformUtils.TransformPayload,
-        payload: TransformPayloadMap[T],
-      ) => (string | number | null)[];
-};
-
-const TRANSFORM_STRATEGIES: TransformStrategyMap = {
-  EXTRACT_NUMBERS: (val) => TransformUtils.parseNumbers(String(val)),
-
-  SPLIT_BY: (val, payload) =>
-    TransformUtils.splitBySeparator(String(val), payload.separator),
-
-  MULTIPLY: (val, payload) =>
-    TransformUtils.multiplyNumbersInString(val, payload.factor),
-};
-
-const applyTransform = (
-  value: TransformUtils.TransformPayload,
-  transform: TransformConfig,
-) => {
-  switch (transform.type) {
-    case "EXTRACT_NUMBERS":
-      return TRANSFORM_STRATEGIES.EXTRACT_NUMBERS(value);
-
-    case "SPLIT_BY":
-      return TRANSFORM_STRATEGIES.SPLIT_BY(value, transform.payload);
-
-    case "MULTIPLY":
-      return TRANSFORM_STRATEGIES.MULTIPLY(value, transform.payload);
-
-    default: {
-      const _exhaustive: never = transform;
-      return _exhaustive;
-    }
-  }
-};
+export const mapColumnToAttribute = async (params: {
+  sessionId: string;
+  colIndex: number;
+  attributeId: string;
+}) =>
+  updateColumn(
+    params.sessionId,
+    params.colIndex,
+    [params.attributeId],
+    (rawValue) => [rawValue],
+  );
 
 export const applyColumnTransformation = async (params: {
   sessionId: string;
@@ -64,26 +23,14 @@ export const applyColumnTransformation = async (params: {
   transform: TransformConfig;
   attributesOrder: string[];
 }) =>
-  processColumnUpdate(
+  updateColumn(
     params.sessionId,
     params.colIndex,
     params.attributesOrder,
     (rawValue) => applyTransform(rawValue, params.transform),
   );
 
-export const mapColumnToAttribute = async (params: {
-  sessionId: string;
-  colIndex: number;
-  attributeId: string;
-}) =>
-  processColumnUpdate(
-    params.sessionId,
-    params.colIndex,
-    [params.attributeId],
-    (rawValue) => [rawValue],
-  );
-
-const processColumnUpdate = async (
+const updateColumn = async (
   sessionId: string,
   colIndex: number,
   attributeIds: string[],
@@ -189,16 +136,4 @@ const processColumnUpdate = async (
   `);
 
   return { success: true, count: dataToUpdate.length };
-};
-
-const getRawValue = (
-  rawRow: JsonValue,
-  colIndex: number,
-): TransformUtils.TransformPayload => {
-  if (!Array.isArray(rawRow)) return null;
-
-  const val = rawRow[colIndex];
-  return typeof val === "string" || typeof val === "number" || val === null
-    ? val
-    : null;
 };
