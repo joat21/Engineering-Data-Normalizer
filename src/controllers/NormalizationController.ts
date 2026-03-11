@@ -1,10 +1,10 @@
-import { RequestHandler } from "express";
 import {
   applyColumnTransformation,
   mapColumnToAttribute,
 } from "../services/NormalizationService/service";
 import {
   applyTransformSchema,
+  mapColToAttrSchema,
   transformSchema,
 } from "../schemas/normalization";
 import { HandlerFromSchema } from "../types/zod";
@@ -16,10 +16,8 @@ export const applyTransformHandler: HandlerFromSchema<
     const transform = transformSchema.parse(req.body.transform);
 
     await applyColumnTransformation({
-      sessionId: req.body.sessionId,
-      colIndex: req.body.colIndex,
+      ...req.body,
       transform,
-      attributesOrder: req.body.attributesOrder,
     });
 
     res.sendStatus(204);
@@ -28,14 +26,8 @@ export const applyTransformHandler: HandlerFromSchema<
   }
 };
 
-export const mapColToAttrHandler: RequestHandler<
-  any,
-  any,
-  {
-    sessionId: string;
-    colIndex: number;
-    attributeId: string;
-  }
+export const mapColToAttrHandler: HandlerFromSchema<
+  typeof mapColToAttrSchema
 > = async (req, res, next) => {
   try {
     await mapColumnToAttribute(req.body);

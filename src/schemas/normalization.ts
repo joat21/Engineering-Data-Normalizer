@@ -14,12 +14,29 @@ export const transformSchema = z.discriminatedUnion("type", [
 
 export type TransformConfig = z.infer<typeof transformSchema>;
 
+const mappingTargetSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("system"),
+    field: z.enum([
+      "name",
+      "article",
+      "model",
+      "externalCode",
+      "price",
+      "manufacturer",
+    ]),
+  }),
+  z.object({ type: z.literal("attribute"), id: z.uuid() }),
+]);
+
+export type MappingTarget = z.infer<typeof mappingTargetSchema>;
+
 export const applyTransformSchema = z.object({
   body: z.object({
     sessionId: z.uuid(),
     colIndex: z.number(),
     transform: transformSchema,
-    attributesOrder: z.array(z.string().or(z.null())),
+    targets: z.array(mappingTargetSchema.nullable()),
   }),
 });
 
@@ -27,6 +44,6 @@ export const mapColToAttrSchema = z.object({
   body: z.object({
     sessionId: z.uuid(),
     colIndex: z.number(),
-    attributeId: z.uuid(),
+    target: mappingTargetSchema,
   }),
 });

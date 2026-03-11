@@ -1,19 +1,22 @@
-import { getRawValue } from "./helpers";
-import { normalizeValue, isSimpleNumeric } from "./normalizers";
+import {
+  getCacheMap,
+  getMappingPlans,
+  getRawValue,
+  getTypeMap,
+} from "./helpers";
 import { applyTransform } from "./transformers";
-import { TransformedRow } from "./types";
-import { TransformConfig } from "../../schemas/normalization";
+import { MappingTarget, TransformedRow, TransformConfig } from "./types";
 import { prisma } from "../../../prisma/prisma";
 
 export const mapColumnToAttribute = async (params: {
   sessionId: string;
   colIndex: number;
-  attributeId: string;
+  target: MappingTarget;
 }) =>
   updateColumn(
     params.sessionId,
     params.colIndex,
-    [params.attributeId],
+    [params.target],
     (rawValue) => [rawValue],
   );
 
@@ -21,97 +24,48 @@ export const applyColumnTransformation = async (params: {
   sessionId: string;
   colIndex: number;
   transform: TransformConfig;
-  attributesOrder: (string | null)[];
+  targets: (MappingTarget | null)[];
 }) =>
-  updateColumn(
-    params.sessionId,
-    params.colIndex,
-    params.attributesOrder,
-    (rawValue) => applyTransform(rawValue, params.transform),
+  updateColumn(params.sessionId, params.colIndex, params.targets, (rawValue) =>
+    applyTransform(rawValue, params.transform),
   );
 
 const updateColumn = async (
   sessionId: string,
   colIndex: number,
-  attributeIds: (string | null)[],
+  targets: (MappingTarget | null)[],
   getUpdatedData: (rawValue: any) => any[],
 ) => {
-  const validAttrIds = attributeIds.filter((id) => id !== null);
-
-  const attributes = await prisma.categoryAttribute.findMany({
-    where: { id: { in: validAttrIds } },
-    select: { id: true, dataType: true },
-  });
-  const typeMap = new Map(attributes.map((a) => [a.id, a.dataType]));
+  const typeMap = await getTypeMap(targets);
 
   const items = await prisma.stagingImportItem.findMany({
     where: { sessionId },
     select: { id: true, rawRow: true, transformedRow: true },
   });
 
-  const cacheLookupSet = new Set<string>();
-
-  items.forEach((item) => {
-    const rawValue = getRawValue(item.rawRow, colIndex);
-    const updatedData = getUpdatedData(rawValue);
-
-    attributeIds.forEach((attrId, i) => {
-      if (!attrId) return null;
-
-      const val = String(updatedData[i] ?? "")
-        .toLowerCase()
-        .trim();
-      const attrType = typeMap.get(attrId);
-
-      if (attrType !== "NUMBER") {
-        cacheLookupSet.add(`${attrId}:${val}`);
-      } else {
-        const parts = val.split(/[\s]*[xх×][\s]*/).filter((p) => p.length > 0);
-        parts.forEach((p) => {
-          if (!isSimpleNumeric(p)) {
-            cacheLookupSet.add(`${attrId}:${p.trim()}`);
-          }
-        });
-      }
-    });
-  });
-
-  const cacheEntries = await prisma.normalizationCache.findMany({
-    where: {
-      OR: Array.from(cacheLookupSet).map((pair) => {
-        const [attrId, clean] = pair.split(":");
-        return { attributeId: attrId, cleanedValue: clean };
-      }),
-    },
-  });
-
-  const cacheMap = new Map(
-    cacheEntries.map((e) => [
-      `${e.attributeId}:${e.cleanedValue}`,
-      e.normalized,
-    ]),
+  const cacheMap = await getCacheMap(
+    targets,
+    items,
+    typeMap,
+    colIndex,
+    getUpdatedData,
   );
+
+  const mappingPlans = getMappingPlans(targets, typeMap);
 
   const dataToUpdate = items.map((item) => {
     const rawValue = getRawValue(item.rawRow, colIndex);
     const updatedData = getUpdatedData(rawValue);
 
-    const columnMappings = attributeIds
-      .map((attrId, i) => {
-        if (!attrId) return null;
+    const columnMappings = mappingPlans
+      .map((plan, i) => {
+        if (!plan) return null;
 
         const valueToNormalize = String(updatedData[i] ?? "");
-        const attrType = typeMap.get(attrId) || "STRING";
-
         return {
-          attributeId: attrId,
+          target: plan.target,
           rawValue: String(rawValue),
-          normalized: normalizeValue(
-            valueToNormalize,
-            attrType,
-            attrId,
-            cacheMap,
-          ),
+          normalized: plan.normalizer(valueToNormalize, cacheMap),
         };
       })
       .filter((m) => m !== null);

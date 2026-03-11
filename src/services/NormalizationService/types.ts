@@ -1,4 +1,5 @@
-import { TransformConfig } from "../../schemas/normalization";
+import { JsonValue } from "@prisma/client/runtime/client";
+import { TransformConfig, MappingTarget } from "../../schemas/normalization";
 
 export type TransformPayload = string | number | null;
 
@@ -25,10 +26,31 @@ export interface UnnormalizedValue {
   needsCheck: true;
 }
 
+export const SYSTEM_FIELDS = [
+  "name",
+  "article",
+  "model",
+  "externalCode",
+  "price",
+  "manufacturer",
+] as const;
+
+export type SystemField = (typeof SYSTEM_FIELDS)[number];
+
+export interface MappingPlan {
+  target: MappingTarget;
+  normalizer: (
+    val: string,
+    cache: Map<string, JsonValue>,
+  ) => NormalizedValue | UnnormalizedValue;
+}
+
 export interface TransformedColumn {
-  attributeId: string;
+  target: MappingTarget;
   rawValue: string;
   normalized: NormalizedValue;
 }
 
 export type TransformedRow = Record<string, TransformedColumn[]>;
+
+export { TransformConfig, MappingTarget } from "../../schemas/normalization";
