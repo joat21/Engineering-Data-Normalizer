@@ -1,5 +1,11 @@
-import { saveFromStagingSchema } from "../schemas/equipment";
-import { saveEquipmentFromStaging } from "../services/EquipmentService";
+import {
+  getEquipmentTableSchema,
+  saveFromStagingSchema,
+} from "../schemas/equipment";
+import {
+  getEquipmentTable,
+  saveEquipmentFromStaging,
+} from "../services/EquipmentService";
 import { HandlerFromSchema } from "../types/zod";
 
 export const saveFromStagingHandler: HandlerFromSchema<
@@ -8,6 +14,17 @@ export const saveFromStagingHandler: HandlerFromSchema<
   try {
     const result = await saveEquipmentFromStaging(req.body.sessionId);
     res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getEquipmentTableHandler: HandlerFromSchema<
+  typeof getEquipmentTableSchema
+> = async (req, res, next) => {
+  try {
+    const equipmentTable = await getEquipmentTable(req.query.categoryId);
+    res.json(equipmentTable);
   } catch (error) {
     next(error);
   }

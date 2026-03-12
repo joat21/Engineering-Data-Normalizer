@@ -101,4 +101,61 @@ export const saveEquipmentFromStaging = async (sessionId: string) => {
   });
 };
 
+export const getEquipmentTable = async (categoryId: string) => {
+  const categoryAttributes = await prisma.categoryAttribute.findMany({
+    where: { categoryId },
+    select: { id: true, label: true },
+  });
+
+  const equipment = await prisma.equipment.findMany({
+    where: { categoryId },
+    include: { attributes: true },
+  });
+
+  const usedAttrIds = new Set(
+    equipment.flatMap((e) => e.attributes.map((a) => a.attributeId)),
+  );
+  const usedAttrs = categoryAttributes.filter((attr) =>
+    usedAttrIds.has(attr.id),
+  );
+
+  const headers = [
+    { key: "name", label: "Название", type: "system" },
+    { key: "article", label: "Артикул", type: "system" },
+    { key: "model", label: "Модель", type: "system" },
+    { key: "manufacturer", label: "Производитель", type: "system" },
+    { key: "externalCode", label: "Код", type: "system" },
+    { key: "price", label: "Цена", type: "system" },
+    ...usedAttrs.map((attr) => ({
+      key: `attr_${attr.id}`,
+      label: attr.label,
+      type: "attribute",
+    })),
+  ];
+
+  const rows = equipment.map((item) => {
+    item.externalCode;
+    const row: any = {
+      id: item.id,
+      article: item.article,
+      model: item.model,
+      name: item.name,
+      manufacturer: item.manufacturer,
+      externalCode: item.externalCode,
+      price: item.price,
+    };
+
+    const valuesMap = new Map(item.attributes.map((a) => [a.attributeId, a]));
+
+    usedAttrs.forEach((attr) => {
+      const val = valuesMap.get(attr.id);
+      row[`attr_${attr.id}`] = val ? val.valueString : null;
+    });
+
+    return row;
+  });
+
+  return { headers, rows };
+};
+
 export const getCategories = async () => await prisma.category.findMany();

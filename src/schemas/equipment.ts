@@ -5,3 +5,9 @@ export const saveFromStagingSchema = z.object({
     sessionId: z.uuid(),
   }),
 });
+
+export const getEquipmentTableSchema = z.object({
+  query: z.object({
+    categoryId: z.uuid(),
+  }),
+});
