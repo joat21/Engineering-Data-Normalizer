@@ -1,10 +1,16 @@
 import { v4 as uuidv4 } from "uuid";
+import { FIELD_MAP } from "./config";
 import { getOperator } from "./helpers";
+import { FilterValue, NumericFilterValue } from "./types";
 import { prisma } from "../../../prisma/prisma";
 import { Prisma } from "../../generated/prisma/client";
 import { TransformedRow } from "../NormalizationService/types";
-import { FIELD_MAP } from "./config";
-import { FilterValue, NumericFilterValue } from "./types";
+import {
+  DATA_TYPE,
+  IMPORT_SESSION_STATUS,
+  SYSTEM_FIELDS,
+  TARGET_TYPE,
+} from "../../config";
 
 export const getCategories = async () => await prisma.category.findMany();
 
@@ -48,10 +54,10 @@ export const saveEquipmentFromStaging = async (sessionId: string) => {
       .forEach((col) => {
         const { target, normalized } = col;
 
-        if (target.type === "system") {
+        if (target.type === TARGET_TYPE.SYSTEM) {
           const field = target.field;
 
-          if (field === "price") {
+          if (field === SYSTEM_FIELDS.PRICE) {
             equipmentEntry.price = new Prisma.Decimal(
               normalized.valueString ?? 0,
             );
@@ -96,7 +102,7 @@ export const saveEquipmentFromStaging = async (sessionId: string) => {
 
     await tx.importSession.update({
       where: { id: sessionId },
-      data: { status: "COMPLETED" },
+      data: { status: IMPORT_SESSION_STATUS.COMPLETED },
     });
 
     return {
@@ -126,7 +132,7 @@ export const getEquipmentTable = async (
     if (filter.systemField) {
       andConditions.push({ [filter.systemField]: operator });
     } else if (filter.attributeId) {
-      if (filter.type === "NUMBER") {
+      if (filter.type === DATA_TYPE.NUMBER) {
         const val = value as NumericFilterValue;
         const attrMatch: any = { attributeId: filter.attributeId };
 
@@ -164,7 +170,7 @@ export const getEquipmentTable = async (
     ...categoryFilters.map((f) => ({
       key: f.systemField || `attr_${f.attributeId}`,
       label: f.label,
-      type: f.systemField ? "system" : "attribute",
+      type: f.systemField ? TARGET_TYPE.SYSTEM : TARGET_TYPE.ATTRIBUTE,
     })),
   ];
 

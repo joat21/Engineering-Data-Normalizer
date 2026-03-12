@@ -1,35 +1,31 @@
 import { z } from "zod";
+import { SYSTEM_FIELD_KEYS, TARGET_TYPE, TRANSFORM_TYPE } from "../config";
 
 export const transformSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("EXTRACT_NUMBERS") }),
+  z.object({ type: z.literal(TRANSFORM_TYPE.EXTRACT_NUMBERS) }),
   z.object({
-    type: z.literal("SPLIT_BY"),
+    type: z.literal(TRANSFORM_TYPE.SPLIT_BY),
     payload: z.object({ separator: z.string() }),
   }),
   z.object({
-    type: z.literal("MULTIPLY"),
+    type: z.literal(TRANSFORM_TYPE.MULTIPLY),
     payload: z.object({ factor: z.number() }),
   }),
 ]);
 
-export type TransformConfig = z.infer<typeof transformSchema>;
+export const systemTargetSchema = z.object({
+  type: z.literal(TARGET_TYPE.SYSTEM),
+  field: z.enum(SYSTEM_FIELD_KEYS),
+});
+export const attributeTargetSchema = z.object({
+  type: z.literal(TARGET_TYPE.ATTRIBUTE),
+  id: z.uuid(),
+});
 
 const mappingTargetSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("system"),
-    field: z.enum([
-      "name",
-      "article",
-      "model",
-      "externalCode",
-      "price",
-      "manufacturer",
-    ]),
-  }),
-  z.object({ type: z.literal("attribute"), id: z.uuid() }),
+  systemTargetSchema,
+  attributeTargetSchema,
 ]);
-
-export type MappingTarget = z.infer<typeof mappingTargetSchema>;
 
 export const applyTransformSchema = z.object({
   body: z.object({

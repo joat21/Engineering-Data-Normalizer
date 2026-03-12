@@ -1,7 +1,14 @@
+import z from "zod";
 import { JsonValue } from "@prisma/client/runtime/client";
-import { TransformConfig, MappingTarget } from "../../schemas/normalization";
+import {
+  attributeTargetSchema,
+  systemTargetSchema,
+  transformSchema,
+} from "../../schemas/normalization";
 
 export type TransformPayload = string | number | null;
+
+export type TransformConfig = z.infer<typeof transformSchema>;
 
 export type TransformType = TransformConfig["type"];
 
@@ -26,16 +33,9 @@ export interface UnnormalizedValue {
   needsCheck: true;
 }
 
-export const SYSTEM_FIELDS = [
-  "name",
-  "article",
-  "model",
-  "externalCode",
-  "price",
-  "manufacturer",
-] as const;
-
-export type SystemField = (typeof SYSTEM_FIELDS)[number];
+export type SystemTarget = z.infer<typeof systemTargetSchema>;
+export type AttributeTarget = z.infer<typeof attributeTargetSchema>;
+export type MappingTarget = SystemTarget | AttributeTarget;
 
 export interface MappingPlan {
   target: MappingTarget;
@@ -52,5 +52,3 @@ export interface TransformedColumn {
 }
 
 export type TransformedRow = Record<string, TransformedColumn[]>;
-
-export { TransformConfig, MappingTarget } from "../../schemas/normalization";

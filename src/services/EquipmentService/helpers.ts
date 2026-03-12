@@ -1,4 +1,5 @@
 import { prisma } from "../../../prisma/prisma";
+import { DATA_TYPE } from "../../config";
 import { Prisma } from "../../generated/prisma/client";
 import { SYSTEM_FIELDS_CONFIG } from "./config";
 import {
@@ -19,7 +20,7 @@ export const recalculateFilters = async (categoryId: string) => {
   const filterEntries: Prisma.CategoryFilterCreateManyInput[] = [];
 
   for (const [field, config] of Object.entries(SYSTEM_FIELDS_CONFIG)) {
-    if (config.type === "NUMBER") {
+    if (config.type === DATA_TYPE.NUMBER) {
       const agg = await prisma.equipment.aggregate({
         where: { categoryId },
         _min: { price: true },
@@ -30,7 +31,7 @@ export const recalculateFilters = async (categoryId: string) => {
         categoryId,
         systemField: field,
         label: config.label,
-        type: "NUMBER",
+        type: DATA_TYPE.NUMBER,
         minValue: agg._min.price,
         maxValue: agg._max.price,
       });
@@ -44,7 +45,7 @@ export const recalculateFilters = async (categoryId: string) => {
         categoryId,
         systemField: field,
         label: config.label,
-        type: "STRING",
+        type: DATA_TYPE.STRING,
         options: groups.map((g) => g[field as any]).filter(Boolean),
       });
     }
@@ -58,7 +59,7 @@ export const recalculateFilters = async (categoryId: string) => {
       type: attr.dataType,
     };
 
-    if (attr.dataType === "NUMBER") {
+    if (attr.dataType === DATA_TYPE.NUMBER) {
       const agg = await prisma.equipmentAttributeValue.aggregate({
         where: { attributeId: attr.id },
         _min: { valueMin: true },
@@ -76,7 +77,7 @@ export const recalculateFilters = async (categoryId: string) => {
         maxValue: agg._max.valueMax,
         options: groups.map((g) => g.valueString),
       });
-    } else if (attr.dataType === "STRING") {
+    } else if (attr.dataType === DATA_TYPE.STRING) {
       const groups = await prisma.equipmentAttributeValue.groupBy({
         by: ["valueString"],
         where: { attributeId: attr.id },
@@ -101,7 +102,7 @@ export const getOperator = (type: string, value: FilterValue) => {
   if (value === undefined || value === null) return null;
 
   switch (type) {
-    case "NUMBER": {
+    case DATA_TYPE.NUMBER: {
       const val = value as NumericFilterValue;
       const res: any = {};
 
@@ -115,13 +116,13 @@ export const getOperator = (type: string, value: FilterValue) => {
       return Object.keys(res).length > 0 ? res : null;
     }
 
-    case "STRING": {
+    case DATA_TYPE.STRING: {
       const val = value as StringFilterValue;
       if (!Array.isArray(val) || val.length === 0) return null;
       return { in: val };
     }
 
-    case "BOOLEAN":
+    case DATA_TYPE.BOOLEAN:
       const val = value as BooleanFilterValue;
       return { equals: val };
 

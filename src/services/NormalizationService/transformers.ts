@@ -1,5 +1,5 @@
-import { TransformPayload } from "./types";
-import { TransformConfig } from "../../schemas/normalization";
+import { TRANSFORM_TYPE } from "../../config";
+import { TransformConfig, TransformPayload } from "./types";
 
 const numberRegex = /-?\d+(?:[.,]\d+)?/g;
 
@@ -8,13 +8,13 @@ export const applyTransform = (
   transform: TransformConfig,
 ) => {
   switch (transform.type) {
-    case "EXTRACT_NUMBERS":
+    case TRANSFORM_TYPE.EXTRACT_NUMBERS:
       return parseNumbers(String(value));
 
-    case "SPLIT_BY":
+    case TRANSFORM_TYPE.SPLIT_BY:
       return splitBySeparator(String(value), transform.payload.separator);
 
-    case "MULTIPLY":
+    case TRANSFORM_TYPE.MULTIPLY:
       return multiplyNumbersInString(String(value), transform.payload.factor);
 
     default: {
@@ -65,7 +65,7 @@ export const multiplyNumbersInString = (
     const num = parseFloat(match.replace(",", "."));
     const transformed = num * factor;
 
-    // toFixed(4) - подумать над указанием точности, чтобы не отбросить лишнего
+    // TODO: toFixed(4) - подумать над указанием точности, чтобы не отбросить лишнего
     return parseFloat(transformed.toFixed(4)).toString();
   });
 

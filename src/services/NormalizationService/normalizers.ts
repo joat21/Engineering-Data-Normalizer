@@ -2,6 +2,7 @@ import { JsonValue } from "@prisma/client/runtime/client";
 import { parseNumbers } from "./transformers";
 import { NormalizedValue, UnnormalizedValue } from "./types";
 import { DataType } from "../../generated/prisma/enums";
+import { DATA_TYPE } from "../../config";
 
 export const normalizeValue = (
   rawValue: string,
@@ -9,7 +10,7 @@ export const normalizeValue = (
   attributeId: string,
   cacheMap: Map<string, JsonValue>,
 ): NormalizedValue | UnnormalizedValue =>
-  type === "NUMBER"
+  type === DATA_TYPE.NUMBER
     ? normalizeNumeric(rawValue, attributeId, cacheMap)
     : normalizeStringOrBoolean(rawValue, attributeId, cacheMap);
 

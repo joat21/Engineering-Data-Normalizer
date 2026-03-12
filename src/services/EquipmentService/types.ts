@@ -1,16 +1,10 @@
 import z from "zod";
-import { Equipment } from "../../generated/prisma/client";
 import {
   booleanFilterValueSchema,
   filterValueSchema,
   numericFilterValueSchema,
   stringFilterValueSchema,
 } from "../../schemas/equipment";
-
-export type SystemEquipmentFields = Pick<
-  Equipment,
-  "name" | "manufacturer" | "article" | "model" | "externalCode" | "price"
->;
 
 export type NumericFilterValue = z.infer<typeof numericFilterValueSchema>;
 export type StringFilterValue = z.infer<typeof stringFilterValueSchema>;

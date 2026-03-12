@@ -1,14 +1,18 @@
 import { JsonValue } from "@prisma/client/runtime/client";
-import { MappingPlan, MappingTarget, TransformPayload } from "./types";
+import { isSimpleNumeric, normalizeValue } from "./normalizers";
+import {
+  AttributeTarget,
+  MappingPlan,
+  MappingTarget,
+  TransformPayload,
+} from "./types";
 import { DataType } from "../../generated/prisma/enums";
 import { prisma } from "../../../prisma/prisma";
-import { isSimpleNumeric, normalizeValue } from "./normalizers";
+import { DATA_TYPE, TARGET_TYPE } from "../../config";
 
 export const getTypeMap = async (targets: (MappingTarget | null)[]) => {
   const attrIds = targets
-    .filter(
-      (t): t is { type: "attribute"; id: string } => t?.type === "attribute",
-    )
+    .filter((t): t is AttributeTarget => t?.type === TARGET_TYPE.ATTRIBUTE)
     .map((t) => t.id);
 
   if (attrIds.length === 0) {
@@ -45,7 +49,7 @@ export const getCacheMap = async (
     const updatedData = getUpdatedData(rawValue);
 
     targets.forEach((target, i) => {
-      if (!target || target.type !== "attribute") return;
+      if (!target || target.type !== TARGET_TYPE.ATTRIBUTE) return;
 
       const val = String(updatedData[i] ?? "")
         .toLowerCase()
@@ -53,7 +57,7 @@ export const getCacheMap = async (
 
       const attrType = typeMap.get(target.id);
 
-      if (attrType !== "NUMBER") {
+      if (attrType !== DATA_TYPE.NUMBER) {
         cacheLookupSet.add(`${target.id}:${val}`);
       } else {
         const parts = val.split(/[\s]*[xх×][\s]*/).filter((p) => p.length > 0);
@@ -90,7 +94,7 @@ export const getMappingPlans = (
   return targets.map((target) => {
     if (!target) return null;
 
-    if (target.type === "system") {
+    if (target.type === TARGET_TYPE.SYSTEM) {
       return {
         target,
         normalizer: (val: string) => ({ valueString: val }),
@@ -102,7 +106,7 @@ export const getMappingPlans = (
       normalizer: (val: string, cache: Map<string, JsonValue>) =>
         normalizeValue(
           val,
-          typeMap.get(target.id) || "STRING",
+          typeMap.get(target.id) || DATA_TYPE.STRING,
           target.id,
           cache,
         ),
