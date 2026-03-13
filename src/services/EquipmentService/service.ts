@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { FIELD_MAP } from "./config";
-import { getOperator } from "./helpers";
+import { getOperator, getOrderBy } from "./helpers";
 import { FilterValue, NumericFilterValue } from "./types";
 import { prisma } from "../../../prisma/prisma";
 import { Prisma } from "../../generated/prisma/client";
@@ -176,6 +176,7 @@ export const getEquipmentTable = async (data: {
       where: { AND: andConditions },
       take: limit,
       skip: (page - 1) * limit,
+      orderBy: getOrderBy(sortBy),
       include: { attributes: true },
     }),
   ]);

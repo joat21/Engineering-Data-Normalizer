@@ -1,6 +1,7 @@
 import { prisma } from "../../../prisma/prisma";
-import { DATA_TYPE } from "../../config";
+import { DATA_TYPE, SYSTEM_FIELD_KEYS, SYSTEM_FIELDS } from "../../config";
 import { Prisma } from "../../generated/prisma/client";
+import { EquipmentSystemFields } from "../../types";
 import { SYSTEM_FIELDS_CONFIG } from "./config";
 import {
   BooleanFilterValue,
@@ -129,4 +130,23 @@ export const getOperator = (type: string, value: FilterValue) => {
     default:
       return null;
   }
+};
+
+export const getOrderBy = (
+  sortBy?: string,
+): Prisma.EquipmentOrderByWithRelationInput => {
+  if (!sortBy) {
+    return { [SYSTEM_FIELDS.NAME]: "asc" };
+  }
+
+  const isDesc = sortBy.startsWith("-");
+  const field = (
+    isDesc ? sortBy.slice(1) : sortBy
+  ) as keyof EquipmentSystemFields;
+
+  if (!SYSTEM_FIELD_KEYS.includes(field)) {
+    return { [SYSTEM_FIELDS.NAME]: "asc" };
+  }
+
+  return { [field]: isDesc ? "desc" : "asc" };
 };
