@@ -12,6 +12,8 @@ import {
   TARGET_TYPE,
 } from "../../config";
 
+const LIMIT = 20;
+
 export const getCategories = async () => await prisma.category.findMany();
 
 export const saveEquipmentFromStaging = async (sessionId: string) => {
@@ -112,10 +114,15 @@ export const saveEquipmentFromStaging = async (sessionId: string) => {
   });
 };
 
-export const getEquipmentTable = async (
-  categoryId: string,
-  query: Record<string, FilterValue>,
-) => {
+export const getEquipmentTable = async (data: {
+  categoryId: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  filters?: Record<string, FilterValue>;
+}) => {
+  const { categoryId, page = 1, limit = LIMIT, sortBy, filters } = data;
+
   const categoryFilters = await prisma.categoryFilter.findMany({
     where: { categoryId },
   });
@@ -123,8 +130,10 @@ export const getEquipmentTable = async (
   const andConditions: Prisma.EquipmentWhereInput[] = [{ categoryId }];
 
   for (const filter of categoryFilters) {
+    if (!filters) break;
+
     const key = filter.systemField || `attr_${filter.attributeId}`;
-    const value = query[key];
+    const value = filters[key];
     const operator = getOperator(filter.type, value);
 
     if (!operator) continue;
@@ -161,10 +170,15 @@ export const getEquipmentTable = async (
     }
   }
 
-  const equipment = await prisma.equipment.findMany({
-    where: { AND: andConditions },
-    include: { attributes: true },
-  });
+  const [total, equipment] = await Promise.all([
+    prisma.equipment.count({ where: { AND: andConditions } }),
+    prisma.equipment.findMany({
+      where: { AND: andConditions },
+      take: limit,
+      skip: (page - 1) * limit,
+      include: { attributes: true },
+    }),
+  ]);
 
   const headers = [
     ...categoryFilters.map((f) => ({
@@ -194,5 +208,14 @@ export const getEquipmentTable = async (
     return row;
   });
 
-  return { headers, rows };
+  return {
+    headers,
+    rows,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };

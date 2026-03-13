@@ -21,7 +21,11 @@ export const validate =
 
     if (params) req.params = params;
     if (body) req.body = body;
-    if (query) req.query = query;
+    if (query) {
+      Object.defineProperty(req, "query", {
+        value: query,
+      });
+    }
 
     next();
   };

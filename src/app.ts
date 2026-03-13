@@ -7,6 +7,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.set("query parser", "extended");
 
 app.use("/api", router);
 
