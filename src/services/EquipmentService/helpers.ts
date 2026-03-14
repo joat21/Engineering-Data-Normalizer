@@ -21,11 +21,17 @@ export const recalculateFilters = async (categoryId: string) => {
   const filterEntries: Prisma.CategoryFilterCreateManyInput[] = [];
 
   for (const [field, config] of Object.entries(SYSTEM_FIELDS_CONFIG)) {
-    if (config.type === DATA_TYPE.NUMBER) {
+    // TODO: переделать для обработки любых числовых полей
+    if (field === SYSTEM_FIELDS.PRICE) {
       const agg = await prisma.equipment.aggregate({
         where: { categoryId },
         _min: { price: true },
         _max: { price: true },
+      });
+
+      const groups = await prisma.equipment.groupBy({
+        by: ["price"],
+        where: { categoryId, NOT: { price: undefined } },
       });
 
       filterEntries.push({
@@ -35,6 +41,7 @@ export const recalculateFilters = async (categoryId: string) => {
         type: DATA_TYPE.NUMBER,
         minValue: agg._min.price,
         maxValue: agg._max.price,
+        options: groups.map((g) => g.price).filter(Boolean),
       });
     } else {
       const groups = await prisma.equipment.groupBy({
