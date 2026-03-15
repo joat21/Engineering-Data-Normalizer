@@ -1,5 +1,6 @@
 import z from "zod";
 import { SYSTEM_FIELD_KEYS, TARGET_TYPE } from "../config";
+import { mappingTargetSchema } from "./normalization";
 
 export const aiParseTargetSchema = z.object({
   type: z.enum(TARGET_TYPE),
@@ -12,5 +13,14 @@ export const aiParseSchema = z.object({
     importSessionId: z.uuid(),
     colIndex: z.number(),
     targets: z.array(aiParseTargetSchema),
+  }),
+});
+
+export const saveAiParseSchema = z.object({
+  body: z.object({
+    importSessionId: z.uuid(),
+    parsingSessionId: z.uuid(),
+    sourceColIndex: z.number(),
+    targets: z.array(mappingTargetSchema),
   }),
 });

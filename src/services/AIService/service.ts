@@ -47,7 +47,7 @@ export async function processAiParsing(data: {
     }
   }
 
-  prisma.aiExtractionResult.createMany({
+  await prisma.aiExtractionResult.createMany({
     data: recordsToSave,
   });
 
@@ -81,7 +81,8 @@ export async function processAiParsing(data: {
   });
 
   return {
-    sessionId,
+    parsingSessionId: sessionId,
+    sourceColIndex: colIndex,
     headers,
     rows: [...resultRows],
   };

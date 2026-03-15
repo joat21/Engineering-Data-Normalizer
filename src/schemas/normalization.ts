@@ -22,7 +22,7 @@ export const attributeTargetSchema = z.object({
   id: z.uuid(),
 });
 
-const mappingTargetSchema = z.discriminatedUnion("type", [
+export const mappingTargetSchema = z.discriminatedUnion("type", [
   systemTargetSchema,
   attributeTargetSchema,
 ]);

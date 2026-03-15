@@ -52,13 +52,13 @@ const normalizeNumeric = (
 
   if (needsCheck) {
     return {
-      valueString: rawValue,
+      valueString: rawValue.trim(),
       needsCheck,
     };
   }
 
   return {
-    valueString: rawValue,
+    valueString: rawValue.trim(),
     valueMin: allNums.length > 0 ? Math.min(...allNums) : undefined,
     valueMax: allNums.length > 0 ? Math.max(...allNums) : undefined,
     valueArray: allNums.length >= 3 ? allNums : undefined,
@@ -77,7 +77,7 @@ const normalizeStringOrBoolean = (
   return cached
     ? (cached as unknown as NormalizedValue)
     : {
-        valueString: rawValue,
+        valueString: rawValue.trim(),
         needsCheck: true,
       };
 };

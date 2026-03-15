@@ -1,4 +1,5 @@
 import {
+  applyAiExtraction,
   applyColumnTransformation,
   mapColumnToAttribute,
 } from "../services/NormalizationService/service";
@@ -8,7 +9,7 @@ import {
   transformSchema,
 } from "../schemas/normalization";
 import { HandlerFromSchema } from "../types/zod";
-import { aiParseSchema } from "../schemas/ai";
+import { aiParseSchema, saveAiParseSchema } from "../schemas/ai";
 import { processAiParsing } from "../services/AIService/service";
 
 export const applyTransformHandler: HandlerFromSchema<
@@ -48,6 +49,19 @@ export const applyAiParse: HandlerFromSchema<typeof aiParseSchema> = async (
   try {
     const result = await processAiParsing(req.body);
 
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const saveAiParse: HandlerFromSchema<typeof saveAiParseSchema> = async (
+  req,
+  res,
+  next,
+) => {
+  try {
+    const result = await applyAiExtraction(req.body);
     res.json(result);
   } catch (error) {
     next(error);
