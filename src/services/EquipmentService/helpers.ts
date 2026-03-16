@@ -21,32 +21,34 @@ export const recalculateFilters = async (categoryId: string) => {
   const filterEntries: Prisma.CategoryFilterCreateManyInput[] = [];
 
   for (const [field, config] of Object.entries(SYSTEM_FIELDS_CONFIG)) {
-    // TODO: переделать для обработки любых числовых полей
-    if (field === SYSTEM_FIELDS.PRICE) {
-      const agg = await prisma.equipment.aggregate({
-        where: { categoryId },
-        _min: { price: true },
-        _max: { price: true },
-      });
+    const systemField = field as keyof EquipmentSystemFields;
 
-      const groups = await prisma.equipment.groupBy({
-        by: ["price"],
-        where: { categoryId, NOT: { price: undefined } },
-      });
+    if (field === DATA_TYPE.NUMBER) {
+      const [agg, groups] = await Promise.all([
+        prisma.equipment.aggregate({
+          where: { categoryId },
+          _min: { [systemField]: true },
+          _max: { [systemField]: true },
+        }),
+        prisma.equipment.groupBy({
+          by: systemField,
+          where: { categoryId, NOT: { [systemField]: null } },
+        }),
+      ]);
 
       filterEntries.push({
         categoryId,
-        systemField: field,
+        systemField,
         label: config.label,
         type: DATA_TYPE.NUMBER,
-        minValue: agg._min.price,
-        maxValue: agg._max.price,
-        options: groups.map((g) => g.price).filter(Boolean),
+        minValue: agg._min[systemField],
+        maxValue: agg._max[systemField],
+        options: groups.map((g) => g[systemField]).filter(Boolean),
       });
     } else {
       const groups = await prisma.equipment.groupBy({
-        by: [field as any],
-        where: { categoryId, NOT: { [field]: null } },
+        by: [systemField],
+        where: { categoryId, NOT: { [systemField]: null } },
       });
 
       filterEntries.push({
@@ -54,7 +56,7 @@ export const recalculateFilters = async (categoryId: string) => {
         systemField: field,
         label: config.label,
         type: DATA_TYPE.STRING,
-        options: groups.map((g) => g[field as any]).filter(Boolean),
+        options: groups.map((g) => g[systemField]).filter(Boolean),
       });
     }
   }
@@ -68,16 +70,17 @@ export const recalculateFilters = async (categoryId: string) => {
     };
 
     if (attr.dataType === DATA_TYPE.NUMBER) {
-      const agg = await prisma.equipmentAttributeValue.aggregate({
-        where: { attributeId: attr.id },
-        _min: { valueMin: true },
-        _max: { valueMax: true },
-      });
-
-      const groups = await prisma.equipmentAttributeValue.groupBy({
-        by: ["valueString"],
-        where: { attributeId: attr.id },
-      });
+      const [agg, groups] = await Promise.all([
+        prisma.equipmentAttributeValue.aggregate({
+          where: { attributeId: attr.id },
+          _min: { valueMin: true },
+          _max: { valueMax: true },
+        }),
+        prisma.equipmentAttributeValue.groupBy({
+          by: ["valueString"],
+          where: { attributeId: attr.id },
+        }),
+      ]);
 
       filterEntries.push({
         ...baseFilter,
