@@ -11,90 +11,95 @@ export const recalculateFilters = async (categoryId: string) => {
 
   if (!category) throw new Error("Category not found");
 
-  const filterEntries: Prisma.CategoryFilterCreateManyInput[] = [];
+  const systemFieldFilters = await Promise.all(
+    Object.entries(SYSTEM_FIELDS_CONFIG).map(async ([field, config]) => {
+      const systemField = field as keyof EquipmentSystemFields;
 
-  for (const [field, config] of Object.entries(SYSTEM_FIELDS_CONFIG)) {
-    const systemField = field as keyof EquipmentSystemFields;
-
-    if (field === DATA_TYPE.NUMBER) {
-      const [agg, groups] = await Promise.all([
-        prisma.equipment.aggregate({
+      if (config.type === DATA_TYPE.NUMBER) {
+        const agg = await prisma.equipment.aggregate({
           where: { categoryId },
           _min: { [systemField]: true },
           _max: { [systemField]: true },
-        }),
-        prisma.equipment.groupBy({
-          by: systemField,
-          where: { categoryId, NOT: { [systemField]: null } },
-        }),
-      ]);
+        });
 
-      filterEntries.push({
-        categoryId,
-        systemField,
-        label: config.label,
-        type: DATA_TYPE.NUMBER,
-        minValue: agg._min[systemField],
-        maxValue: agg._max[systemField],
-        options: groups.map((g) => g[systemField]).filter(Boolean),
-      });
-    } else {
-      const groups = await prisma.equipment.groupBy({
-        by: [systemField],
+        return {
+          categoryId,
+          systemField,
+          label: config.label,
+          type: DATA_TYPE.NUMBER,
+          minValue: agg._min[systemField],
+          maxValue: agg._max[systemField],
+        };
+      }
+
+      const groups = await prisma.equipment.findMany({
         where: { categoryId, NOT: { [systemField]: null } },
+        distinct: [systemField],
+        select: { [systemField]: true },
       });
 
-      filterEntries.push({
+      return {
         categoryId,
         systemField: field,
         label: config.label,
         type: DATA_TYPE.STRING,
-        options: groups.map((g) => g[systemField]).filter(Boolean),
-      });
-    }
-  }
+        options: groups.map((g) => g[systemField]).filter((v) => v !== null),
+      };
+    }),
+  );
 
-  for (const attr of category.attributes) {
-    const baseFilter = {
-      categoryId,
-      attributeId: attr.id,
-      label: attr.label,
-      type: attr.dataType,
-    };
+  const attributeFilters = await Promise.all(
+    category.attributes.map(async (attr) => {
+      const baseFilter = {
+        categoryId,
+        attributeId: attr.id,
+        label: attr.label,
+        type: attr.dataType,
+      };
 
-    if (attr.dataType === DATA_TYPE.NUMBER) {
-      const [agg, groups] = await Promise.all([
-        prisma.equipmentAttributeValue.aggregate({
+      if (attr.dataType === DATA_TYPE.NUMBER) {
+        const [agg, groups] = await Promise.all([
+          prisma.equipmentAttributeValue.aggregate({
+            where: { attributeId: attr.id },
+            _min: { valueMin: true },
+            _max: { valueMax: true },
+          }),
+          prisma.equipmentAttributeValue.findMany({
+            where: { attributeId: attr.id },
+            distinct: ["valueString"],
+            select: { valueString: true },
+          }),
+        ]);
+
+        return {
+          ...baseFilter,
+          minValue: agg._min.valueMin,
+          maxValue: agg._max.valueMax,
+          options: groups.map((g) => g.valueString),
+        };
+      }
+
+      if (attr.dataType === DATA_TYPE.STRING) {
+        const groups = await prisma.equipmentAttributeValue.findMany({
           where: { attributeId: attr.id },
-          _min: { valueMin: true },
-          _max: { valueMax: true },
-        }),
-        prisma.equipmentAttributeValue.groupBy({
-          by: ["valueString"],
-          where: { attributeId: attr.id },
-        }),
-      ]);
+          distinct: ["valueString"],
+          select: { valueString: true },
+        });
 
-      filterEntries.push({
-        ...baseFilter,
-        minValue: agg._min.valueMin,
-        maxValue: agg._max.valueMax,
-        options: groups.map((g) => g.valueString),
-      });
-    } else if (attr.dataType === DATA_TYPE.STRING) {
-      const groups = await prisma.equipmentAttributeValue.groupBy({
-        by: ["valueString"],
-        where: { attributeId: attr.id },
-      });
+        return {
+          ...baseFilter,
+          options: groups.map((g) => g.valueString),
+        };
+      }
 
-      filterEntries.push({
-        ...baseFilter,
-        options: groups.map((g) => g.valueString),
-      });
-    } else {
-      filterEntries.push(baseFilter);
-    }
-  }
+      return baseFilter;
+    }),
+  );
+
+  const filterEntries: Prisma.CategoryFilterCreateManyInput[] = [
+    ...systemFieldFilters,
+    ...attributeFilters,
+  ];
 
   await prisma.$transaction([
     prisma.categoryFilter.deleteMany({ where: { categoryId } }),
