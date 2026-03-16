@@ -1,5 +1,5 @@
 import {
-  applyAiExtraction,
+  applyAiParse,
   applyColumnTransformation,
   mapColumnToAttribute,
 } from "../services/NormalizationService/service";
@@ -9,8 +9,15 @@ import {
   transformSchema,
 } from "../schemas/normalization";
 import { HandlerFromSchema } from "../types/zod";
-import { aiParseSchema, saveAiParseSchema } from "../schemas/ai";
-import { processAiParsing } from "../services/AIService/service";
+import {
+  aiParseSchema,
+  editAiParseResultsSchema,
+  saveAiParseSchema,
+} from "../schemas/ai";
+import {
+  editAiParseResults,
+  processAiParsing,
+} from "../services/AIService/service";
 
 export const applyTransformHandler: HandlerFromSchema<
   typeof applyTransformSchema
@@ -41,11 +48,9 @@ export const mapColToAttrHandler: HandlerFromSchema<
   }
 };
 
-export const applyAiParse: HandlerFromSchema<typeof aiParseSchema> = async (
-  req,
-  res,
-  next,
-) => {
+export const applyAiParseHandler: HandlerFromSchema<
+  typeof aiParseSchema
+> = async (req, res, next) => {
   try {
     const result = await processAiParsing(req.body);
 
@@ -55,13 +60,25 @@ export const applyAiParse: HandlerFromSchema<typeof aiParseSchema> = async (
   }
 };
 
-export const saveAiParse: HandlerFromSchema<typeof saveAiParseSchema> = async (
-  req,
-  res,
-  next,
-) => {
+export const saveAiParseHandler: HandlerFromSchema<
+  typeof saveAiParseSchema
+> = async (req, res, next) => {
   try {
-    const result = await applyAiExtraction(req.body);
+    const result = await applyAiParse(req.body);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const editAiParseResultsHandler: HandlerFromSchema<
+  typeof editAiParseResultsSchema
+> = async (req, res, next) => {
+  try {
+    const result = await editAiParseResults(
+      req.params.sessionId,
+      req.body.editedValues,
+    );
     res.json(result);
   } catch (error) {
     next(error);

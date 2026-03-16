@@ -13,7 +13,7 @@ export const aiParseSchema = z.object({
     importSessionId: z.uuid(),
     colIndex: z.number(),
     targets: z.array(aiParseTargetSchema),
-    testRowIndexes: z.array(z.number()).optional(),
+    testRowIds: z.array(z.uuid()).optional(),
   }),
 });
 
@@ -23,5 +23,20 @@ export const saveAiParseSchema = z.object({
     parsingSessionId: z.uuid(),
     sourceColIndex: z.number(),
     targets: z.array(mappingTargetSchema),
+  }),
+});
+
+export const editedAiParseResult = z.object({
+  sourceItemId: z.uuid(),
+  targetKey: z.enum(SYSTEM_FIELD_KEYS).or(z.uuid()),
+  newRawValue: z.string(),
+});
+
+export const editAiParseResultsSchema = z.object({
+  params: z.object({
+    sessionId: z.uuid(),
+  }),
+  body: z.object({
+    editedValues: z.array(editedAiParseResult),
   }),
 });

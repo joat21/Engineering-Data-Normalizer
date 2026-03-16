@@ -81,7 +81,7 @@ const updateColumn = async (
   return saveTransformedRows(dataToUpdate);
 };
 
-export const applyAiExtraction = async (params: {
+export const applyAiParse = async (params: {
   importSessionId: string;
   parsingSessionId: string;
   sourceColIndex: number;
@@ -89,7 +89,7 @@ export const applyAiExtraction = async (params: {
 }) => {
   const { importSessionId, parsingSessionId, sourceColIndex, targets } = params;
 
-  const aiRows = await prisma.aiExtractionResult.findMany({
+  const aiRows = await prisma.aiParseResult.findMany({
     where: { sessionId: parsingSessionId },
   });
 
@@ -116,7 +116,7 @@ export const applyAiExtraction = async (params: {
       grouped.set(r.sourceItemId, new Map());
     }
 
-    grouped.get(r.sourceItemId)!.set(r.target, r.rawValue ?? "");
+    grouped.get(r.sourceItemId)!.set(r.targetKey, r.rawValue ?? "");
   });
 
   const updatedValuesByItem = new Map<string, string[]>();
@@ -214,28 +214,29 @@ const buildTransformedRows = (
 
     return {
       id: item.id,
-      transformedRow: JSON.stringify(newData).replace(/'/g, "''"),
+      transformedRow: newData,
     };
   });
 };
 
 const saveTransformedRows = async (
-  dataToUpdate: { id: string; transformedRow: string }[],
+  dataToUpdate: { id: string; transformedRow: TransformedRow }[],
 ) => {
   if (dataToUpdate.length === 0) {
     return { success: true, count: 0 };
   }
 
-  const values = dataToUpdate
-    .map((d) => `('${d.id}'::uuid, '${d.transformedRow}'::jsonb)`)
-    .join(",");
+  const payload = JSON.stringify(dataToUpdate);
 
-  await prisma.$executeRawUnsafe(`
+  await prisma.$executeRaw`
     UPDATE "StagingImportItem" AS t
-    SET "transformedRow" = v.new_val
-    FROM (VALUES ${values}) AS v(id, new_val)
-    WHERE t.id = v.id;
-  `);
+    SET "transformedRow" = v."transformedRow"
+    FROM json_to_recordset(${payload}::json) AS v(
+      "id" uuid,
+      "transformedRow" jsonb
+    )
+    WHERE t.id = v.id
+  `;
 
   return { success: true, count: dataToUpdate.length };
 };

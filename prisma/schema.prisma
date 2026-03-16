@@ -137,14 +137,14 @@ model ImportSession {
 }
 
 model StagingImportItem {
-  id                  String               @id @default(uuid()) @db.Uuid
-  session             ImportSession        @relation(fields: [sessionId], references: [id])
-  sessionId           String               @db.Uuid
-  rowIndex            Int
-  rawRow              Json
-  transformedRow      Json?
-  status              ImportItemStatus     @default(PENDING)
-  aiExtractionResults AiExtractionResult[]
+  id             String           @id @default(uuid()) @db.Uuid
+  session        ImportSession    @relation(fields: [sessionId], references: [id])
+  sessionId      String           @db.Uuid
+  rowIndex       Int
+  rawRow         Json
+  transformedRow Json?
+  status         ImportItemStatus @default(PENDING)
+  aiParseResults AiParseResult[]
 
   @@index([rowIndex])
 }
@@ -160,15 +160,16 @@ model NormalizationCache {
   @@index([cleanedValue])
 }
 
-model AiExtractionResult {
+model AiParseResult {
   id           String            @id @default(uuid()) @db.Uuid
   sourceItem   StagingImportItem @relation(fields: [sourceItemId], references: [id])
   sourceItemId String            @db.Uuid
   sessionId    String            @db.Uuid
   targetType   MappingTargetType
-  target       String
+  targetKey    String
   rawValue     String
-  isEdited     Boolean           @default(false)
+
+  @@unique([sessionId, sourceItemId, targetKey])
 }
 
 enum DataType {

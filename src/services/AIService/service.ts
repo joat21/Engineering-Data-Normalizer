@@ -4,26 +4,29 @@ import { prisma } from "../../../prisma/prisma";
 import { Prisma } from "../../generated/prisma/client";
 import { getRawValue } from "../../helpers/getRawValue";
 import { TransformPayload } from "../NormalizationService/types";
-import { ParseTarget } from "./types";
-import { TARGET_TYPE } from "../../config";
+import { EditedAiParseResult, ParseTarget } from "./types";
+import { STAGING_IMPORT_ITEM_STATUS, TARGET_TYPE } from "../../config";
 
 export async function processAiParsing(data: {
   importSessionId: string;
   colIndex: number;
   targets: ParseTarget[];
-  testRowIndexes?: number[];
+  testRowIds?: string[];
 }) {
   const sessionId = uuidv4();
-  const { importSessionId, colIndex, targets, testRowIndexes } = data;
-  const isTest = !!testRowIndexes?.length;
+  const { importSessionId, colIndex, targets, testRowIds } = data;
+  const isTest = !!testRowIds?.length;
 
   const where: Prisma.StagingImportItemWhereInput = {
     sessionId: importSessionId,
+    status: {
+      not: STAGING_IMPORT_ITEM_STATUS.EDITED_MANUALLY,
+    },
   };
 
-  if (testRowIndexes?.length) {
-    where.rowIndex = {
-      in: testRowIndexes,
+  if (testRowIds?.length) {
+    where.id = {
+      in: testRowIds,
     };
   }
 
@@ -45,7 +48,7 @@ export async function processAiParsing(data: {
 
   const llmResults = await callLlmParser(linesToParse, targets);
 
-  const recordsToSave: Prisma.AiExtractionResultCreateManyInput[] = [];
+  const recordsToSave: Prisma.AiParseResultCreateManyInput[] = [];
 
   for (const result of llmResults) {
     const { rowId, extracted } = result;
@@ -56,7 +59,7 @@ export async function processAiParsing(data: {
       recordsToSave.push({
         sessionId,
         sourceItemId: rowId,
-        target: target.key,
+        targetKey: target.key,
         targetType: target.type,
         rawValue: String(value),
       });
@@ -66,7 +69,7 @@ export async function processAiParsing(data: {
   // TODO: возможно стоит сделать так, чтобы тестовые строки сохранялись при тестовом прогоне,
   // но не использовались при прогоне всей колонки
   if (!isTest) {
-    await prisma.aiExtractionResult.createMany({
+    await prisma.aiParseResult.createMany({
       data: recordsToSave,
     });
   }
@@ -107,6 +110,57 @@ export async function processAiParsing(data: {
     rows: [...resultRows],
   };
 }
+
+export const editAiParseResults = async (
+  parsingSessionId: string,
+  editedValues: EditedAiParseResult[],
+) => {
+  if (!editedValues.length) {
+    return { updated: 0 };
+  }
+
+  const exists = await prisma.aiParseResult.findFirst({
+    where: { sessionId: parsingSessionId },
+    select: { id: true },
+  });
+
+  if (!exists) {
+    throw new Error("Parsing session not found");
+  }
+
+  const payload = JSON.stringify(editedValues);
+
+  const updated = await prisma.$executeRaw`
+    UPDATE "AiExtractionResult" AS t
+    SET
+      "rawValue" = v."newRawValue"
+    FROM json_to_recordset(${payload}::json) AS v(
+      "sourceItemId" uuid,
+      "targetKey" text,
+      "newRawValue" text
+    )
+    WHERE
+      t."sessionId" = ${parsingSessionId}::uuid
+      AND t."sourceItemId" = v."sourceItemId"
+      AND t."targetKey" = v."targetKey"
+  `;
+
+  await prisma.$executeRaw`
+    UPDATE "StagingImportItem" AS s
+    SET "status" = 'EDITED_MANUALLY'
+    FROM (
+      SELECT DISTINCT "sourceItemId"
+      FROM json_to_recordset(${payload}::json) AS v(
+        "sourceItemId" uuid,
+        "targetKey" text, 
+        "newRawValue" text
+      )
+    ) AS edited
+    WHERE s.id = edited."sourceItemId"
+  `;
+
+  return { updated };
+};
 
 const callLlmParser = async (
   lines: {

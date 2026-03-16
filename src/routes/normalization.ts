@@ -5,7 +5,11 @@ import {
   applyTransformSchema,
 } from "../schemas/normalization";
 import * as NormalizationController from "../controllers/NormalizationController";
-import { aiParseSchema, saveAiParseSchema } from "../schemas/ai";
+import {
+  aiParseSchema,
+  editAiParseResultsSchema,
+  saveAiParseSchema,
+} from "../schemas/ai";
 
 const router = Router();
 
@@ -22,12 +26,17 @@ router.patch(
 router.post(
   "/ai-parse",
   validate(aiParseSchema),
-  NormalizationController.applyAiParse,
+  NormalizationController.applyAiParseHandler,
 );
 router.post(
   "/ai-parse/save",
   validate(saveAiParseSchema),
-  NormalizationController.saveAiParse,
+  NormalizationController.saveAiParseHandler,
+);
+router.patch(
+  "/ai-parse/:sessionId",
+  validate(editAiParseResultsSchema),
+  NormalizationController.editAiParseResultsHandler,
 );
 
 export default router;
