@@ -52,3 +52,14 @@ export interface TransformedColumn {
 }
 
 export type TransformedRow = Record<string, TransformedColumn[]>;
+
+export type NormalizeSingleEntity = {
+  target: MappingTarget;
+  value: string | null | undefined;
+};
+
+export type NormalizedResult = {
+  target: MappingTarget;
+  rawValue: string;
+  normalized: ReturnType<MappingPlan["normalizer"]>;
+};

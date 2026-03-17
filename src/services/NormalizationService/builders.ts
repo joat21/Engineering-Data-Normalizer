@@ -1,9 +1,43 @@
 import { JsonValue } from "@prisma/client/runtime/client";
 import { getCacheMap, getMappingPlans, getTypeMap } from "./helpers";
-import { MappingPlan, MappingTarget, TransformedRow } from "./types";
+import {
+  MappingPlan,
+  MappingTarget,
+  NormalizeSingleEntity,
+  TransformedRow,
+} from "./types";
 import { prisma } from "../../../prisma/prisma";
 
-export const buildNormalizationContext = async (
+export const buildBatchNormalizationContext = async (
+  targets: (MappingTarget | null)[],
+  valuesByItem: Map<string, string[]>,
+) => {
+  return buildNormalizationContext(targets, valuesByItem);
+};
+
+export const buildSingleNormalizationContext = async (
+  inputs: NormalizeSingleEntity[],
+) => {
+  // при нормализации данных из колонки targets приходят с фронта отдельно,
+  // и values под них собираются на ходу из БД, чтобы не делать этого на фронте
+  // для нормализации одной сущности (через заполнение формы на фронте)
+  // удобно сразу присылать с фронта массив { target, value }[]
+  // и для переиспользования существующего кода разделить его на targets[] и values[]
+  const targets = inputs.map((i) => i.target);
+  const values = inputs.map((i) => String(i.value ?? "").trim());
+
+  // при нормализации колонки: item - это строка таблицы, batch обработка
+  // при нормализации одной сущности есть только один item, так как нет таблицы
+  // Эмулируем batch-структуру, так как ее ожидает getCacheMap внутри buildNormalizationContext
+  const valuesByItem = new Map<string, string[]>();
+  valuesByItem.set("single", values);
+
+  const context = await buildNormalizationContext(targets, valuesByItem);
+
+  return { values, ...context };
+};
+
+const buildNormalizationContext = async (
   targets: (MappingTarget | null)[],
   valuesByItem: Map<string, string[]>,
 ) => {

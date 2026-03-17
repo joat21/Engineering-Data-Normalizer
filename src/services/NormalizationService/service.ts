@@ -1,10 +1,16 @@
 import {
-  buildNormalizationContext,
+  buildBatchNormalizationContext,
+  buildSingleNormalizationContext,
   buildTransformedRows,
   saveTransformedRows,
 } from "./builders";
 import { applyTransform } from "./transformers";
-import { MappingTarget, TransformConfig } from "./types";
+import {
+  MappingTarget,
+  NormalizedResult,
+  NormalizeSingleEntity,
+  TransformConfig,
+} from "./types";
 import { prisma } from "../../../prisma/prisma";
 import { getRawValue } from "../../helpers/getRawValue";
 import { TARGET_TYPE } from "../../config";
@@ -57,7 +63,7 @@ const updateColumn = async (
     rawValueByItem.set(item.id, String(rawValue ?? ""));
   });
 
-  const { cacheMap, mappingPlans } = await buildNormalizationContext(
+  const { cacheMap, mappingPlans } = await buildBatchNormalizationContext(
     targets,
     updatedValuesByItem,
   );
@@ -122,7 +128,7 @@ export const applyAiParse = async (params: {
     updatedValuesByItem.set(itemId, values);
   });
 
-  const { cacheMap, mappingPlans } = await buildNormalizationContext(
+  const { cacheMap, mappingPlans } = await buildBatchNormalizationContext(
     targets,
     updatedValuesByItem,
   );
@@ -141,6 +147,33 @@ export const applyAiParse = async (params: {
   prisma.aiParseResult
     .deleteMany({ where: { sessionId: parsingSessionId } })
     .catch(console.error);
+
+  return result;
+};
+
+export const normalizeSingleEntity = async (
+  inputs: NormalizeSingleEntity[],
+): Promise<NormalizedResult[]> => {
+  if (!inputs.length) return [];
+
+  const { values, cacheMap, mappingPlans } =
+    await buildSingleNormalizationContext(inputs);
+
+  const result: NormalizedResult[] = mappingPlans
+    .map((plan, index) => {
+      if (!plan) return null;
+
+      const rawValue = values[index] ?? "";
+
+      const normalized = plan.normalizer(rawValue, cacheMap);
+
+      return {
+        target: plan.target,
+        rawValue,
+        normalized,
+      };
+    })
+    .filter((r): r is NormalizedResult => r !== null);
 
   return result;
 };
