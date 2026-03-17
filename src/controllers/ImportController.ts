@@ -6,7 +6,7 @@ export const initImportHandler: HandlerFromSchema<
   typeof initImportSchema
 > = async (req, res, next) => {
   try {
-    const { categoryId } = req.body;
+    const { categoryId, sourceType } = req.body;
     const file = req.file;
 
     if (!file) {
@@ -15,6 +15,7 @@ export const initImportHandler: HandlerFromSchema<
 
     const sessionId = await createSession({
       categoryId,
+      sourceType,
       file,
     });
 

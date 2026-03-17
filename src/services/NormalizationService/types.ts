@@ -58,8 +58,4 @@ export type NormalizeSingleEntity = {
   value: string | null | undefined;
 };
 
-export type NormalizedResult = {
-  target: MappingTarget;
-  rawValue: string;
-  normalized: ReturnType<MappingPlan["normalizer"]>;
-};
+export type NormalizedResult = TransformedColumn;

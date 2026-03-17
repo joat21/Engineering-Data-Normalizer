@@ -1,11 +1,12 @@
 import { prisma } from "../../prisma/prisma";
-import { SourceType } from "../generated/prisma/enums";
 import { calculateHashAsync } from "../helpers/calculateHashAsync";
 import { uploadFile } from "./S3Service";
 import { createSource } from "./SourceService";
+import { SourceType } from "../types";
 
 export const createSession = async (data: {
   categoryId: string;
+  sourceType: SourceType;
   file: Express.Multer.File;
 }) => {
   const fileHash = await calculateHashAsync(data.file.buffer);
@@ -19,7 +20,7 @@ export const createSession = async (data: {
       fileName: data.file.originalname,
       url,
       fileHash,
-      type: SourceType.CATALOG,
+      type: data.sourceType,
     });
   }
 

@@ -3,6 +3,7 @@ import { validate } from "../middleware/validate";
 import {
   mapColToAttrSchema,
   applyTransformSchema,
+  normalizeSingleEntitySchema,
 } from "../schemas/normalization";
 import * as NormalizationController from "../controllers/NormalizationController";
 import {
@@ -37,6 +38,11 @@ router.patch(
   "/ai-parse/:sessionId",
   validate(editAiParseResultsSchema),
   NormalizationController.editAiParseResultsHandler,
+);
+router.post(
+  "/single-entity",
+  validate(normalizeSingleEntitySchema),
+  NormalizationController.normalizeSingleEntityHandler,
 );
 
 export default router;

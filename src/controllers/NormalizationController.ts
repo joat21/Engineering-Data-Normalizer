@@ -2,10 +2,12 @@ import {
   applyAiParse,
   applyColumnTransformation,
   mapColumnToAttribute,
+  normalizeSingleEntity,
 } from "../services/NormalizationService/service";
 import {
   applyTransformSchema,
   mapColToAttrSchema,
+  normalizeSingleEntitySchema,
   transformSchema,
 } from "../schemas/normalization";
 import { HandlerFromSchema } from "../types/zod";
@@ -79,6 +81,17 @@ export const editAiParseResultsHandler: HandlerFromSchema<
       req.params.sessionId,
       req.body.editedValues,
     );
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const normalizeSingleEntityHandler: HandlerFromSchema<
+  typeof normalizeSingleEntitySchema
+> = async (req, res, next) => {
+  try {
+    const result = await normalizeSingleEntity(req.body);
     res.json(result);
   } catch (error) {
     next(error);

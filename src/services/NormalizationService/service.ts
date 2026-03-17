@@ -14,6 +14,7 @@ import {
 import { prisma } from "../../../prisma/prisma";
 import { getRawValue } from "../../helpers/getRawValue";
 import { TARGET_TYPE } from "../../config";
+import { createSingleEquipment } from "../EquipmentService/service";
 
 export const mapColumnToAttribute = async (params: {
   sessionId: string;
@@ -151,15 +152,18 @@ export const applyAiParse = async (params: {
   return result;
 };
 
-export const normalizeSingleEntity = async (
-  inputs: NormalizeSingleEntity[],
-): Promise<NormalizedResult[]> => {
+export const normalizeSingleEntity = async (params: {
+  sessionId: string;
+  inputs: NormalizeSingleEntity[];
+}) => {
+  const { sessionId, inputs } = params;
+
   if (!inputs.length) return [];
 
   const { values, cacheMap, mappingPlans } =
     await buildSingleNormalizationContext(inputs);
 
-  const result: NormalizedResult[] = mappingPlans
+  const data = mappingPlans
     .map((plan, index) => {
       if (!plan) return null;
 
@@ -174,6 +178,11 @@ export const normalizeSingleEntity = async (
       };
     })
     .filter((r): r is NormalizedResult => r !== null);
+
+  const result = await createSingleEquipment({
+    sessionId,
+    normalizedData: data,
+  });
 
   return result;
 };

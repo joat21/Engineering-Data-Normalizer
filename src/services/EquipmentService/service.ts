@@ -4,7 +4,10 @@ import { getOperator, getOrderBy } from "./helpers";
 import { FilterValue, NumericFilterValue } from "./types";
 import { prisma } from "../../../prisma/prisma";
 import { Prisma } from "../../generated/prisma/client";
-import { TransformedRow } from "../NormalizationService/types";
+import {
+  NormalizedResult,
+  TransformedRow,
+} from "../NormalizationService/types";
 import {
   DATA_TYPE,
   IMPORT_SESSION_STATUS,
@@ -36,56 +39,14 @@ export const saveEquipmentFromStaging = async (sessionId: string) => {
     const transformedRow = item.transformedRow as unknown as TransformedRow;
     if (!transformedRow) return;
 
-    const equipmentId = uuidv4();
-
-    const equipmentEntry: Prisma.EquipmentCreateManyInput = {
-      id: equipmentId,
+    const { equipmentEntry, entryAttributes } = collectEquipmentAndAttributes({
       categoryId: session.categoryId,
       sourceId: session.sourceId,
-      name: null,
-      article: null,
-      model: null,
-      externalCode: null,
-      manufacturer: null,
-      price: new Prisma.Decimal(0),
-    };
-
-    Object.values(transformedRow)
-      .flat()
-      .forEach((col) => {
-        const { target, normalized } = col;
-
-        if (target.type === TARGET_TYPE.SYSTEM) {
-          const field = target.field;
-
-          if (field === SYSTEM_FIELDS.PRICE) {
-            equipmentEntry.price = new Prisma.Decimal(
-              normalized.valueString ?? 0,
-            );
-          } else {
-            equipmentEntry[field] = normalized.valueString;
-          }
-        } else {
-          attributesToCreate.push({
-            id: uuidv4(),
-            equipmentId: equipmentId,
-            attributeId: target.id,
-            valueString: normalized.valueString,
-            valueMin: normalized.valueMin
-              ? new Prisma.Decimal(normalized.valueMin)
-              : null,
-            valueMax: normalized.valueMax
-              ? new Prisma.Decimal(normalized.valueMax)
-              : null,
-            valueArray: normalized.valueArray
-              ? (normalized.valueArray as any)
-              : null,
-            valueBoolean: normalized.valueBoolean ?? null,
-          });
-        }
-      });
+      normalizedData: Object.values(transformedRow).flat(),
+    });
 
     equipmentToCreate.push(equipmentEntry);
+    attributesToCreate.push(...entryAttributes);
   });
 
   const result = await prisma.$transaction(async (tx) => {
@@ -118,6 +79,101 @@ export const saveEquipmentFromStaging = async (sessionId: string) => {
     .catch(console.error);
 
   return result;
+};
+
+export const createSingleEquipment = async (data: {
+  sessionId: string;
+  normalizedData: NormalizedResult[];
+}) => {
+  const session = await prisma.importSession.findUnique({
+    where: { id: data.sessionId },
+    select: { sourceId: true, categoryId: true },
+  });
+
+  if (!session) throw new Error("Session not found");
+
+  const { equipmentEntry, entryAttributes } = collectEquipmentAndAttributes({
+    categoryId: session.categoryId,
+    sourceId: session.sourceId,
+    normalizedData: data.normalizedData,
+  });
+
+  const created = await prisma.$transaction(async (tx) => {
+    await tx.equipment.create({ data: equipmentEntry });
+
+    if (entryAttributes.length > 0) {
+      await tx.equipmentAttributeValue.createMany({
+        data: entryAttributes,
+      });
+    }
+
+    return {
+      equipmentCount: 1,
+      attributesCount: entryAttributes.length,
+    };
+  });
+
+  recalculateFilters(session.categoryId).catch(console.error);
+
+  return created;
+};
+
+export const collectEquipmentAndAttributes = (data: {
+  categoryId: string;
+  sourceId: string;
+  normalizedData: NormalizedResult[];
+}) => {
+  const { categoryId, sourceId, normalizedData } = data;
+  const equipmentId = uuidv4();
+
+  const equipmentEntry: Prisma.EquipmentCreateManyInput = {
+    id: equipmentId,
+    categoryId: categoryId,
+    sourceId: sourceId,
+    name: null,
+    article: null,
+    model: null,
+    externalCode: null,
+    manufacturer: null,
+    price: new Prisma.Decimal(0),
+  };
+
+  const entryAttributes: Prisma.EquipmentAttributeValueCreateManyInput[] = [];
+
+  normalizedData.forEach((item) => {
+    const { target, normalized } = item;
+
+    if (target.type === TARGET_TYPE.SYSTEM) {
+      const field = target.field;
+
+      if (field === SYSTEM_FIELDS.PRICE) {
+        equipmentEntry.price = new Prisma.Decimal(normalized.valueString ?? 0);
+      } else {
+        equipmentEntry[field] = normalized.valueString;
+      }
+    } else {
+      entryAttributes.push({
+        equipmentId: equipmentId,
+        attributeId: target.id,
+        valueString: normalized.valueString,
+        valueMin: normalized.valueMin
+          ? new Prisma.Decimal(normalized.valueMin)
+          : null,
+        valueMax: normalized.valueMax
+          ? new Prisma.Decimal(normalized.valueMax)
+          : null,
+        valueArray: normalized.valueArray
+          ? (normalized.valueArray as any)
+          : null,
+        valueBoolean: normalized.valueBoolean ?? null,
+      });
+    }
+  });
+
+  return {
+    equipmentEntry,
+    entryAttributes,
+  };
 };
 
 export const getEquipmentTable = async (data: {

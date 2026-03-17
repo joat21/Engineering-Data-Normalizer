@@ -1,8 +1,10 @@
 import { z } from "zod";
+import { SOURCE_TYPE } from "../config";
 
 export const initImportSchema = z.object({
   body: z.object({
     categoryId: z.uuid(),
+    sourceType: z.enum(SOURCE_TYPE),
   }),
 });
 

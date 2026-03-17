@@ -3,6 +3,7 @@ import {
   DataType as PrismaDataType,
   MappingTargetType,
   ImportItemStatus,
+  SourceType,
 } from "./generated/prisma/client";
 import { DataType, EquipmentSystemFields } from "./types";
 
@@ -39,3 +40,5 @@ export const SYSTEM_FIELDS = Object.fromEntries(
 export const IMPORT_SESSION_STATUS = ImportStatus;
 
 export const STAGING_IMPORT_ITEM_STATUS = ImportItemStatus;
+
+export const SOURCE_TYPE = SourceType;

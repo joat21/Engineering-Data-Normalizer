@@ -43,3 +43,15 @@ export const mapColToAttrSchema = z.object({
     target: mappingTargetSchema,
   }),
 });
+
+export const normalizeSingleEntitySchema = z.object({
+  body: z.object({
+    sessionId: z.uuid(),
+    inputs: z.array(
+      z.object({
+        target: mappingTargetSchema,
+        value: z.string().nullable(),
+      }),
+    ),
+  }),
+});
