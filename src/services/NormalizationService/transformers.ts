@@ -48,10 +48,6 @@ export const multiply = (input: TransformPayload, factor: number) => {
   if (!input) return [];
 
   const nums = parseNumbers(input);
-  console.log(
-    nums,
-    nums.map((n) => n * factor),
-  );
   return nums.map((n) => n * factor);
 };
 

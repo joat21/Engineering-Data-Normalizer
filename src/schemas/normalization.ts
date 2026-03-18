@@ -28,18 +28,22 @@ export const mappingTargetSchema = z.discriminatedUnion("type", [
 ]);
 
 export const applyTransformSchema = z.object({
-  body: z.object({
+  params: z.object({
     sessionId: z.uuid(),
-    colIndex: z.number(),
+  }),
+  body: z.object({
+    colIndex: z.coerce.number(),
     transform: transformSchema,
     targets: z.array(mappingTargetSchema.nullable()),
   }),
 });
 
 export const mapColToAttrSchema = z.object({
-  body: z.object({
+  params: z.object({
     sessionId: z.uuid(),
-    colIndex: z.number(),
+  }),
+  body: z.object({
+    colIndex: z.coerce.number(),
     target: mappingTargetSchema,
   }),
 });

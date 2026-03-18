@@ -201,13 +201,24 @@ const callLlmParser = async (
   };
 
   const prompt = `
-    Распарси следующие строки номенклатуры.
-    Используй эти ключи для атрибутов:
-    ${targets.map((t) => `- ${t.key} (Смысл: ${t.label})`).join("\n")}
+    Ты извлекаешь параметры из строк номенклатуры.
 
-    СТРОКИ ДЛЯ ПАРСИНГА:
-    ${JSON.stringify(lines)}
+    Правила:
+    - Отвечай СТРОГО валидным JSON
+    - НЕ повторяй значения
+    - НЕ добавляй пояснения
+    - Значения короткие (число или слово)
+    - Если сильно не уверен — пиши атрибуту значение null
+    - Неправильно заполненный атрибут хуже null
+
+    Атрибуты:
+    ${targets.map((t) => `- ${t.key} (${t.label})`).join("\n")}
+
+    Строки:
+    ${lines.map((l) => `${l.id}: ${l.text}`).join("\n")}
   `;
+
+  console.log(prompt);
 
   const response = await ai.models.generateContent({
     model: "gemini-3.1-flash-lite-preview",
@@ -219,12 +230,18 @@ const callLlmParser = async (
       thinkingConfig: {
         thinkingLevel: ThinkingLevel.MINIMAL,
       },
+      maxOutputTokens: 10000,
       systemInstruction:
         "Ты — инженерный парсер. Твоя задача: извлекать технические характеристики из строк номенклатуры. Если значение не найдено, пиши null. Не выдумывай данные.",
     },
   });
 
-  console.log("[LOG]: TOKENS USAGE:", response.usageMetadata);
+  console.log(
+    `[LOG]: ${new Date(Date.now()).toLocaleString()}\nTOKENS USAGE:`,
+    response.usageMetadata,
+  );
+
+  console.log(response.text);
 
   return JSON.parse(response.text || "") as AiParseResult[];
 };

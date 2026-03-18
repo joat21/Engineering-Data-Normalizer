@@ -28,7 +28,9 @@ export const applyTransformHandler: HandlerFromSchema<
     const transform = transformSchema.parse(req.body.transform);
 
     await applyColumnTransformation({
-      ...req.body,
+      sessionId: req.params.sessionId,
+      colIndex: req.body.colIndex,
+      targets: req.body.targets,
       transform,
     });
 
@@ -42,7 +44,11 @@ export const mapColToAttrHandler: HandlerFromSchema<
   typeof mapColToAttrSchema
 > = async (req, res, next) => {
   try {
-    await mapColumnToAttribute(req.body);
+    await mapColumnToAttribute({
+      sessionId: req.params.sessionId,
+      colIndex: req.body.colIndex,
+      target: req.body.target,
+    });
 
     res.sendStatus(204);
   } catch (error) {
@@ -66,7 +72,12 @@ export const saveAiParseHandler: HandlerFromSchema<
   typeof saveAiParseSchema
 > = async (req, res, next) => {
   try {
-    const result = await applyAiParse(req.body);
+    const result = await applyAiParse({
+      parsingSessionId: req.params.sessionId,
+      importSessionId: req.body.importSessionId,
+      sourceColIndex: req.body.sourceColIndex,
+      targets: req.body.targets,
+    });
     res.json(result);
   } catch (error) {
     next(error);

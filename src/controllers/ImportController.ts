@@ -29,7 +29,10 @@ export const importRowsHandler: HandlerFromSchema<
   typeof importRowsSchema
 > = async (req, res, next) => {
   try {
-    await addItemsToStaging(req.body);
+    await addItemsToStaging({
+      sessionId: req.params.sessionId,
+      rows: req.body.rows,
+    });
 
     res.sendStatus(201);
   } catch (error) {

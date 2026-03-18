@@ -9,8 +9,8 @@ export const initImportSchema = z.object({
 });
 
 export const importRowsSchema = z.object({
+  params: z.object({ sessionId: z.uuid() }),
   body: z.object({
-    sessionId: z.uuid(),
     rows: z.array(z.array(z.string().or(z.number()))),
   }),
 });

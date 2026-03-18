@@ -127,6 +127,73 @@ async function main() {
     include: { attributes: true },
   });
 
+  const plugs = await prisma.category.create({
+    data: {
+      name: "Заглушки",
+      attributes: {
+        create: [
+          {
+            key: "plugType",
+            label: "Тип заглушки",
+            unit: "",
+            dataType: DataType.STRING,
+            isFilterable: true,
+          },
+          {
+            key: "dn",
+            label: "DN (Диаметр)",
+            unit: "мм",
+            dataType: DataType.NUMBER,
+            isFilterable: true,
+          },
+          {
+            key: "pn",
+            label: "PN (Давление)",
+            unit: "бар",
+            dataType: DataType.NUMBER,
+            isFilterable: true,
+          },
+          {
+            key: "outerDiameter",
+            label: "Наружный диаметр",
+            unit: "мм",
+            dataType: DataType.NUMBER,
+            isFilterable: false,
+          },
+          {
+            key: "wallThickness",
+            label: "Толщина стенки",
+            unit: "мм",
+            dataType: DataType.NUMBER,
+            isFilterable: false,
+          },
+          {
+            key: "material",
+            label: "Материал",
+            unit: "",
+            dataType: DataType.STRING,
+            isFilterable: true,
+          },
+          {
+            key: "standard",
+            label: "Стандарт",
+            unit: "",
+            dataType: DataType.STRING,
+            isFilterable: true,
+          },
+          {
+            key: "execution",
+            label: "Исполнение",
+            unit: "",
+            dataType: DataType.STRING,
+            isFilterable: false,
+          },
+        ],
+      },
+    },
+    include: { attributes: true },
+  });
+
   const pumpDnAttr = pumps.attributes.find((a) => a.key === "dn")!;
   const valveMaterialAttr = valves.attributes.find(
     (a) => a.key === "material",

@@ -12,8 +12,9 @@ router.post(
   validate(initImportSchema),
   ImportController.initImportHandler,
 );
+
 router.post(
-  "/staging",
+  "/:sessionId",
   validate(importRowsSchema),
   ImportController.importRowsHandler,
 );

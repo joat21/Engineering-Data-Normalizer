@@ -4,7 +4,7 @@ import { mappingTargetSchema } from "./normalization";
 
 export const aiParseTargetSchema = z.object({
   type: z.enum(TARGET_TYPE),
-  key: z.enum(SYSTEM_FIELD_KEYS).or(z.uuid()),
+  key: z.enum(SYSTEM_FIELD_KEYS).or(z.string()),
   label: z.string(),
 });
 
@@ -19,15 +19,17 @@ export const aiParseSchema = z.object({
 });
 
 export const saveAiParseSchema = z.object({
+  params: z.object({
+    sessionId: z.uuid(),
+  }),
   body: z.object({
     importSessionId: z.uuid(),
-    parsingSessionId: z.uuid(),
     sourceColIndex: z.number(),
     targets: z.array(mappingTargetSchema),
   }),
 });
 
-export const editedAiParseResult = z.object({
+export const editedAiParseResultSchema = z.object({
   sourceItemId: z.uuid(),
   targetKey: z.enum(SYSTEM_FIELD_KEYS).or(z.uuid()),
   newRawValue: z.string(),
@@ -38,6 +40,6 @@ export const editAiParseResultsSchema = z.object({
     sessionId: z.uuid(),
   }),
   body: z.object({
-    editedValues: z.array(editedAiParseResult),
+    editedValues: z.array(editedAiParseResultSchema),
   }),
 });
