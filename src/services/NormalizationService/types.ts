@@ -5,6 +5,7 @@ import {
   systemTargetSchema,
   transformSchema,
 } from "../../schemas/normalization";
+import { DataType } from "../../types";
 
 export type TransformPayload = string | number | null;
 
@@ -59,3 +60,31 @@ export type NormalizeSingleEntity = {
 };
 
 export type NormalizedResult = TransformedColumn;
+
+export interface AttributeInfo {
+  dataType: DataType;
+  label: string;
+}
+
+export const isNormalizedValue = (
+  val: NormalizedValue | UnnormalizedValue,
+): val is NormalizedValue => {
+  return !(val as UnnormalizedValue).needsCheck;
+};
+
+export type EnrichedTarget = MappingTarget & {
+  label: string;
+  dataType: DataType;
+};
+
+export interface NormalizationOption {
+  id: string;
+  label: string;
+  normalized: NormalizedValue;
+}
+
+export interface NormalizationIssue {
+  target: EnrichedTarget;
+  unnormalizedValues: string[];
+  normalizationOptions: NormalizationOption[];
+}

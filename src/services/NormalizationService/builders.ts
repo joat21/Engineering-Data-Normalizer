@@ -1,12 +1,17 @@
 import { JsonValue } from "@prisma/client/runtime/client";
-import { getCacheMap, getMappingPlans, getTypeMap } from "./helpers";
+import { getCacheMap, getMappingPlans, getAttributeInfoMap } from "./helpers";
 import {
+  AttributeInfo,
+  EnrichedTarget,
+  isNormalizedValue,
   MappingPlan,
   MappingTarget,
   NormalizeSingleEntity,
   TransformedRow,
 } from "./types";
 import { prisma } from "../../../prisma/prisma";
+import { DATA_TYPE, TARGET_TYPE } from "../../config";
+import { DataType } from "../../types";
 
 export const buildBatchNormalizationContext = async (
   targets: (MappingTarget | null)[],
@@ -41,12 +46,12 @@ const buildNormalizationContext = async (
   targets: (MappingTarget | null)[],
   valuesByItem: Map<string, string[]>,
 ) => {
-  const typeMap = await getTypeMap(targets);
-  const cacheMap = await getCacheMap(targets, valuesByItem, typeMap);
-  const mappingPlans = getMappingPlans(targets, typeMap);
+  const attributeInfoMap = await getAttributeInfoMap(targets);
+  const cacheMap = await getCacheMap(targets, valuesByItem, attributeInfoMap);
+  const mappingPlans = getMappingPlans(targets, attributeInfoMap);
 
   return {
-    typeMap,
+    attributeInfoMap,
     cacheMap,
     mappingPlans,
   };
@@ -72,19 +77,32 @@ const buildColumnMappings = (
     .filter((m) => m !== null);
 };
 
-export const buildTransformedRows = (
+export const buildTransformedRows = async (params: {
   items: {
     id: string;
     rawRow: JsonValue;
     transformedRow: JsonValue;
-  }[],
-  colIndex: number,
-  updatedValuesByItem: Map<string, string[]>,
-  rawValueByItem: Map<string, string>,
-  mappingPlans: (MappingPlan | null)[],
-  cacheMap: Map<string, JsonValue>,
-) => {
-  return items.map((item) => {
+  }[];
+  colIndex: number;
+  targets: (MappingTarget | null)[];
+  updatedValuesByItem: Map<string, string[]>;
+  rawValueByItem: Map<string, string>;
+}) => {
+  const { items, colIndex, targets, updatedValuesByItem, rawValueByItem } =
+    params;
+
+  const issuesMap = new Map<
+    string,
+    {
+      target: EnrichedTarget;
+      unnormalizedValues: Set<string>;
+    }
+  >();
+
+  const { attributeInfoMap, cacheMap, mappingPlans } =
+    await buildBatchNormalizationContext(targets, updatedValuesByItem);
+
+  const transformedRows = items.map((item) => {
     const rawValue = rawValueByItem.get(item.id) || "";
     const values = updatedValuesByItem.get(item.id) || [];
 
@@ -94,6 +112,30 @@ export const buildTransformedRows = (
       mappingPlans,
       cacheMap,
     );
+
+    for (const mapping of columnMappings) {
+      if (isNormalizedValue(mapping.normalized)) continue;
+
+      const target = mapping.target;
+      const targetKey =
+        target.type === TARGET_TYPE.ATTRIBUTE ? target.id : target.field;
+
+      if (!issuesMap.has(targetKey)) {
+        issuesMap.set(targetKey, {
+          target: {
+            ...target,
+            label:
+              attributeInfoMap.get(targetKey)?.label || "Неизвестный атрибут",
+            dataType:
+              attributeInfoMap.get(targetKey)?.dataType || DATA_TYPE.STRING,
+          },
+          unnormalizedValues: new Set<string>(),
+        });
+      }
+
+      const valueToAdd = mapping.normalized.valueString;
+      issuesMap.get(targetKey)?.unnormalizedValues.add(valueToAdd);
+    }
 
     const existingRow =
       (item.transformedRow as unknown as TransformedRow) || {};
@@ -108,16 +150,20 @@ export const buildTransformedRows = (
       transformedRow: newData,
     };
   });
+
+  return {
+    transformedRows,
+    issues: Array.from(issuesMap.values()).map((v) => ({
+      ...v,
+      unnormalizedValues: Array.from(v.unnormalizedValues),
+    })),
+  };
 };
 
 export const saveTransformedRows = async (
-  dataToUpdate: { id: string; transformedRow: TransformedRow }[],
+  transformedRows: { id: string; transformedRow: TransformedRow }[],
 ) => {
-  if (dataToUpdate.length === 0) {
-    return { success: true, count: 0 };
-  }
-
-  const payload = JSON.stringify(dataToUpdate);
+  const payload = JSON.stringify(transformedRows);
 
   await prisma.$executeRaw`
     UPDATE "StagingImportItem" AS t
@@ -128,6 +174,4 @@ export const saveTransformedRows = async (
     )
     WHERE t.id = v.id
   `;
-
-  return { success: true, count: dataToUpdate.length };
 };

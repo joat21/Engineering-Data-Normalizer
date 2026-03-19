@@ -27,14 +27,14 @@ export const applyTransformHandler: HandlerFromSchema<
   try {
     const transform = transformSchema.parse(req.body.transform);
 
-    await applyColumnTransformation({
+    const result = await applyColumnTransformation({
       sessionId: req.params.sessionId,
       colIndex: req.body.colIndex,
       targets: req.body.targets,
       transform,
     });
 
-    res.sendStatus(204);
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -44,13 +44,13 @@ export const mapColToAttrHandler: HandlerFromSchema<
   typeof mapColToAttrSchema
 > = async (req, res, next) => {
   try {
-    await mapColumnToAttribute({
+    const result = await mapColumnToAttribute({
       sessionId: req.params.sessionId,
       colIndex: req.body.colIndex,
       target: req.body.target,
     });
 
-    res.sendStatus(204);
+    res.json(result);
   } catch (error) {
     next(error);
   }

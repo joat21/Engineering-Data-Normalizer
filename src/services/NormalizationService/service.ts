@@ -1,5 +1,4 @@
 import {
-  buildBatchNormalizationContext,
   buildSingleNormalizationContext,
   buildTransformedRows,
   saveTransformedRows,
@@ -15,6 +14,7 @@ import { prisma } from "../../../prisma/prisma";
 import { getRawValue } from "../../helpers/getRawValue";
 import { TARGET_TYPE } from "../../config";
 import { createSingleEquipment } from "../EquipmentService/service";
+import { enrichIssuesWithOptions } from "./helpers";
 
 export const mapColumnToAttribute = async (params: {
   sessionId: string;
@@ -64,21 +64,13 @@ const updateColumn = async (
     rawValueByItem.set(item.id, String(rawValue ?? ""));
   });
 
-  const { cacheMap, mappingPlans } = await buildBatchNormalizationContext(
-    targets,
-    updatedValuesByItem,
-  );
-
-  const dataToUpdate = buildTransformedRows(
+  return processNormalizationPipeline({
     items,
     colIndex,
+    targets,
     updatedValuesByItem,
     rawValueByItem,
-    mappingPlans,
-    cacheMap,
-  );
-
-  return saveTransformedRows(dataToUpdate);
+  });
 };
 
 export const applyAiParse = async (params: {
@@ -129,27 +121,51 @@ export const applyAiParse = async (params: {
     updatedValuesByItem.set(itemId, values);
   });
 
-  const { cacheMap, mappingPlans } = await buildBatchNormalizationContext(
+  const result = await processNormalizationPipeline({
+    items,
+    colIndex: sourceColIndex,
     targets,
     updatedValuesByItem,
-  );
-
-  const dataToUpdate = buildTransformedRows(
-    items,
-    sourceColIndex,
-    updatedValuesByItem,
     rawValueByItem,
-    mappingPlans,
-    cacheMap,
-  );
-
-  const result = await saveTransformedRows(dataToUpdate);
+  });
 
   prisma.aiParseResult
     .deleteMany({ where: { sessionId: parsingSessionId } })
     .catch(console.error);
 
   return result;
+};
+
+export const processNormalizationPipeline = async (params: {
+  items: any[];
+  colIndex: number;
+  targets: (MappingTarget | null)[];
+  updatedValuesByItem: Map<string, string[]>;
+  rawValueByItem: Map<string, string>;
+}) => {
+  const { items, colIndex, targets, updatedValuesByItem, rawValueByItem } =
+    params;
+
+  const { transformedRows, issues: rawIssues } = await buildTransformedRows({
+    items,
+    colIndex,
+    updatedValuesByItem,
+    rawValueByItem,
+    targets,
+  });
+
+  if (transformedRows.length === 0) {
+    return { count: 0, issues: [] };
+  }
+
+  const issues = await enrichIssuesWithOptions(rawIssues);
+
+  await saveTransformedRows(transformedRows);
+
+  return {
+    count: transformedRows.length,
+    issues,
+  };
 };
 
 export const normalizeSingleEntity = async (params: {
