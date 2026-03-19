@@ -3,6 +3,7 @@ import {
   collectEquipmentAndAttributes,
   getOperator,
   getOrderBy,
+  updateCacheFromNormalizedData,
 } from "./helpers";
 import { FilterValue, NumericFilterValue } from "./types";
 import { prisma } from "../../../prisma/prisma";
@@ -103,6 +104,8 @@ export const createEquipment = async (data: {
         data: entryAttributes,
       });
     }
+
+    await updateCacheFromNormalizedData(normalizedData, tx);
 
     await tx.importSession.update({
       where: { id: sessionId },

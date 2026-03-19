@@ -2,7 +2,9 @@ import { JsonValue } from "@prisma/client/runtime/client";
 import { parseNumbers } from "../transformation/transformers";
 import { NormalizedValue, UnnormalizedValue } from "../types";
 import { DataType } from "../../../generated/prisma/enums";
-import { DATA_TYPE } from "../../../config";
+import { DATA_TYPE, DIMENSION_SEPARATORS_REGEX } from "../../../config";
+import { isSimpleNumeric } from "../../../helpers/isSimpleNumeric";
+import { cleanValue } from "../../../helpers/cleanValue";
 
 export const normalizeValue = (
   rawValue: string,
@@ -19,12 +21,11 @@ const normalizeNumeric = (
   attributeId: string,
   cacheMap: Map<string, JsonValue>,
 ): NormalizedValue | UnnormalizedValue => {
-  // Сплит по разделителям,
+  // Сплит по разделителям размерности,
   // чтобы отдельно обрабатывать части строк вида '1.25"x2"'
-  const separators = /[\s]*[xх×][\s]*/;
   const parts = rawValue
     .toLowerCase()
-    .split(separators)
+    .split(DIMENSION_SEPARATORS_REGEX)
     .filter((p) => p.length > 0);
 
   const normalizedParts = parts.map((part) => {
@@ -70,7 +71,7 @@ const normalizeStringOrBoolean = (
   attributeId: string,
   cacheMap: Map<string, JsonValue>,
 ): NormalizedValue | UnnormalizedValue => {
-  const cleaned = rawValue.toLowerCase().trim();
+  const cleaned = cleanValue(rawValue);
   const key = `${attributeId}:${cleaned}`;
   const cached = cacheMap.get(key);
 
@@ -80,22 +81,4 @@ const normalizeStringOrBoolean = (
         valueString: rawValue.trim(),
         needsCheck: true,
       };
-};
-
-export const isSimpleNumeric = (val: string): boolean => {
-  if (!val) return true;
-
-  // Убираем всё, что считаем "нормальным" для числовой колонки:
-  // - Числа, точки, запятые
-  // - Разделители: /, |, ~, ;, - и прочие разновидности дефисов и тире
-  // - Буквы: a-z, A-Z, а-я, А-Я (очистка единиц измерения)
-  // - Понятные спецсимволы: °, %, ³, ², Δ, △, μ, Ω
-  const residual = val
-    .replace(/[0-9.,\s\-\/|~—‐‑‐;]/g, "")
-    .replace(/[a-zA-Zа-яА-Я°%³²Δ△μΩ]/g, "");
-
-  // Если осталась пустая строка, значит число "простое":
-  // содержит только те символы, которые можно обработать регулярками
-  // Если что-то осталось (например, ½, ¼, кавычки и тд) - число "сложное"
-  return residual.length === 0;
 };

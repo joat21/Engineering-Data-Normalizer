@@ -12,6 +12,7 @@ import { TARGET_TYPE } from "../../config";
 import { createEquipment } from "../EquipmentService/service";
 import { buildSingleNormalizationContext } from "./normalization/context";
 import { executeUpdatePipeline } from "./transformation/executeUpdatePipeline";
+import { cleanValue } from "../../helpers/cleanValue";
 
 export const mapColumnToAttribute = async (params: {
   sessionId: string;
@@ -200,9 +201,11 @@ export const resolveNormalizationIssues = async (params: {
 
   const cacheData = resolutions.map((r) => ({
     attributeId:
+      // TODO: нужно окончательно решить добавлять ли в кэш нормализации
+      // системные поля или нет
       r.target.type === TARGET_TYPE.ATTRIBUTE ? r.target.id : r.target.field,
     rawValue: r.rawValue,
-    cleanedValue: r.rawValue.toLowerCase().trim(),
+    cleanedValue: cleanValue(r.rawValue),
     normalized: r.normalized as any,
   }));
 

@@ -10,11 +10,11 @@ import { DATA_TYPE, TARGET_TYPE } from "../../config";
 import { booleanNormalizationOptions } from "./config";
 
 export const enrichIssuesWithOptions = async (
-  conflicts: { target: EnrichedTarget; unnormalizedValues: string[] }[],
+  issues: { target: EnrichedTarget; unnormalizedValues: string[] }[],
 ): Promise<NormalizationIssue[]> => {
   const optionsMap = new Map<string, NormalizationOption[]>();
 
-  const stringAttrKeys = conflicts
+  const stringAttrKeys = issues
     .filter((v) => v.target.type === TARGET_TYPE.ATTRIBUTE)
     .map((v) =>
       v.target.type === TARGET_TYPE.ATTRIBUTE ? v.target.id : v.target.field,
@@ -44,23 +44,20 @@ export const enrichIssuesWithOptions = async (
     });
   }
 
-  return conflicts.map((conflict) => {
+  return issues.map((issue) => {
     const key =
-      conflict.target.type === TARGET_TYPE.ATTRIBUTE
-        ? conflict.target.id
-        : conflict.target.field;
+      issue.target.type === TARGET_TYPE.ATTRIBUTE
+        ? issue.target.id
+        : issue.target.field;
     let options = optionsMap.get(key) || [];
 
     // Если это булево, добавляем стандартные Да/Нет, если их нет в кэше
-    if (
-      conflict.target.dataType === DATA_TYPE.BOOLEAN &&
-      options.length === 0
-    ) {
+    if (issue.target.dataType === DATA_TYPE.BOOLEAN && options.length === 0) {
       options = booleanNormalizationOptions;
     }
 
     return {
-      ...conflict,
+      ...issue,
       normalizationOptions: options,
     };
   });

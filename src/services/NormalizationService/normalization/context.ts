@@ -1,18 +1,16 @@
 import { JsonValue } from "@prisma/client/runtime/client";
 import {
   AttributeInfo,
-  AttributeTarget,
-  EnrichedTarget,
-  isNormalizedValue,
   MappingPlan,
   MappingTarget,
   NormalizeSingleEntity,
-  TransformedRow,
 } from "../types";
 import { prisma } from "../../../../prisma/prisma";
 import { DATA_TYPE, TARGET_TYPE } from "../../../config";
-import { DataType } from "../../../types";
-import { isSimpleNumeric, normalizeValue } from "./normalizers";
+import { normalizeValue } from "./normalizers";
+import { cleanValue } from "../../../helpers/cleanValue";
+import { getCacheableCleanedValues, getCacheKey } from "../../../helpers/cache";
+import { getAttributeInfoMap } from "../../../db/categoryAttribute";
 
 export const buildBatchNormalizationContext = async (
   targets: (MappingTarget | null)[],
@@ -58,27 +56,6 @@ const buildNormalizationContext = async (
   };
 };
 
-export const getAttributeInfoMap = async (
-  targets: (MappingTarget | null)[],
-) => {
-  const attrIds = targets
-    .filter((t): t is AttributeTarget => t?.type === TARGET_TYPE.ATTRIBUTE)
-    .map((t) => t.id);
-
-  if (attrIds.length === 0) {
-    return new Map<string, AttributeInfo>();
-  }
-
-  const attributes = await prisma.categoryAttribute.findMany({
-    where: { id: { in: attrIds } },
-    select: { id: true, dataType: true, label: true },
-  });
-
-  return new Map<string, AttributeInfo>(
-    attributes.map((a) => [a.id, { dataType: a.dataType, label: a.label }]),
-  );
-};
-
 export const getCacheMap = async (
   targets: (MappingTarget | null)[],
   valuesByItem: Map<string, string[]>,
@@ -94,25 +71,24 @@ export const getCacheMap = async (
     targets.forEach((target, i) => {
       if (!target || target.type !== TARGET_TYPE.ATTRIBUTE) return;
 
-      const val = String(values[i] ?? "")
-        .toLowerCase()
-        .trim();
+      const val = cleanValue(String(values[i] ?? ""));
+      let attrType = attributeInfoMap.get(target.id)?.dataType;
 
-      const attrType = attributeInfoMap.get(target.id)?.dataType;
-
-      if (attrType !== DATA_TYPE.NUMBER) {
-        cacheLookupSet.add(`${target.id}:${val}`);
-      } else {
-        const parts = val.split(/[\s]*[xх×][\s]*/).filter(Boolean);
-
-        parts.forEach((p) => {
-          if (!isSimpleNumeric(p)) {
-            cacheLookupSet.add(`${target.id}:${p.trim()}`);
-          }
-        });
+      if (!attrType) {
+        console.log(
+          `[LOG]: Attribute type for value ${val} not found. Set attribute type to ${DATA_TYPE.STRING}`,
+        );
+        attrType = DATA_TYPE.STRING;
       }
+
+      const cacheableValues = getCacheableCleanedValues(val, attrType);
+      cacheableValues.forEach((val) => {
+        cacheLookupSet.add(`${target.id}:${val}`);
+      });
     });
   }
+
+  if (cacheLookupSet.size === 0) return new Map();
 
   const cacheEntries = await prisma.normalizationCache.findMany({
     where: {
@@ -125,7 +101,7 @@ export const getCacheMap = async (
 
   return new Map(
     cacheEntries.map((e) => [
-      `${e.attributeId}:${e.cleanedValue}`,
+      getCacheKey(e.attributeId, e.cleanedValue),
       e.normalized,
     ]),
   );

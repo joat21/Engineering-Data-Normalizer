@@ -42,3 +42,5 @@ export const IMPORT_SESSION_STATUS = ImportStatus;
 export const STAGING_IMPORT_ITEM_STATUS = ImportItemStatus;
 
 export const SOURCE_TYPE = SourceType;
+
+export const DIMENSION_SEPARATORS_REGEX = /[\s]*[xх×][\s]*/;

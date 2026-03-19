@@ -2,6 +2,7 @@ import "dotenv/config";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, DataType } from "../src/generated/prisma/client";
+import { cleanValue } from "../src/helpers/cleanValue";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -240,7 +241,7 @@ async function main() {
       data: {
         attributeId: item.attributeId,
         rawValue: item.rawValue,
-        cleanedValue: item.rawValue.toLowerCase().trim(),
+        cleanedValue: cleanValue(item.rawValue),
         normalized: item.normalized as any,
       },
     });

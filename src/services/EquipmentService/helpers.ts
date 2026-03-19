@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { prisma } from "../../../prisma/prisma";
 import {
   DATA_TYPE,
   SYSTEM_FIELD_KEYS,
@@ -8,12 +9,14 @@ import {
 import { Prisma } from "../../generated/prisma/client";
 import { EquipmentSystemFields } from "../../types";
 import { NormalizedData } from "../NormalizationService/types";
+import { getCacheableCleanedValues } from "../../helpers/cache";
 import {
   BooleanFilterValue,
   FilterValue,
   NumericFilterValue,
   StringFilterValue,
 } from "./types";
+import { getAttributeInfoMap } from "../../db/categoryAttribute";
 
 export const getOperator = (type: string, value: FilterValue) => {
   if (value === undefined || value === null) return null;
@@ -125,4 +128,59 @@ export const collectEquipmentAndAttributes = (data: {
     equipmentEntry,
     entryAttributes,
   };
+};
+
+export const updateCacheFromNormalizedData = async (
+  normalizedData: NormalizedData[],
+  tx?: Prisma.TransactionClient,
+) => {
+  const db = tx || prisma;
+  const cacheEntriesToSave: any[] = [];
+
+  const attributeInfoMap = await getAttributeInfoMap(
+    normalizedData.map((d) => d.target),
+  );
+
+  for (const d of normalizedData) {
+    if (d.target.type !== TARGET_TYPE.ATTRIBUTE) continue;
+
+    const attrInfo = attributeInfoMap.get(d.target.id);
+    let attrType = attrInfo?.dataType;
+
+    if (!attrType) {
+      console.log(
+        `[LOG]: Attribute type for value ${d.rawValue} not found. Set attribute type to ${DATA_TYPE.STRING}`,
+      );
+      attrType = DATA_TYPE.STRING;
+    }
+
+    const cacheableParts = getCacheableCleanedValues(d.rawValue, attrType);
+
+    if (cacheableParts.length === 1) {
+      // Простой кейс (1 к 1): либо строка/булево, либо одиночное число (например, "10 бар")
+      cacheEntriesToSave.push({
+        attributeId: d.target.id!,
+        rawValue: d.rawValue,
+        cleanedValue: cacheableParts[0],
+        normalized: d.normalized as any,
+      });
+    } else if (cacheableParts.length > 1) {
+      // Сложный кейс: rawValue = '1.25"x2"', cacheableParts = ['1.25"', '2"']
+      // Нельзя записать это в кэш, так как d.normalized (например, { valueMin: 1.25, valueMax: 2 })
+      // относится ко всей строке rawValue, а не к отдельным частям
+      //
+      // Поэтому просто игнорируем кэширование этой строки
+      // Пользователь ввел данные для оборудования - они сохранились
+      // Импорт оборудования по одной единице не такая частая операция, по сравнению с импортом каталогов
+      console.log(`[LOG]: Missing caching of composite value: ${d.rawValue}`);
+      continue;
+    }
+  }
+
+  if (cacheEntriesToSave.length > 0) {
+    await db.normalizationCache.createMany({
+      data: cacheEntriesToSave,
+      skipDuplicates: true,
+    });
+  }
 };
