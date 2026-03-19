@@ -2,6 +2,7 @@ import z from "zod";
 import { JsonValue } from "@prisma/client/runtime/client";
 import {
   attributeTargetSchema,
+  normalizedDataSchema,
   normalizedValueSchema,
   systemTargetSchema,
   transformSchema,
@@ -41,13 +42,9 @@ export interface MappingPlan {
   ) => NormalizedValue | UnnormalizedValue;
 }
 
-export interface NormalizedResult {
-  target: MappingTarget;
-  rawValue: string;
-  normalized: NormalizedValue;
-}
+export type NormalizedData = z.infer<typeof normalizedDataSchema>;
 
-export type TransformedRow = Record<string, NormalizedResult[]>;
+export type TransformedRow = Record<string, NormalizedData[]>;
 
 export type NormalizeSingleEntity = {
   target: MappingTarget;

@@ -1,6 +1,13 @@
-import { DATA_TYPE, SYSTEM_FIELD_KEYS, SYSTEM_FIELDS } from "../../config";
+import { v4 as uuidv4 } from "uuid";
+import {
+  DATA_TYPE,
+  SYSTEM_FIELD_KEYS,
+  SYSTEM_FIELDS,
+  TARGET_TYPE,
+} from "../../config";
 import { Prisma } from "../../generated/prisma/client";
 import { EquipmentSystemFields } from "../../types";
+import { NormalizedData } from "../NormalizationService/types";
 import {
   BooleanFilterValue,
   FilterValue,
@@ -58,4 +65,64 @@ export const getOrderBy = (
   }
 
   return { [field]: isDesc ? "desc" : "asc" };
+};
+
+export const collectEquipmentAndAttributes = (data: {
+  categoryId: string;
+  sourceId: string;
+  normalizedData: NormalizedData[];
+}) => {
+  const { categoryId, sourceId, normalizedData } = data;
+  const equipmentId = uuidv4();
+
+  const equipmentEntry: Prisma.EquipmentCreateManyInput = {
+    id: equipmentId,
+    categoryId: categoryId,
+    sourceId: sourceId,
+    name: null,
+    article: null,
+    model: null,
+    externalCode: null,
+    manufacturer: null,
+    price: new Prisma.Decimal(0),
+  };
+
+  const entryAttributes: Prisma.EquipmentAttributeValueCreateManyInput[] = [];
+
+  normalizedData.forEach((item) => {
+    const { target, normalized } = item;
+
+    if (target.type === TARGET_TYPE.SYSTEM) {
+      const field = target.field;
+
+      // TODO: в идеале сделать обработку по типу атрибута, а не по самому атрибуту
+      if (field === SYSTEM_FIELDS.PRICE) {
+        equipmentEntry.price = new Prisma.Decimal(normalized.valueString ?? 0);
+      } else {
+        // и добавить обработку булевых значений
+        equipmentEntry[field] = normalized.valueString;
+      }
+    } else {
+      entryAttributes.push({
+        equipmentId: equipmentId,
+        attributeId: target.id,
+        valueString: normalized.valueString,
+        valueMin: normalized.valueMin
+          ? new Prisma.Decimal(normalized.valueMin)
+          : null,
+        valueMax: normalized.valueMax
+          ? new Prisma.Decimal(normalized.valueMax)
+          : null,
+        valueArray: normalized.valueArray
+          ? (normalized.valueArray as any)
+          : null,
+        valueBoolean: normalized.valueBoolean ?? null,
+      });
+    }
+  });
+
+  return {
+    equipmentEntry,
+    entryAttributes,
+  };
 };

@@ -1,19 +1,32 @@
 import {
   getEquipmentTableSchema,
-  saveFromStagingSchema,
+  createEquipmentFromStagingSchema,
+  createEquipmentSchema,
 } from "../schemas/equipment";
 import { recalculateFilters } from "../services/CategoryService/recalculateFilters";
 import {
   getEquipmentTable,
-  saveEquipmentFromStaging,
+  createEquipmentFromStaging,
+  createEquipment,
 } from "../services/EquipmentService/service";
 import { HandlerFromSchema } from "../types/zod";
 
-export const saveFromStagingHandler: HandlerFromSchema<
-  typeof saveFromStagingSchema
+export const createEquipmentFromStagingHandler: HandlerFromSchema<
+  typeof createEquipmentFromStagingSchema
 > = async (req, res, next) => {
   try {
-    const result = await saveEquipmentFromStaging(req.query.sessionId);
+    const result = await createEquipmentFromStaging(req.query.sessionId);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createEquipmentHandler: HandlerFromSchema<
+  typeof createEquipmentSchema
+> = async (req, res, next) => {
+  try {
+    const result = await createEquipment({ ...req.body });
     res.json(result);
   } catch (error) {
     next(error);

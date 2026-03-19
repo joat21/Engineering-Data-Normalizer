@@ -1,24 +1,19 @@
-import { v4 as uuidv4 } from "uuid";
 import { FIELD_MAP } from "./config";
-import { getOperator, getOrderBy } from "./helpers";
+import {
+  collectEquipmentAndAttributes,
+  getOperator,
+  getOrderBy,
+} from "./helpers";
 import { FilterValue, NumericFilterValue } from "./types";
 import { prisma } from "../../../prisma/prisma";
 import { Prisma } from "../../generated/prisma/client";
-import {
-  NormalizedResult,
-  TransformedRow,
-} from "../NormalizationService/types";
-import {
-  DATA_TYPE,
-  IMPORT_SESSION_STATUS,
-  SYSTEM_FIELDS,
-  TARGET_TYPE,
-} from "../../config";
+import { NormalizedData, TransformedRow } from "../NormalizationService/types";
+import { DATA_TYPE, IMPORT_SESSION_STATUS, TARGET_TYPE } from "../../config";
 import { recalculateFilters } from "../CategoryService/recalculateFilters";
 
 const LIMIT = 20;
 
-export const saveEquipmentFromStaging = async (sessionId: string) => {
+export const createEquipmentFromStaging = async (sessionId: string) => {
   const session = await prisma.importSession.findUnique({
     where: { id: sessionId },
     select: { categoryId: true, sourceId: true },
@@ -81,12 +76,14 @@ export const saveEquipmentFromStaging = async (sessionId: string) => {
   return result;
 };
 
-export const createSingleEquipment = async (data: {
+export const createEquipment = async (data: {
   sessionId: string;
-  normalizedData: NormalizedResult[];
+  normalizedData: NormalizedData[];
 }) => {
+  const { sessionId, normalizedData } = data;
+
   const session = await prisma.importSession.findUnique({
-    where: { id: data.sessionId },
+    where: { id: sessionId },
     select: { sourceId: true, categoryId: true },
   });
 
@@ -95,7 +92,7 @@ export const createSingleEquipment = async (data: {
   const { equipmentEntry, entryAttributes } = collectEquipmentAndAttributes({
     categoryId: session.categoryId,
     sourceId: session.sourceId,
-    normalizedData: data.normalizedData,
+    normalizedData: normalizedData,
   });
 
   const created = await prisma.$transaction(async (tx) => {
@@ -107,6 +104,11 @@ export const createSingleEquipment = async (data: {
       });
     }
 
+    await tx.importSession.update({
+      where: { id: sessionId },
+      data: { status: IMPORT_SESSION_STATUS.COMPLETED },
+    });
+
     return {
       equipmentCount: 1,
       attributesCount: entryAttributes.length,
@@ -116,64 +118,6 @@ export const createSingleEquipment = async (data: {
   recalculateFilters(session.categoryId).catch(console.error);
 
   return created;
-};
-
-export const collectEquipmentAndAttributes = (data: {
-  categoryId: string;
-  sourceId: string;
-  normalizedData: NormalizedResult[];
-}) => {
-  const { categoryId, sourceId, normalizedData } = data;
-  const equipmentId = uuidv4();
-
-  const equipmentEntry: Prisma.EquipmentCreateManyInput = {
-    id: equipmentId,
-    categoryId: categoryId,
-    sourceId: sourceId,
-    name: null,
-    article: null,
-    model: null,
-    externalCode: null,
-    manufacturer: null,
-    price: new Prisma.Decimal(0),
-  };
-
-  const entryAttributes: Prisma.EquipmentAttributeValueCreateManyInput[] = [];
-
-  normalizedData.forEach((item) => {
-    const { target, normalized } = item;
-
-    if (target.type === TARGET_TYPE.SYSTEM) {
-      const field = target.field;
-
-      if (field === SYSTEM_FIELDS.PRICE) {
-        equipmentEntry.price = new Prisma.Decimal(normalized.valueString ?? 0);
-      } else {
-        equipmentEntry[field] = normalized.valueString;
-      }
-    } else {
-      entryAttributes.push({
-        equipmentId: equipmentId,
-        attributeId: target.id,
-        valueString: normalized.valueString,
-        valueMin: normalized.valueMin
-          ? new Prisma.Decimal(normalized.valueMin)
-          : null,
-        valueMax: normalized.valueMax
-          ? new Prisma.Decimal(normalized.valueMax)
-          : null,
-        valueArray: normalized.valueArray
-          ? (normalized.valueArray as any)
-          : null,
-        valueBoolean: normalized.valueBoolean ?? null,
-      });
-    }
-  });
-
-  return {
-    equipmentEntry,
-    entryAttributes,
-  };
 };
 
 export const getEquipmentTable = async (data: {

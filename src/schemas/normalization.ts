@@ -1,4 +1,4 @@
-import { array, z } from "zod";
+import { z } from "zod";
 import { SYSTEM_FIELD_KEYS, TARGET_TYPE, TRANSFORM_TYPE } from "../config";
 
 export const transformSchema = z.discriminatedUnion("type", [
@@ -68,6 +68,12 @@ export const normalizedValueSchema = z.object({
   valueBoolean: z.boolean().optional(),
 });
 
+export const normalizedDataSchema = z.object({
+  target: mappingTargetSchema,
+  rawValue: z.string(),
+  normalized: normalizedValueSchema,
+});
+
 export const resolveNormalizationIssuesSchema = z.object({
   params: z.object({
     sessionId: z.uuid(),
@@ -75,13 +81,7 @@ export const resolveNormalizationIssuesSchema = z.object({
   body: z.object({
     colIndex: z.number(),
     targets: z.array(mappingTargetSchema.nullable()),
-    resolutions: z.array(
-      z.object({
-        attributeId: z.uuid(),
-        rawValue: z.string(),
-        normalized: normalizedValueSchema,
-      }),
-    ),
+    resolutions: z.array(normalizedDataSchema),
     sourceType: z.enum(["DIRECT", "AI_PARSE"]),
     transform: transformSchema.optional(),
     parsingSessionId: z.uuid().optional(),

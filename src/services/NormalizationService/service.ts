@@ -1,7 +1,7 @@
 import { applyTransform } from "./transformation/transformers";
 import {
   MappingTarget,
-  NormalizedResult,
+  NormalizedData,
   NormalizedValue,
   NormalizeSingleEntity,
   TransformConfig,
@@ -9,7 +9,7 @@ import {
 import { prisma } from "../../../prisma/prisma";
 import { getRawValue } from "../../helpers/getRawValue";
 import { TARGET_TYPE } from "../../config";
-import { createSingleEquipment } from "../EquipmentService/service";
+import { createEquipment } from "../EquipmentService/service";
 import { buildSingleNormalizationContext } from "./normalization/context";
 import { executeUpdatePipeline } from "./transformation/executeUpdatePipeline";
 
@@ -165,9 +165,9 @@ export const normalizeSingleEntity = async (params: {
         normalized,
       };
     })
-    .filter((r): r is NormalizedResult => r !== null);
+    .filter((r): r is NormalizedData => r !== null);
 
-  const result = await createSingleEquipment({
+  const result = await createEquipment({
     sessionId,
     normalizedData: data,
   });
@@ -180,7 +180,7 @@ export const resolveNormalizationIssues = async (params: {
   colIndex: number;
   targets: (MappingTarget | null)[];
   resolutions: {
-    attributeId: string;
+    target: MappingTarget;
     rawValue: string;
     normalized: NormalizedValue;
   }[];
@@ -199,7 +199,8 @@ export const resolveNormalizationIssues = async (params: {
   } = params;
 
   const cacheData = resolutions.map((r) => ({
-    attributeId: r.attributeId,
+    attributeId:
+      r.target.type === TARGET_TYPE.ATTRIBUTE ? r.target.id : r.target.field,
     rawValue: r.rawValue,
     cleanedValue: r.rawValue.toLowerCase().trim(),
     normalized: r.normalized as any,

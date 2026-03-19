@@ -1,12 +1,11 @@
 import { Router } from "express";
 import * as EquipmentController from "../controllers/EquipmentController";
-import * as NormalizationController from "../controllers/NormalizationController";
 import { validate } from "../middleware/validate";
 import {
   getEquipmentTableSchema,
-  saveFromStagingSchema,
+  createEquipmentFromStagingSchema,
+  createEquipmentSchema,
 } from "../schemas/equipment";
-import { normalizeSingleEntitySchema } from "../schemas/normalization";
 
 const router = Router();
 
@@ -18,15 +17,15 @@ router.get(
 );
 
 router.post(
-  "/staging/save",
-  validate(saveFromStagingSchema),
-  EquipmentController.saveFromStagingHandler,
+  "/staging",
+  validate(createEquipmentFromStagingSchema),
+  EquipmentController.createEquipmentFromStagingHandler,
 );
 
 router.post(
   "/",
-  validate(normalizeSingleEntitySchema),
-  NormalizationController.normalizeSingleEntityHandler,
+  validate(createEquipmentSchema),
+  EquipmentController.createEquipmentHandler,
 );
 
 router.post("/recalc", EquipmentController._recalculateFiltersHandler);
