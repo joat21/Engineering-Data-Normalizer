@@ -6,6 +6,7 @@ import { getCategoryFiltersSchema } from "../schemas/category";
 const router = Router();
 
 router.get("/", CategoryController.getAllHandler);
+
 router.get(
   "/:id/filters",
   validate(getCategoryFiltersSchema),

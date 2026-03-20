@@ -5,6 +5,7 @@ import aiParseRoutes from "./aiParse";
 import categoryRoutes from "./category";
 import equipmentRoutes from "./equipment";
 import projectRoutes from "./project";
+import comparisonRoutes from "./comparison";
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use("/ai-parse", aiParseRoutes);
 router.use("/equipment", equipmentRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/projects", projectRoutes);
+router.use("/comparison", comparisonRoutes);
 
 export default router;
