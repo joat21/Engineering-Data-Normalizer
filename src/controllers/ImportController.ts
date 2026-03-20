@@ -1,12 +1,20 @@
-import { addItemsToStaging, createSession } from "../services/ImportService";
-import { importRowsSchema, initImportSchema } from "../schemas/import";
+import {
+  addItemsToStaging,
+  createSession,
+  getStagingTable,
+} from "../services/ImportService/service";
+import {
+  getStagingTableSchema,
+  importRowsSchema,
+  initImportSchema,
+} from "../schemas/import";
 import { HandlerFromSchema } from "../types/zod";
 
 export const initImportHandler: HandlerFromSchema<
   typeof initImportSchema
 > = async (req, res, next) => {
   try {
-    const { categoryId, sourceType } = req.body;
+    const { categoryId, sourceType, originHeader } = req.body;
     const file = req.file;
 
     if (!file) {
@@ -17,6 +25,7 @@ export const initImportHandler: HandlerFromSchema<
       categoryId,
       sourceType,
       file,
+      originHeader,
     });
 
     res.json({ sessionId });
@@ -35,6 +44,17 @@ export const importRowsHandler: HandlerFromSchema<
     });
 
     res.sendStatus(201);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getStagingTableHandler: HandlerFromSchema<
+  typeof getStagingTableSchema
+> = async (req, res, next) => {
+  try {
+    const result = await getStagingTable(req.params.sessionId);
+    res.json(result);
   } catch (error) {
     next(error);
   }

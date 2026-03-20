@@ -133,6 +133,7 @@ model ImportSession {
   categoryId      String              @db.Uuid
   createdAt       DateTime            @default(now()) @db.Timestamptz()
   status          ImportStatus        @default(PENDING)
+  originHeader    Json?               @default("[]")
   items           StagingImportItem[]
   aiParseSessions AiParseSession[]
 }

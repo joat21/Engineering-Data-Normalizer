@@ -8,6 +8,7 @@ import {
 import { prisma } from "../../../prisma/prisma";
 import { DATA_TYPE, TARGET_TYPE } from "../../config";
 import { booleanNormalizationOptions } from "./config";
+import { getTargetKey } from "../../helpers/getTargetKey";
 
 export const enrichIssuesWithOptions = async (
   issues: { target: EnrichedTarget; unnormalizedValues: string[] }[],
@@ -16,9 +17,7 @@ export const enrichIssuesWithOptions = async (
 
   const stringAttrKeys = issues
     .filter((v) => v.target.type === TARGET_TYPE.ATTRIBUTE)
-    .map((v) =>
-      v.target.type === TARGET_TYPE.ATTRIBUTE ? v.target.id : v.target.field,
-    );
+    .map((v) => getTargetKey(v.target));
 
   if (stringAttrKeys.length) {
     const cache = await prisma.$queryRaw<

@@ -9,6 +9,7 @@ import {
 import { prisma } from "../../../../prisma/prisma";
 import { DATA_TYPE, TARGET_TYPE } from "../../../config";
 import { buildBatchNormalizationContext } from "../normalization/context";
+import { getTargetKey } from "../../../helpers/getTargetKey";
 
 const buildColumnMappings = (
   rawValue: any,
@@ -70,8 +71,7 @@ export const buildTransformedRows = async (params: {
       if (isNormalizedValue(mapping.normalized)) continue;
 
       const target = mapping.target;
-      const targetKey =
-        target.type === TARGET_TYPE.ATTRIBUTE ? target.id : target.field;
+      const targetKey = getTargetKey(target);
 
       if (!issuesMap.has(targetKey)) {
         issuesMap.set(targetKey, {

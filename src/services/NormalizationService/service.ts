@@ -13,6 +13,7 @@ import { createEquipment } from "../EquipmentService/service";
 import { buildSingleNormalizationContext } from "./normalization/context";
 import { executeUpdatePipeline } from "./transformation/executeUpdatePipeline";
 import { cleanValue } from "../../helpers/cleanValue";
+import { getTargetKey } from "../../helpers/getTargetKey";
 
 export const mapColumnToAttribute = async (params: {
   sessionId: string;
@@ -51,6 +52,10 @@ const updateColumn = async (params: {
     where: { sessionId },
     select: { id: true, rawRow: true, transformedRow: true },
   });
+
+  if (!items.length) {
+    throw new Error("Session not found");
+  }
 
   const updatedValuesByItem = new Map<string, string[]>();
   const rawValueByItem = new Map<string, string>();
@@ -117,10 +122,7 @@ export const commitAiParsingResults = async (params: {
   const updatedValuesByItem = new Map<string, string[]>();
 
   grouped.forEach((targetMap, itemId) => {
-    const values = targets.map(
-      (t) =>
-        targetMap.get(t.type === TARGET_TYPE.ATTRIBUTE ? t.id : t.field) ?? "",
-    );
+    const values = targets.map((t) => targetMap.get(getTargetKey(t)) ?? "");
     updatedValuesByItem.set(itemId, values);
   });
 
@@ -203,7 +205,7 @@ export const resolveNormalizationIssues = async (params: {
     attributeId:
       // TODO: нужно окончательно решить добавлять ли в кэш нормализации
       // системные поля или нет
-      r.target.type === TARGET_TYPE.ATTRIBUTE ? r.target.id : r.target.field,
+      getTargetKey(r.target),
     rawValue: r.rawValue,
     cleanedValue: cleanValue(r.rawValue),
     normalized: r.normalized as any,

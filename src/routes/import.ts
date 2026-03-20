@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { upload } from "../middleware/upload";
 import { validate } from "../middleware/validate";
-import { importRowsSchema, initImportSchema } from "../schemas/import";
+import {
+  getStagingTableSchema,
+  importRowsSchema,
+  initImportSchema,
+} from "../schemas/import";
 import * as ImportController from "../controllers/ImportController";
 
 const router = Router();
@@ -17,6 +21,12 @@ router.post(
   "/:sessionId",
   validate(importRowsSchema),
   ImportController.importRowsHandler,
+);
+
+router.get(
+  "/:sessionId",
+  validate(getStagingTableSchema),
+  ImportController.getStagingTableHandler,
 );
 
 export default router;
