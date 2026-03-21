@@ -3,7 +3,6 @@ import { validate } from "../middleware/validate";
 import * as ComparisonController from "../controllers/ComparisonController";
 import {
   addToComparisonSchema,
-  getComparisonTableSchema,
   removeFromComparisonSchema,
 } from "../schemas/comparison";
 
@@ -21,10 +20,6 @@ router.delete(
   ComparisonController.removeFromComparisonHandler,
 );
 
-router.get(
-  "/",
-  validate(getComparisonTableSchema),
-  ComparisonController.getComparisonTableHandler,
-);
+router.get("/", ComparisonController.getComparisonTableHandler);
 
 export default router;

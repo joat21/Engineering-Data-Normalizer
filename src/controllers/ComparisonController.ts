@@ -1,6 +1,6 @@
+import { RequestHandler } from "express";
 import {
   addToComparisonSchema,
-  getComparisonTableSchema,
   removeFromComparisonSchema,
 } from "../schemas/comparison";
 import {
@@ -14,7 +14,7 @@ export const addToComparisonHandler: HandlerFromSchema<
   typeof addToComparisonSchema
 > = async (req, res, next) => {
   try {
-    const result = await addToComparison(req.body.userId, req.body.equipmentId);
+    const result = await addToComparison(req.user?.id!, req.body.equipmentId);
     res.json(result);
   } catch (error) {
     next(error);
@@ -32,11 +32,13 @@ export const removeFromComparisonHandler: HandlerFromSchema<
   }
 };
 
-export const getComparisonTableHandler: HandlerFromSchema<
-  typeof getComparisonTableSchema
-> = async (req, res, next) => {
+export const getComparisonTableHandler: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
   try {
-    const result = await getComparisonTable(req.body.userId);
+    const result = await getComparisonTable(req.user?.id!);
     res.json(result);
   } catch (error) {
     next(error);
