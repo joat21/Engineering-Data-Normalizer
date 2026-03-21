@@ -5,3 +5,9 @@ export const getCategoryFiltersSchema = z.object({
     id: z.uuid(),
   }),
 });
+
+export const getCategoryAttributesSchema = z.object({
+  params: z.object({
+    id: z.uuid(),
+  }),
+});
