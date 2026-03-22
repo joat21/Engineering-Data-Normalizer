@@ -1,11 +1,10 @@
 node_modules/
 dist/
-.env
+.env*
 .vscode/
 
-prisma/migration_lock.toml
-prisma/scripts
-/src/generated/prisma
-clear.sql
-
-hash.js
+backend/prisma/migration_lock.toml
+backend/prisma/scripts
+backend/src/generated/prisma
+backend/clear.sql
+backend/hash.js
