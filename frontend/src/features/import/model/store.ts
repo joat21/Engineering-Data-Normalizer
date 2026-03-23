@@ -1,6 +1,6 @@
+import { create } from "zustand";
 import type { SourceType } from "@engineering-data-normalizer/shared";
 import { SingleImportStep, type CatalogImportStep } from "./types";
-import { create } from "zustand";
 
 interface ImportState {
   step: SingleImportStep | CatalogImportStep;

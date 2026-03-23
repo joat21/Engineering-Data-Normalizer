@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { Button, Card, Form, Input } from "@heroui/react";
 import { useLoginMutation } from "../api/auth.api";
-import { useAuthMe } from "../../../entities/user/api";
+import { useAuthMe } from "@/entities/user/api";
 
 export const LoginPage = () => {
   const navigate = useNavigate();

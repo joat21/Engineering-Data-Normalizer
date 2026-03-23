@@ -1,8 +1,8 @@
 import { SourceType } from "@engineering-data-normalizer/shared";
-import { InitImport } from "../../../widgets/init-import/ui/InitImport";
-import { SingleImportStep, useImportStore } from "../../../features/import";
 import { SingleImportForm } from "./SingleImportForm";
-import { useCategoryAttributes } from "../../../entities/category-attribute";
+import { InitImport } from "@/widgets/init-import/ui/InitImport";
+import { SingleImportStep, useImportStore } from "@/features/import";
+import { useCategoryAttributes } from "@/entities/category-attribute";
 
 export const SingleImportPage = () => {
   const { step, categoryId } = useImportStore();

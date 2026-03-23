@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../../shared/api/base";
+import { api } from "@/shared/api/base";
 import type { User } from "./types";
 
 export const authMe = () => api.get<User>("/auth/me").then((r) => r.data);

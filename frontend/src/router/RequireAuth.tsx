@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router";
-import { useAuthMe } from "../entities/user/api";
+import { useAuthMe } from "@/entities/user/api";
 
 export const RequireAuth = () => {
   const { data: user, isLoading, isError } = useAuthMe();

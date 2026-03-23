@@ -15,7 +15,7 @@ import {
   NumberField,
   TextField,
 } from "@heroui/react";
-import { useImportStore } from "../../../features/import";
+import { useImportStore } from "@/features/import";
 import { useCreateEquipmentMutation } from "../api/single-import.api";
 
 interface SingleImportFormProps {

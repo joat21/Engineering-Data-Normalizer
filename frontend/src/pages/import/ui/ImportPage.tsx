@@ -1,5 +1,5 @@
 import { Card } from "@heroui/react";
-import { AppLink } from "../../../shared/ui";
+import { AppLink } from "@/shared/ui";
 
 export const ImportPage = () => {
   return (

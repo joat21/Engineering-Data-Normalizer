@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router";
 import { MainLayout } from "./layouts/MainLayout";
 import { RequireAuth } from "./router/RequireAuth";
-import { LoginPage } from "./pages/login";
-import { ImportPage } from "./pages/import";
-import { SingleImportPage } from "./pages/single-import";
+import { LoginPage } from "@/pages/login";
+import { ImportPage } from "@/pages/import";
+import { SingleImportPage } from "@/pages/single-import";
 
 function App() {
   return (

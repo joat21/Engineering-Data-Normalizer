@@ -1,5 +1,5 @@
 import type { CategoryAttribute } from "@engineering-data-normalizer/shared";
-import { api } from "../../../shared/api/base";
+import { api } from "@/shared/api/base";
 import { useQuery } from "@tanstack/react-query";
 
 export const getCategoryAttributes = (categoryId: string) =>
