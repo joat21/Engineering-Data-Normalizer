@@ -40,8 +40,8 @@ export const InitImportForm = ({
   return (
     <Card>
       <Form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <Input type="file" />
-        <Select name="category" placeholder="Выберите категорию">
+        <Input type="file" required />
+        <Select name="category" placeholder="Выберите категорию" isRequired>
           <Label>Категория оборудования</Label>
           <Select.Trigger isPending={isPending}>
             <Select.Value />

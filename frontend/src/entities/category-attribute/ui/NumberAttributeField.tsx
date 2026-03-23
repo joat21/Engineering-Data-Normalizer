@@ -1,43 +1,63 @@
-import { Description, Label, NumberField } from "@heroui/react";
-import type { NumberFieldProps } from "../model/types";
+import { useState } from "react";
+import { Button, Label, Tooltip } from "@heroui/react";
+import { ArrowLeftRight, Variable } from "lucide-react";
+import type { BaseAttributeFieldProps, NumberFieldProps } from "../model/types";
+import { AppNumberField } from "@/shared/ui";
 
 export const NumberAttributeField = ({
-  attributeKey: key,
+  attributeKey,
   label,
   unit,
 }: NumberFieldProps) => {
+  const [isRange, setIsRange] = useState(false);
+
   return (
-    <div key={key} className="flex flex-col gap-1">
+    <div key={attributeKey} className="flex flex-col gap-1">
       <Label>
         {label} {unit}
       </Label>
       <div className="flex gap-1">
-        <NumberField
-          aria-label={label}
-          name={`${key}_valueMin`}
-          className="max-w-44"
-        >
-          <NumberField.Group>
-            <NumberField.DecrementButton />
-            <NumberField.Input placeholder="Минимум" />
-            <NumberField.IncrementButton />
-          </NumberField.Group>
-        </NumberField>
-        <NumberField
-          aria-label={label}
-          name={`${key}_valueMax`}
-          className="max-w-44"
-        >
-          <NumberField.Group>
-            <NumberField.DecrementButton />
-            <NumberField.Input placeholder="Максимум" />
-            <NumberField.IncrementButton />
-          </NumberField.Group>
-        </NumberField>
+        {isRange ? (
+          <RangeField attributeKey={attributeKey} label={label} />
+        ) : (
+          <ExactField attributeKey={attributeKey} label={label} />
+        )}
+        <Tooltip delay={0} closeDelay={0}>
+          <Button isIconOnly onPress={() => setIsRange(!isRange)}>
+            {isRange ? <Variable /> : <ArrowLeftRight />}
+          </Button>
+          <Tooltip.Content>
+            <p>{isRange ? "Число" : "Диапазон"}</p>
+          </Tooltip.Content>
+        </Tooltip>
       </div>
-      <Description>
-        Если значение одно - заполняйте им минимум и максимум
-      </Description>
+    </div>
+  );
+};
+
+const ExactField = ({ attributeKey, label }: BaseAttributeFieldProps) => {
+  return (
+    <AppNumberField
+      aria-label={label}
+      name={`${attributeKey}_valueMin`}
+      placeholder={label}
+    />
+  );
+};
+
+const RangeField = ({ attributeKey, label }: BaseAttributeFieldProps) => {
+  return (
+    <div className="flex gap-1">
+      <AppNumberField
+        aria-label={label}
+        name={`${attributeKey}_valueMin`}
+        placeholder="Минимум"
+      />
+      <AppNumberField
+        aria-label={label}
+        name={`${attributeKey}_valueMax`}
+        placeholder="Максимум"
+      />
     </div>
   );
 };
