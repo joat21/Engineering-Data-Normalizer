@@ -7,7 +7,7 @@ import {
   getStagingTableSchema,
   importRowsSchema,
   initImportSchema,
-} from "../schemas/import";
+} from "@engineering-data-normalizer/shared";
 import { HandlerFromSchema } from "../types/zod";
 
 export const initImportHandler: HandlerFromSchema<

@@ -1,12 +1,11 @@
 import z from "zod";
 import { JsonValue } from "@prisma/client/runtime/client";
 import {
-  attributeTargetSchema,
-  normalizedDataSchema,
-  normalizedValueSchema,
-  systemTargetSchema,
-  transformSchema,
-} from "../../schemas/normalization";
+  MappingTarget,
+  NormalizedData,
+  NormalizedValue,
+} from "@engineering-data-normalizer/shared";
+import { transformSchema } from "../../schemas/normalization";
 import { DataType } from "../../types";
 
 export type TransformPayload = string | number | null;
@@ -23,16 +22,10 @@ export type TransformPayloadMap = {
     : undefined;
 };
 
-export type NormalizedValue = z.infer<typeof normalizedValueSchema>;
-
 export interface UnnormalizedValue {
   valueString: string;
   needsCheck: true;
 }
-
-export type SystemTarget = z.infer<typeof systemTargetSchema>;
-export type AttributeTarget = z.infer<typeof attributeTargetSchema>;
-export type MappingTarget = SystemTarget | AttributeTarget;
 
 export interface MappingPlan {
   target: MappingTarget;
@@ -41,8 +34,6 @@ export interface MappingPlan {
     cache: Map<string, JsonValue>,
   ) => NormalizedValue | UnnormalizedValue;
 }
-
-export type NormalizedData = z.infer<typeof normalizedDataSchema>;
 
 export type TransformedRow = Record<string, NormalizedData[]>;
 

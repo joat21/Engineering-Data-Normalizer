@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { SOURCE_TYPE } from "../config";
+import { SourceType } from "./types";
 
 export const initImportSchema = z.object({
   body: z.object({
     categoryId: z.uuid(),
-    sourceType: z.enum(SOURCE_TYPE),
+    sourceType: z.enum(SourceType),
     originHeader: z.preprocess((val) => {
       if (typeof val === "string") {
         try {

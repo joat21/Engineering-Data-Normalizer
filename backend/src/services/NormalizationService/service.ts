@@ -1,14 +1,12 @@
-import { applyTransform } from "./transformation/transformers";
 import {
   MappingTarget,
   NormalizedData,
   NormalizedValue,
-  NormalizeSingleEntity,
-  TransformConfig,
-} from "./types";
+} from "@engineering-data-normalizer/shared";
+import { applyTransform } from "./transformation/transformers";
+import { NormalizeSingleEntity, TransformConfig } from "./types";
 import { prisma } from "../../prisma";
 import { getRawValue } from "../../helpers/getRawValue";
-import { TARGET_TYPE } from "../../config";
 import { createEquipment } from "../EquipmentService/service";
 import { buildSingleNormalizationContext } from "./normalization/context";
 import { executeUpdatePipeline } from "./transformation/executeUpdatePipeline";

@@ -1,11 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
-import {
-  EnrichedTarget,
-  NormalizationIssue,
-  NormalizationOption,
-  NormalizedValue,
-} from "./types";
-import { prisma } from "../../prisma";
+import { EnrichedTarget, NormalizationIssue } from "./types";
 import { DATA_TYPE, TARGET_TYPE } from "../../config";
 import { booleanNormalizationOptions } from "./config";
 import { getTargetKey } from "../../helpers/getTargetKey";

@@ -1,7 +1,9 @@
 import { Route, Routes } from "react-router";
-import { LoginPage } from "./pages/login";
 import { MainLayout } from "./layouts/MainLayout";
 import { RequireAuth } from "./router/RequireAuth";
+import { LoginPage } from "./pages/login";
+import { ImportPage } from "./pages/import";
+import { SingleImportPage } from "./pages/single-import";
 
 function App() {
   return (
@@ -11,6 +13,12 @@ function App() {
 
         <Route path="/" element={<RequireAuth />}>
           <Route index element={<h1>Main</h1>} />
+
+          <Route path="/import">
+            <Route index element={<ImportPage />} />
+            <Route path="catalog" element={<h1>Catalog</h1>} />
+            <Route path="single" index element={<SingleImportPage />} />
+          </Route>
         </Route>
       </Route>
     </Routes>

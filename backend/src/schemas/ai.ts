@@ -1,6 +1,6 @@
 import z from "zod";
+import { mappingTargetSchema } from "@engineering-data-normalizer/shared";
 import { SYSTEM_FIELD_KEYS, TARGET_TYPE } from "../config";
-import { mappingTargetSchema } from "./normalization";
 
 export const aiParseTargetSchema = z.object({
   type: z.enum(TARGET_TYPE),

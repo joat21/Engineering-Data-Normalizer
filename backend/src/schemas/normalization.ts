@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { SYSTEM_FIELD_KEYS, TARGET_TYPE, TRANSFORM_TYPE } from "../config";
+import {
+  mappingTargetSchema,
+  normalizedDataSchema,
+} from "@engineering-data-normalizer/shared";
+import { TRANSFORM_TYPE } from "../config";
 
 export const transformSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal(TRANSFORM_TYPE.EXTRACT_NUMBERS) }),
@@ -11,20 +15,6 @@ export const transformSchema = z.discriminatedUnion("type", [
     type: z.literal(TRANSFORM_TYPE.MULTIPLY),
     payload: z.object({ factor: z.number() }),
   }),
-]);
-
-export const systemTargetSchema = z.object({
-  type: z.literal(TARGET_TYPE.SYSTEM),
-  field: z.enum(SYSTEM_FIELD_KEYS),
-});
-export const attributeTargetSchema = z.object({
-  type: z.literal(TARGET_TYPE.ATTRIBUTE),
-  id: z.uuid(),
-});
-
-export const mappingTargetSchema = z.discriminatedUnion("type", [
-  systemTargetSchema,
-  attributeTargetSchema,
 ]);
 
 export const applyTransformSchema = z.object({
@@ -58,20 +48,6 @@ export const normalizeSingleEntitySchema = z.object({
       }),
     ),
   }),
-});
-
-export const normalizedValueSchema = z.object({
-  valueString: z.string(),
-  valueMin: z.number().optional(),
-  valueMax: z.number().optional(),
-  valueArray: z.array(z.number()).optional(),
-  valueBoolean: z.boolean().optional(),
-});
-
-export const normalizedDataSchema = z.object({
-  target: mappingTargetSchema,
-  rawValue: z.string(),
-  normalized: normalizedValueSchema,
 });
 
 export const resolveNormalizationIssuesSchema = z.object({

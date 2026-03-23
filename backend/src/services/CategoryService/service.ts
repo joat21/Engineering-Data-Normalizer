@@ -1,5 +1,5 @@
 import { prisma } from "../../prisma";
-import { DATA_TYPE, SYSTEM_FIELDS_CONFIG } from "../../config";
+import { DATA_TYPE, SYSTEM_FIELDS_CONFIG, TARGET_TYPE } from "../../config";
 import { getAttributeOptionsMap } from "../../helpers/getAttributeOptionsMap";
 import { booleanNormalizationOptions } from "../NormalizationService/config";
 
@@ -35,6 +35,7 @@ export const getCategoryAttributes = async (categoryId: string) => {
     ([key, config]) => ({
       id: key,
       key: key,
+      type: TARGET_TYPE.SYSTEM,
       label: config.label,
       unit: null,
       dataType: config.type,
@@ -54,6 +55,7 @@ export const getCategoryAttributes = async (categoryId: string) => {
 
     return {
       ...rest,
+      type: TARGET_TYPE.ATTRIBUTE,
       options,
     };
   });

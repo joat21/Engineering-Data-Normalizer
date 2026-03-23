@@ -1,7 +1,7 @@
+import { createEquipmentSchema } from "@engineering-data-normalizer/shared";
 import {
   getEquipmentTableSchema,
   createEquipmentFromStagingSchema,
-  createEquipmentSchema,
 } from "../schemas/equipment";
 import { recalculateFilters } from "../services/CategoryService/recalculateFilters";
 import {

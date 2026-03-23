@@ -5,7 +5,7 @@ import {
   getStagingTableSchema,
   importRowsSchema,
   initImportSchema,
-} from "../schemas/import";
+} from "@engineering-data-normalizer/shared";
 import * as ImportController from "../controllers/ImportController";
 
 const router = Router();

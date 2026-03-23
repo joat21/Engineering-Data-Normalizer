@@ -1,16 +1,9 @@
 import z from "zod";
-import { normalizedDataSchema } from "./normalization";
+import { normalizedDataSchema } from "@engineering-data-normalizer/shared";
 
 export const createEquipmentFromStagingSchema = z.object({
   query: z.object({
     sessionId: z.uuid(),
-  }),
-});
-
-export const createEquipmentSchema = z.object({
-  body: z.object({
-    sessionId: z.string(),
-    normalizedData: z.array(normalizedDataSchema),
   }),
 });
 
