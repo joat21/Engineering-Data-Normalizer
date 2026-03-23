@@ -8,4 +8,4 @@ export const SourceType = {
 
 export type SourceType = (typeof SourceType)[keyof typeof SourceType];
 
-export type InitImportInput = z.infer<typeof initImportSchema.shape.body>;
+export type InitImportBody = z.infer<typeof initImportSchema.shape.body>;

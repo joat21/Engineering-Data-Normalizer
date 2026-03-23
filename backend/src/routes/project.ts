@@ -1,7 +1,4 @@
 import { Router } from "express";
-import { validate } from "../middleware/validate";
-
-import * as ProjectController from "../controllers/ProjectController";
 import {
   createProjectSchema,
   deleteProjectItemSchema,
@@ -10,7 +7,9 @@ import {
   updateItemAmountSchema,
   updateProjectSchema,
   upsertProjectItemSchema,
-} from "../schemas/project";
+} from "@engineering-data-normalizer/shared";
+import { validate } from "../middleware/validate";
+import * as ProjectController from "../controllers/ProjectController";
 
 const router = Router();
 

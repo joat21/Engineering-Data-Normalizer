@@ -1,17 +1,24 @@
+import { SYSTEM_FIELDS_CONFIG } from "@engineering-data-normalizer/shared";
 import {
-  DataType as PrismaDataType,
   ImportStatus,
+  ImportItemStatus,
   Equipment,
-  SourceType as PrismaSourceType,
 } from "../generated/prisma/client";
+
+export const ImportSessionStatus = ImportStatus;
+export type ImportSessionStatus =
+  (typeof ImportSessionStatus)[keyof typeof ImportSessionStatus];
+
+export const StagingImportItemStatus = ImportItemStatus;
+export type StagingImportItemStatus =
+  (typeof StagingImportItemStatus)[keyof typeof StagingImportItemStatus];
+
+// Эти типы не используются в коде, но TS выдаст ошибку,
+// если ключи в конфиге не совпадут с полями в модели Prisma
+type _EnsureFieldsMatch<T extends keyof Equipment> = T;
+type _Verified = _EnsureFieldsMatch<keyof typeof SYSTEM_FIELDS_CONFIG>;
 
 export type EquipmentSystemFields = Pick<
   Equipment,
-  "name" | "manufacturer" | "article" | "model" | "externalCode" | "price"
+  keyof typeof SYSTEM_FIELDS_CONFIG
 >;
-
-export type DataType = PrismaDataType;
-
-export type ImportSessionStatus = ImportStatus;
-
-export type SourceType = PrismaSourceType;

@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { validate } from "../middleware/validate";
-import * as ComparisonController from "../controllers/ComparisonController";
 import {
   addToComparisonSchema,
   removeFromComparisonSchema,
-} from "../schemas/comparison";
+} from "@engineering-data-normalizer/shared";
+import { validate } from "../middleware/validate";
+import * as ComparisonController from "../controllers/ComparisonController";
 
 const router = Router();
 

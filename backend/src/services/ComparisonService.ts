@@ -1,5 +1,5 @@
+import { SYSTEM_FIELDS_CONFIG } from "@engineering-data-normalizer/shared";
 import { prisma } from "../prisma";
-import { SYSTEM_FIELDS_CONFIG } from "../config";
 import { EquipmentSystemFields } from "../types";
 
 type ComparisonGroup = {

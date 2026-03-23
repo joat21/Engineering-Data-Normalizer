@@ -1,3 +1,10 @@
+import {
+  DataType,
+  FilterValue,
+  MappingTargetType,
+  NormalizedData,
+  NumericFilterValue,
+} from "@engineering-data-normalizer/shared";
 import { FIELD_MAP } from "./config";
 import {
   collectEquipmentAndAttributes,
@@ -5,12 +12,11 @@ import {
   getOrderBy,
   updateCacheFromNormalizedData,
 } from "./helpers";
-import { FilterValue, NumericFilterValue } from "./types";
 import { prisma } from "../../prisma";
 import { Prisma } from "../../generated/prisma/client";
-import { NormalizedData, TransformedRow } from "../NormalizationService/types";
-import { DATA_TYPE, IMPORT_SESSION_STATUS, TARGET_TYPE } from "../../config";
+import { TransformedRow } from "../NormalizationService/types";
 import { recalculateFilters } from "../CategoryService/recalculateFilters";
+import { ImportSessionStatus } from "../../types";
 
 const LIMIT = 20;
 
@@ -60,7 +66,7 @@ export const createEquipmentFromStaging = async (sessionId: string) => {
 
     await tx.importSession.update({
       where: { id: sessionId },
-      data: { status: IMPORT_SESSION_STATUS.COMPLETED },
+      data: { status: ImportSessionStatus.COMPLETED },
     });
 
     return {
@@ -109,7 +115,7 @@ export const createEquipment = async (data: {
 
     await tx.importSession.update({
       where: { id: sessionId },
-      data: { status: IMPORT_SESSION_STATUS.COMPLETED },
+      data: { status: ImportSessionStatus.COMPLETED },
     });
 
     return {
@@ -150,7 +156,7 @@ export const getEquipmentTable = async (data: {
     if (filter.systemField) {
       andConditions.push({ [filter.systemField]: operator });
     } else if (filter.attributeId) {
-      if (filter.type === DATA_TYPE.NUMBER) {
+      if (filter.type === DataType.NUMBER) {
         const val = value as NumericFilterValue;
         const attrMatch: any = { attributeId: filter.attributeId };
 
@@ -194,7 +200,9 @@ export const getEquipmentTable = async (data: {
     ...categoryFilters.map((f) => ({
       key: f.systemField || `attr_${f.attributeId}`,
       label: f.label,
-      type: f.systemField ? TARGET_TYPE.SYSTEM : TARGET_TYPE.ATTRIBUTE,
+      type: f.systemField
+        ? MappingTargetType.SYSTEM
+        : MappingTargetType.ATTRIBUTE,
     })),
   ];
 

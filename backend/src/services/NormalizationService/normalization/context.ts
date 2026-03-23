@@ -1,12 +1,11 @@
-import { JsonValue } from "@prisma/client/runtime/client";
 import {
-  AttributeInfo,
-  MappingPlan,
+  DataType,
   MappingTarget,
-  NormalizeSingleEntity,
-} from "../types";
+  MappingTargetType,
+} from "@engineering-data-normalizer/shared";
+import { JsonValue } from "@prisma/client/runtime/client";
+import { AttributeInfo, MappingPlan, NormalizeSingleEntity } from "../types";
 import { prisma } from "../../../prisma";
-import { DATA_TYPE, TARGET_TYPE } from "../../../config";
 import { normalizeValue } from "./normalizers";
 import { cleanValue } from "../../../helpers/cleanValue";
 import { getCacheableCleanedValues, getCacheKey } from "../../../helpers/cache";
@@ -69,16 +68,16 @@ export const getCacheMap = async (
 
   for (const values of valuesByItem.values()) {
     targets.forEach((target, i) => {
-      if (!target || target.type !== TARGET_TYPE.ATTRIBUTE) return;
+      if (!target || target.type !== MappingTargetType.ATTRIBUTE) return;
 
       const val = cleanValue(String(values[i] ?? ""));
       let attrType = attributeInfoMap.get(target.id)?.dataType;
 
       if (!attrType) {
         console.log(
-          `[LOG]: Attribute type for value ${val} not found. Set attribute type to ${DATA_TYPE.STRING}`,
+          `[LOG]: Attribute type for value ${val} not found. Set attribute type to ${DataType.STRING}`,
         );
-        attrType = DATA_TYPE.STRING;
+        attrType = DataType.STRING;
       }
 
       const cacheableValues = getCacheableCleanedValues(val, attrType);
@@ -114,7 +113,7 @@ export const getMappingPlans = (
   return targets.map((target) => {
     if (!target) return null;
 
-    if (target.type === TARGET_TYPE.SYSTEM) {
+    if (target.type === MappingTargetType.SYSTEM) {
       return {
         target,
         normalizer: (val: string) => ({ valueString: val }),
@@ -126,7 +125,7 @@ export const getMappingPlans = (
       normalizer: (val: string, cache: Map<string, JsonValue>) =>
         normalizeValue(
           val,
-          attributeInfoMap.get(target.id)?.dataType || DATA_TYPE.STRING,
+          attributeInfoMap.get(target.id)?.dataType || DataType.STRING,
           target.id,
           cache,
         ),

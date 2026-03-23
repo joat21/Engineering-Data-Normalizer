@@ -1,3 +1,8 @@
+import type z from "zod";
+import type {
+  getCategoryAttributesSchema,
+  getCategoryFiltersSchema,
+} from "./schemas";
 import type { MappingTargetType } from "../normalization";
 
 export interface Category {
@@ -24,3 +29,10 @@ export interface CategoryAttribute {
   //
   options: any[];
 }
+
+export type GetCategoryFiltersParams = z.infer<
+  typeof getCategoryFiltersSchema.shape.params
+>;
+export type GetCategoryAttributesParams = z.infer<
+  typeof getCategoryAttributesSchema.shape.params
+>;

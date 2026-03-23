@@ -1,5 +1,6 @@
-import { DATA_TYPE, DIMENSION_SEPARATORS_REGEX } from "../config";
-import { DataType } from "../types";
+import { DataType } from "@engineering-data-normalizer/shared";
+import { DIMENSION_SEPARATORS_REGEX } from "../config";
+
 import { cleanValue } from "./cleanValue";
 import { isSimpleNumeric } from "./isSimpleNumeric";
 
@@ -7,7 +8,7 @@ export const isCacheRequired = (val: string, type: DataType): boolean => {
   const cleanVal = cleanValue(val);
   if (!cleanVal) return false;
 
-  if (type !== DATA_TYPE.NUMBER) {
+  if (type !== DataType.NUMBER) {
     return true;
   }
 
@@ -22,7 +23,7 @@ export const getCacheableCleanedValues = (
   const cleanVal = rawValue.toLowerCase().trim();
   if (!cleanVal) return [];
 
-  if (dataType !== DATA_TYPE.NUMBER) {
+  if (dataType !== DataType.NUMBER) {
     return [cleanVal];
   }
 

@@ -1,5 +1,5 @@
+import { MappingTarget } from "@engineering-data-normalizer/shared";
 import { enrichIssuesWithOptions } from "../helpers";
-import { MappingTarget } from "../types";
 import { buildTransformedRows, saveTransformedRows } from "./builders";
 
 export const executeUpdatePipeline = async (params: {

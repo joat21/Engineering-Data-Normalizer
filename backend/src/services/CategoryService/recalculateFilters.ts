@@ -1,7 +1,10 @@
-import { DATA_TYPE, SYSTEM_FIELDS_CONFIG } from "../../config";
 import { EquipmentSystemFields } from "../../types";
 import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../../prisma";
+import {
+  DataType,
+  SYSTEM_FIELDS_CONFIG,
+} from "@engineering-data-normalizer/shared";
 
 export const recalculateFilters = async (categoryId: string) => {
   const category = await prisma.category.findUnique({
@@ -15,7 +18,7 @@ export const recalculateFilters = async (categoryId: string) => {
     Object.entries(SYSTEM_FIELDS_CONFIG).map(async ([field, config]) => {
       const systemField = field as keyof EquipmentSystemFields;
 
-      if (config.type === DATA_TYPE.NUMBER) {
+      if (config.type === DataType.NUMBER) {
         const agg = await prisma.equipment.aggregate({
           where: { categoryId },
           _min: { [systemField]: true },
@@ -26,7 +29,7 @@ export const recalculateFilters = async (categoryId: string) => {
           categoryId,
           systemField,
           label: config.label,
-          type: DATA_TYPE.NUMBER,
+          type: DataType.NUMBER,
           minValue: agg._min[systemField],
           maxValue: agg._max[systemField],
         };
@@ -42,7 +45,7 @@ export const recalculateFilters = async (categoryId: string) => {
         categoryId,
         systemField: field,
         label: config.label,
-        type: DATA_TYPE.STRING,
+        type: DataType.STRING,
         options: groups.map((g) => g[systemField]).filter((v) => v !== null),
       };
     }),
@@ -57,7 +60,7 @@ export const recalculateFilters = async (categoryId: string) => {
         type: attr.dataType,
       };
 
-      if (attr.dataType === DATA_TYPE.NUMBER) {
+      if (attr.dataType === DataType.NUMBER) {
         const [agg, groups] = await Promise.all([
           prisma.equipmentAttributeValue.aggregate({
             where: { attributeId: attr.id },
@@ -79,7 +82,7 @@ export const recalculateFilters = async (categoryId: string) => {
         };
       }
 
-      if (attr.dataType === DATA_TYPE.STRING) {
+      if (attr.dataType === DataType.STRING) {
         const groups = await prisma.equipmentAttributeValue.findMany({
           where: { attributeId: attr.id },
           distinct: ["valueString"],

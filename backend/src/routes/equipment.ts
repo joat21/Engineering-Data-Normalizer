@@ -1,11 +1,11 @@
-import { createEquipmentSchema } from "@engineering-data-normalizer/shared";
 import { Router } from "express";
-import * as EquipmentController from "../controllers/EquipmentController";
-import { validate } from "../middleware/validate";
 import {
+  createEquipmentSchema,
   getEquipmentTableSchema,
   createEquipmentFromStagingSchema,
-} from "../schemas/equipment";
+} from "@engineering-data-normalizer/shared";
+import * as EquipmentController from "../controllers/EquipmentController";
+import { validate } from "../middleware/validate";
 
 const router = Router();
 

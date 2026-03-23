@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { validate } from "../middleware/validate";
 import {
   applyTransformSchema,
   mapColToAttrSchema,
   resolveNormalizationIssuesSchema,
-} from "../schemas/normalization";
+} from "@engineering-data-normalizer/shared";
+import { validate } from "../middleware/validate";
 import * as NormalizationController from "../controllers/NormalizationController";
 
 const router = Router();

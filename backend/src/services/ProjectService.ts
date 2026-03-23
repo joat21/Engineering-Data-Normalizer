@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
+import { SYSTEM_FIELDS_CONFIG } from "@engineering-data-normalizer/shared";
 import { prisma } from "../prisma";
-import { SYSTEM_FIELDS_CONFIG } from "../config";
 
 export const createProject = async (data: {
   name: string;

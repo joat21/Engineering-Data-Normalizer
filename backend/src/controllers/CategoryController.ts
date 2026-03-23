@@ -1,9 +1,9 @@
 import { RequestHandler } from "express";
-import { HandlerFromSchema } from "../types/zod";
 import {
   getCategoryAttributesSchema,
   getCategoryFiltersSchema,
-} from "../schemas/category";
+} from "@engineering-data-normalizer/shared";
+import { HandlerFromSchema } from "../types/zod";
 import {
   getCategories,
   getCategoryAttributes,

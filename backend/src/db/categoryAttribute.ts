@@ -1,11 +1,11 @@
-import { prisma } from "../prisma";
-import { TARGET_TYPE } from "../config";
-import { Prisma } from "../generated/prisma/client";
 import {
-  AttributeInfo,
   AttributeTarget,
   MappingTarget,
-} from "../services/NormalizationService/types";
+  MappingTargetType,
+} from "@engineering-data-normalizer/shared";
+import { prisma } from "../prisma";
+import { Prisma } from "../generated/prisma/client";
+import { AttributeInfo } from "../services/NormalizationService/types";
 
 export const getAttributeInfoMap = async (
   targets: (MappingTarget | null)[],
@@ -14,7 +14,9 @@ export const getAttributeInfoMap = async (
   const db = tx || prisma;
 
   const attrIds = targets
-    .filter((t): t is AttributeTarget => t?.type === TARGET_TYPE.ATTRIBUTE)
+    .filter(
+      (t): t is AttributeTarget => t?.type === MappingTargetType.ATTRIBUTE,
+    )
     .map((t) => t.id);
 
   if (attrIds.length === 0) {

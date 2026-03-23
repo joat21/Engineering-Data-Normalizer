@@ -1,18 +1,17 @@
 import z from "zod";
 import { JsonValue } from "@prisma/client/runtime/client";
 import {
+  DataType,
   MappingTarget,
   NormalizedData,
   NormalizedValue,
+  TransformType,
+  transformConfigSchema,
 } from "@engineering-data-normalizer/shared";
-import { transformSchema } from "../../schemas/normalization";
-import { DataType } from "../../types";
 
 export type TransformPayload = string | number | null;
 
-export type TransformConfig = z.infer<typeof transformSchema>;
-
-export type TransformType = TransformConfig["type"];
+export type TransformConfig = z.infer<typeof transformConfigSchema>;
 
 export type TransformPayloadMap = {
   [T in TransformType]: Extract<TransformConfig, { type: T }> extends {

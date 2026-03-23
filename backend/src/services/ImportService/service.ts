@@ -1,8 +1,8 @@
+import { SourceType } from "@engineering-data-normalizer/shared";
 import { prisma } from "../../prisma";
 import { calculateHashAsync } from "../../helpers/calculateHashAsync";
 import { uploadFile } from "../S3Service";
 import { createSource } from "../SourceService";
-import { SourceType } from "../../types";
 import { TransformedRow } from "../NormalizationService/types";
 import { getAttributeInfoMap } from "../../db/categoryAttribute";
 import { ColumnMetadata, isSubColumn } from "./types";

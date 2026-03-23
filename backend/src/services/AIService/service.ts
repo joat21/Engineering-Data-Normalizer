@@ -1,11 +1,14 @@
 import { GoogleGenAI, Schema, ThinkingLevel, Type } from "@google/genai";
-import { v4 as uuidv4 } from "uuid";
+import {
+  EditedAiParseResult,
+  MappingTargetType,
+  ParseTarget,
+} from "@engineering-data-normalizer/shared";
 import { prisma } from "../../prisma";
 import { Prisma } from "../../generated/prisma/client";
 import { getRawValue } from "../../helpers/getRawValue";
 import { TransformPayload } from "../NormalizationService/types";
-import { EditedAiParseResult, ParseTarget } from "./types";
-import { STAGING_IMPORT_ITEM_STATUS, TARGET_TYPE } from "../../config";
+import { StagingImportItemStatus } from "../../types";
 
 export const processAiParsing = async (data: {
   importSessionId: string;
@@ -32,7 +35,7 @@ export const processAiParsing = async (data: {
   const where: Prisma.StagingImportItemWhereInput = {
     sessionId: importSessionId,
     status: {
-      not: STAGING_IMPORT_ITEM_STATUS.EDITED_MANUALLY,
+      not: StagingImportItemStatus.EDITED_MANUALLY,
     },
     id: isTestRun
       ? { in: testRowIds }
@@ -84,7 +87,7 @@ export const processAiParsing = async (data: {
   const headers = [
     { key: "sourceString", label: "Исходная строка" },
     ...targets.map((t) => ({
-      key: t.type === TARGET_TYPE.ATTRIBUTE ? `attr_${t.key}` : t.key,
+      key: t.type === MappingTargetType.ATTRIBUTE ? `attr_${t.key}` : t.key,
       label: t.label,
       type: t.type,
     })),
@@ -98,7 +101,7 @@ export const processAiParsing = async (data: {
 
     for (const target of targets) {
       const columnKey =
-        target.type === TARGET_TYPE.ATTRIBUTE
+        target.type === MappingTargetType.ATTRIBUTE
           ? `attr_${target.key}`
           : target.key;
 

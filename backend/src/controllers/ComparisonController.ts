@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import {
   addToComparisonSchema,
   removeFromComparisonSchema,
-} from "../schemas/comparison";
+} from "@engineering-data-normalizer/shared";
 import {
   addToComparison,
   getComparisonTable,

@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { validate } from "../middleware/validate";
-import * as NormalizationController from "../controllers/NormalizationController";
 import {
   aiParseSchema,
   editAiParseResultsSchema,
   saveAiParseSchema,
-} from "../schemas/ai";
+} from "@engineering-data-normalizer/shared";
+import { validate } from "../middleware/validate";
+import * as NormalizationController from "../controllers/NormalizationController";
 
 const router = Router();
 

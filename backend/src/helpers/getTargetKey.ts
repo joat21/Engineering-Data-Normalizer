@@ -1,5 +1,7 @@
-import { TARGET_TYPE } from "../config";
-import { MappingTarget } from "../services/NormalizationService/types";
+import {
+  MappingTarget,
+  MappingTargetType,
+} from "@engineering-data-normalizer/shared";
 
 export const getTargetKey = (target: MappingTarget) =>
-  target.type === TARGET_TYPE.ATTRIBUTE ? target.id : target.field;
+  target.type === MappingTargetType.ATTRIBUTE ? target.id : target.field;

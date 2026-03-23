@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { validate } from "../middleware/validate";
-import * as CategoryController from "../controllers/CategoryController";
 import {
   getCategoryAttributesSchema,
   getCategoryFiltersSchema,
-} from "../schemas/category";
+} from "@engineering-data-normalizer/shared";
+import { validate } from "../middleware/validate";
+import * as CategoryController from "../controllers/CategoryController";
 
 const router = Router();
 

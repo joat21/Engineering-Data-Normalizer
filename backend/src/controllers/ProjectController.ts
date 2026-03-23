@@ -8,7 +8,7 @@ import {
   updateItemAmountSchema,
   updateProjectSchema,
   upsertProjectItemSchema,
-} from "../schemas/project";
+} from "@engineering-data-normalizer/shared";
 import {
   createProject,
   deleteProjectItem,

@@ -1,7 +1,7 @@
 import {
   MappingTargetType,
   type CategoryAttribute,
-  type CreateEquipmentInput,
+  type CreateEquipmentBody,
   type MappingTarget,
   type NormalizedValue,
 } from "@engineering-data-normalizer/shared";
@@ -76,7 +76,7 @@ export const SingleImportForm = ({ attributes }: SingleImportFormProps) => {
       };
     });
 
-    const payload: CreateEquipmentInput = {
+    const payload: CreateEquipmentBody = {
       sessionId: sessionId ?? "",
       normalizedData:
         normalizedData?.filter((item) => {

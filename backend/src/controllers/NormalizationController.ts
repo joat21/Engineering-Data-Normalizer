@@ -1,21 +1,19 @@
 import {
+  editAiParseResultsSchema,
+  aiParseSchema,
+  saveAiParseSchema,
+  applyTransformSchema,
+  mapColToAttrSchema,
+  resolveNormalizationIssuesSchema,
+  transformConfigSchema,
+} from "@engineering-data-normalizer/shared";
+import {
   commitAiParsingResults,
   applyColumnTransformation,
   mapColumnToAttribute,
   resolveNormalizationIssues,
 } from "../services/NormalizationService/service";
-import {
-  applyTransformSchema,
-  mapColToAttrSchema,
-  resolveNormalizationIssuesSchema,
-  transformSchema,
-} from "../schemas/normalization";
 import { HandlerFromSchema } from "../types/zod";
-import {
-  aiParseSchema,
-  editAiParseResultsSchema,
-  saveAiParseSchema,
-} from "../schemas/ai";
 import {
   editAiParseResults,
   processAiParsing,
@@ -25,7 +23,7 @@ export const applyTransformHandler: HandlerFromSchema<
   typeof applyTransformSchema
 > = async (req, res, next) => {
   try {
-    const transform = transformSchema.parse(req.body.transform);
+    const transform = transformConfigSchema.parse(req.body.transform);
 
     const result = await applyColumnTransformation({
       sessionId: req.params.sessionId,

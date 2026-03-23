@@ -1,4 +1,4 @@
-import { TRANSFORM_TYPE } from "../../../config";
+import { TransformType } from "@engineering-data-normalizer/shared";
 import { TransformConfig, TransformPayload } from "../types";
 
 const numberRegex = /-?\d+(?:[.,]\d+)?/g;
@@ -8,13 +8,13 @@ export const applyTransform = (
   transform: TransformConfig,
 ) => {
   switch (transform.type) {
-    case TRANSFORM_TYPE.EXTRACT_NUMBERS:
+    case TransformType.EXTRACT_NUMBERS:
       return parseNumbers(String(value));
 
-    case TRANSFORM_TYPE.SPLIT_BY:
+    case TransformType.SPLIT_BY:
       return splitBySeparator(String(value), transform.payload.separator);
 
-    case TRANSFORM_TYPE.MULTIPLY:
+    case TransformType.MULTIPLY:
       return multiplyNumbersInString(String(value), transform.payload.factor);
 
     default: {

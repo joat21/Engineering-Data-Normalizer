@@ -1,13 +1,12 @@
+import { DataType, MappingTarget } from "@engineering-data-normalizer/shared";
 import { JsonValue } from "@prisma/client/runtime/client";
 import {
   EnrichedTarget,
   isNormalizedValue,
   MappingPlan,
-  MappingTarget,
   TransformedRow,
 } from "../types";
 import { prisma } from "../../../prisma";
-import { DATA_TYPE, TARGET_TYPE } from "../../../config";
 import { buildBatchNormalizationContext } from "../normalization/context";
 import { getTargetKey } from "../../../helpers/getTargetKey";
 
@@ -80,7 +79,7 @@ export const buildTransformedRows = async (params: {
             label:
               attributeInfoMap.get(targetKey)?.label || "Неизвестный атрибут",
             dataType:
-              attributeInfoMap.get(targetKey)?.dataType || DATA_TYPE.STRING,
+              attributeInfoMap.get(targetKey)?.dataType || DataType.STRING,
           },
           unnormalizedValues: new Set<string>(),
         });

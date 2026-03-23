@@ -1,5 +1,9 @@
+import {
+  DataType,
+  MappingTargetType,
+  SYSTEM_FIELDS_CONFIG,
+} from "@engineering-data-normalizer/shared";
 import { prisma } from "../../prisma";
-import { DATA_TYPE, SYSTEM_FIELDS_CONFIG, TARGET_TYPE } from "../../config";
 import { getAttributeOptionsMap } from "../../helpers/getAttributeOptionsMap";
 import { booleanNormalizationOptions } from "../NormalizationService/config";
 
@@ -26,7 +30,7 @@ export const getCategoryAttributes = async (categoryId: string) => {
   });
 
   const stringAttrIds = categoryAttributes
-    .filter((attr) => attr.dataType === DATA_TYPE.STRING)
+    .filter((attr) => attr.dataType === DataType.STRING)
     .map((attr) => attr.id);
 
   const optionsMap = await getAttributeOptionsMap(stringAttrIds);
@@ -35,7 +39,7 @@ export const getCategoryAttributes = async (categoryId: string) => {
     ([key, config]) => ({
       id: key,
       key: key,
-      type: TARGET_TYPE.SYSTEM,
+      type: MappingTargetType.SYSTEM,
       label: config.label,
       unit: null,
       dataType: config.type,
@@ -49,13 +53,13 @@ export const getCategoryAttributes = async (categoryId: string) => {
     let options = optionsMap.get(attr.id) || [];
 
     // Подмешиваем дефолтные булевы значения
-    if (attr.dataType === DATA_TYPE.BOOLEAN && options.length === 0) {
+    if (attr.dataType === DataType.BOOLEAN && options.length === 0) {
       options = booleanNormalizationOptions;
     }
 
     return {
       ...rest,
-      type: TARGET_TYPE.ATTRIBUTE,
+      type: MappingTargetType.ATTRIBUTE,
       options,
     };
   });

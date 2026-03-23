@@ -1,9 +1,8 @@
 import { JsonValue } from "@prisma/client/runtime/client";
-import { NormalizedValue } from "@engineering-data-normalizer/shared";
+import { DataType, NormalizedValue } from "@engineering-data-normalizer/shared";
 import { parseNumbers } from "../transformation/transformers";
 import { UnnormalizedValue } from "../types";
-import { DataType } from "../../../generated/prisma/enums";
-import { DATA_TYPE, DIMENSION_SEPARATORS_REGEX } from "../../../config";
+import { DIMENSION_SEPARATORS_REGEX } from "../../../config";
 import { isSimpleNumeric } from "../../../helpers/isSimpleNumeric";
 import { cleanValue } from "../../../helpers/cleanValue";
 
@@ -13,7 +12,7 @@ export const normalizeValue = (
   attributeId: string,
   cacheMap: Map<string, JsonValue>,
 ): NormalizedValue | UnnormalizedValue =>
-  type === DATA_TYPE.NUMBER
+  type === DataType.NUMBER
     ? normalizeNumeric(rawValue, attributeId, cacheMap)
     : normalizeStringOrBoolean(rawValue, attributeId, cacheMap);
 

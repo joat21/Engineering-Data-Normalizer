@@ -1,28 +1,26 @@
 import { v4 as uuidv4 } from "uuid";
-import { prisma } from "../../prisma";
-import {
-  DATA_TYPE,
-  SYSTEM_FIELD_KEYS,
-  SYSTEM_FIELDS,
-  TARGET_TYPE,
-} from "../../config";
-import { Prisma } from "../../generated/prisma/client";
-import { EquipmentSystemFields } from "../../types";
-import { NormalizedData } from "../NormalizationService/types";
-import { getCacheableCleanedValues } from "../../helpers/cache";
 import {
   BooleanFilterValue,
+  DataType,
   FilterValue,
+  MappingTargetType,
+  NormalizedData,
   NumericFilterValue,
   StringFilterValue,
-} from "./types";
+  SYSTEM_FIELD_KEYS,
+} from "@engineering-data-normalizer/shared";
+import { prisma } from "../../prisma";
+import { SYSTEM_FIELDS } from "../../config";
+import { Prisma } from "../../generated/prisma/client";
+import { EquipmentSystemFields } from "../../types";
+import { getCacheableCleanedValues } from "../../helpers/cache";
 import { getAttributeInfoMap } from "../../db/categoryAttribute";
 
 export const getOperator = (type: string, value: FilterValue) => {
   if (value === undefined || value === null) return null;
 
   switch (type) {
-    case DATA_TYPE.NUMBER: {
+    case DataType.NUMBER: {
       const val = value as NumericFilterValue;
       const res: any = {};
 
@@ -36,13 +34,13 @@ export const getOperator = (type: string, value: FilterValue) => {
       return Object.keys(res).length > 0 ? res : null;
     }
 
-    case DATA_TYPE.STRING: {
+    case DataType.STRING: {
       const val = value as StringFilterValue;
       if (!Array.isArray(val) || val.length === 0) return null;
       return { in: val };
     }
 
-    case DATA_TYPE.BOOLEAN:
+    case DataType.BOOLEAN:
       const val = value as BooleanFilterValue;
       return { equals: val };
 
@@ -95,7 +93,7 @@ export const collectEquipmentAndAttributes = (data: {
   normalizedData.forEach((item) => {
     const { target, normalized } = item;
 
-    if (target.type === TARGET_TYPE.SYSTEM) {
+    if (target.type === MappingTargetType.SYSTEM) {
       const field = target.field;
 
       // TODO: в идеале сделать обработку по типу атрибута, а не по самому атрибуту
@@ -142,16 +140,16 @@ export const updateCacheFromNormalizedData = async (
   );
 
   for (const d of normalizedData) {
-    if (d.target.type !== TARGET_TYPE.ATTRIBUTE) continue;
+    if (d.target.type !== MappingTargetType.ATTRIBUTE) continue;
 
     const attrInfo = attributeInfoMap.get(d.target.id);
     let attrType = attrInfo?.dataType;
 
     if (!attrType) {
       console.log(
-        `[LOG]: Attribute type for value ${d.rawValue} not found. Set attribute type to ${DATA_TYPE.STRING}`,
+        `[LOG]: Attribute type for value ${d.rawValue} not found. Set attribute type to ${DataType.STRING}`,
       );
-      attrType = DATA_TYPE.STRING;
+      attrType = DataType.STRING;
     }
 
     const cacheableParts = getCacheableCleanedValues(d.rawValue, attrType);
