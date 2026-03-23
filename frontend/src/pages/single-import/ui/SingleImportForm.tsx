@@ -1,3 +1,4 @@
+import { Button, Form } from "@heroui/react";
 import {
   MappingTargetType,
   type CategoryAttribute,
@@ -5,18 +6,9 @@ import {
   type MappingTarget,
   type NormalizedValue,
 } from "@engineering-data-normalizer/shared";
-import {
-  Button,
-  Checkbox,
-  Description,
-  Form,
-  Input,
-  Label,
-  NumberField,
-  TextField,
-} from "@heroui/react";
-import { useImportStore } from "@/features/import";
 import { useCreateEquipmentMutation } from "../api/single-import.api";
+import { useImportStore } from "@/features/import";
+import { AttributeField } from "@/entities/category-attribute";
 
 interface SingleImportFormProps {
   attributes?: CategoryAttribute[];
@@ -102,58 +94,15 @@ export const SingleImportForm = ({ attributes }: SingleImportFormProps) => {
 
   return (
     <Form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 w-full">
-      {attributes?.map((attr) => {
-        switch (attr.dataType) {
-          case "STRING":
-            return (
-              <TextField key={attr.key} name={attr.key}>
-                <Label>{attr.label}</Label>
-                <Input placeholder={attr.label} />
-              </TextField>
-            );
-          case "NUMBER":
-            return (
-              <div key={attr.key} className="flex flex-col gap-1">
-                <Label>
-                  {attr.label} {attr.unit}
-                </Label>
-                <div className="flex gap-1">
-                  <NumberField
-                    aria-label={attr.label}
-                    name={`${attr.key}_valueMin`}
-                    className="max-w-44"
-                  >
-                    <NumberField.Group>
-                      <NumberField.DecrementButton />
-                      <NumberField.Input placeholder="Минимум" />
-                      <NumberField.IncrementButton />
-                    </NumberField.Group>
-                  </NumberField>
-                  <NumberField
-                    aria-label={attr.label}
-                    name={`${attr.key}_valueMax`}
-                    className="max-w-44"
-                  >
-                    <NumberField.Group>
-                      <NumberField.DecrementButton />
-                      <NumberField.Input placeholder="Максимум" />
-                      <NumberField.IncrementButton />
-                    </NumberField.Group>
-                  </NumberField>
-                </div>
-                <Description>
-                  Если значение одно - заполняйте им минимум и максимум
-                </Description>
-              </div>
-            );
-          case "BOOLEAN":
-            return (
-              <Checkbox key={attr.key} name={attr.key}>
-                <Label>{attr.label}</Label>
-              </Checkbox>
-            );
-        }
-      })}
+      {attributes?.map((attr) => (
+        <AttributeField
+          key={attr.key}
+          attributeKey={attr.key}
+          label={attr.label}
+          unit={attr.unit}
+          dataType={attr.dataType}
+        />
+      ))}
       <Button type="submit" isPending={createEquipmentMutation.isPending}>
         Сохранить
       </Button>
