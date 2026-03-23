@@ -1,33 +1,43 @@
 import type {
-  DataType,
+  CategoryAttribute,
   NormalizedValue,
 } from "@engineering-data-normalizer/shared";
 
 interface TransformAttributeArgs {
   formData: FormData;
-  attrKey: string;
-  dataType: DataType;
+  attr: CategoryAttribute;
 }
 
 export const transformAttribute = ({
   formData,
-  attrKey,
-  dataType,
+  attr,
 }: TransformAttributeArgs) => {
-  switch (dataType) {
+  switch (attr.dataType) {
     case "STRING":
-      return transformStringAttribute(formData, attrKey);
+      return transformStringAttribute(formData, attr);
     case "NUMBER":
-      return transformNumberAttribute(formData, attrKey);
+      return transformNumberAttribute(formData, attr.key);
     case "BOOLEAN":
-      return transformBooleanAttribute(formData, attrKey);
+      return transformBooleanAttribute(formData, attr.key);
   }
 };
 
-const transformStringAttribute = (formData: FormData, attrKey: string) => {
-  const strVal = String(formData.get(attrKey) ?? "");
-  const rawValue = strVal;
-  const normalized: NormalizedValue = { valueString: strVal };
+const transformStringAttribute = (
+  formData: FormData,
+  attr: CategoryAttribute,
+) => {
+  const strVal = String(formData.get(attr.key) ?? "");
+  let rawValue = strVal;
+  let normalized: NormalizedValue = { valueString: strVal };
+
+  if (attr.options.length) {
+    const selectedOption = attr.options.find((o) => o.id === strVal);
+
+    if (selectedOption) {
+      rawValue = selectedOption.normalized.valueString;
+      normalized = selectedOption.normalized;
+    }
+  }
 
   return { normalized, rawValue };
 };

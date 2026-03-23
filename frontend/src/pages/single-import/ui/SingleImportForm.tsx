@@ -32,11 +32,7 @@ export const SingleImportForm = ({ attributes }: SingleImportFormProps) => {
             }
           : { type: attr.type, field: attr.key as any }; // TODO: в идеале типизировать как системное поле
 
-      const { normalized, rawValue } = transformAttribute({
-        formData,
-        attrKey: attr.key,
-        dataType: attr.dataType,
-      });
+      const { normalized, rawValue } = transformAttribute({ formData, attr });
 
       return {
         target,
@@ -68,6 +64,8 @@ export const SingleImportForm = ({ attributes }: SingleImportFormProps) => {
       return alert("Заполните хотя бы один атрибут");
     }
 
+    console.log(payload);
+
     createEquipmentMutation.mutate(payload, {
       onSuccess: () => alert("Оборудование сохранено"),
     });
@@ -81,6 +79,7 @@ export const SingleImportForm = ({ attributes }: SingleImportFormProps) => {
           attributeKey={attr.key}
           label={attr.label}
           unit={attr.unit}
+          options={attr.options}
           dataType={attr.dataType}
         />
       ))}

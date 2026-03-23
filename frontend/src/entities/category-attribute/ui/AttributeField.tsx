@@ -11,6 +11,7 @@ export const AttributeField = (props: AttributeFieldProps) => {
         <StringAttributeField
           attributeKey={props.attributeKey}
           label={props.label}
+          options={props.options}
         />
       );
 
@@ -20,6 +21,7 @@ export const AttributeField = (props: AttributeFieldProps) => {
           attributeKey={props.attributeKey}
           label={props.label}
           unit={props.unit}
+          options={props.options}
         />
       );
 

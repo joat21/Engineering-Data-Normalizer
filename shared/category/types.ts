@@ -3,7 +3,7 @@ import type {
   getCategoryAttributesSchema,
   getCategoryFiltersSchema,
 } from "./schemas";
-import type { MappingTargetType } from "../normalization";
+import type { MappingTargetType, NormalizedValue } from "../normalization";
 
 export interface Category {
   id: string;
@@ -18,6 +18,14 @@ export const DataType = {
 
 export type DataType = (typeof DataType)[keyof typeof DataType];
 
+// TODO: скорее всего придется добавить options для системных полей,
+// значит нужно будет id менять на optionKey = id | field
+export interface AttributeOption {
+  id: string;
+  label: string;
+  normalized: NormalizedValue;
+}
+
 export interface CategoryAttribute {
   id: string;
   key: string;
@@ -26,8 +34,7 @@ export interface CategoryAttribute {
   unit: string | null;
   dataType: DataType;
   isFilterable: boolean;
-  //
-  options: any[];
+  options: AttributeOption[];
 }
 
 export type GetCategoryFiltersParams = z.infer<

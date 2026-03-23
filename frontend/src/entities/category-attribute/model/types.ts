@@ -1,14 +1,20 @@
-import type { DataType } from "@engineering-data-normalizer/shared";
+import type {
+  AttributeOption,
+  DataType,
+} from "@engineering-data-normalizer/shared";
 
 export interface BaseAttributeFieldProps {
   attributeKey: string;
   label: string;
 }
 
-export interface StringFieldProps extends BaseAttributeFieldProps {}
+export interface StringFieldProps extends BaseAttributeFieldProps {
+  options: AttributeOption[];
+}
 
 export interface NumberFieldProps extends BaseAttributeFieldProps {
   unit: string | null;
+  options: AttributeOption[];
 }
 
 export interface BooleanFieldProps extends BaseAttributeFieldProps {}
