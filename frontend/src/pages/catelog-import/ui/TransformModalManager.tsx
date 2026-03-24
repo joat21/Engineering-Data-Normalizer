@@ -1,3 +1,4 @@
+import { Modal } from "@heroui/react";
 import type {
   CategoryAttribute,
   StagingRow,
@@ -6,8 +7,8 @@ import {
   TransformationType,
   type ActiveTransformContext,
 } from "../model/types";
-import { Modal } from "@heroui/react";
 import { ExtractNumbersDialog } from "./ExtractNumbersDialog";
+import { SplitByDialog } from "./SplitByDialog";
 
 interface TransformModalManagerProps {
   transformContext: ActiveTransformContext | null;
@@ -55,8 +56,8 @@ const ModalContentRouter = ({
         <ExtractNumbersDialog column={transformContext.column} {...props} />
       );
 
-    // case TransformationType.SPLIT_BY:
-    //   return <SplitByDialog column={transformContext.column} {...props} />;
+    case TransformationType.SPLIT_BY:
+      return <SplitByDialog column={transformContext.column} {...props} />;
 
     // case TransformationType.AI_PARSE:
     //   return <AIParseDialog column={transformContext.column} {...props} />;

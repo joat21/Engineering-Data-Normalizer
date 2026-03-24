@@ -1,6 +1,8 @@
 import {
   TransformType,
+  type CategoryAttribute,
   type StagingColumn,
+  type StagingRow,
 } from "@engineering-data-normalizer/shared";
 
 export const SelectionMode = {
@@ -32,3 +34,11 @@ export const TransformationType = {
 
 export type TransformationType =
   (typeof TransformationType)[keyof typeof TransformationType];
+
+export interface TransformationDialogProps {
+  attributes: CategoryAttribute[];
+  column: StagingColumn;
+  rows: StagingRow[];
+  sessionId: string;
+  onClose: () => void;
+}

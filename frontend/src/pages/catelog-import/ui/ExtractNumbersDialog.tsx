@@ -1,24 +1,14 @@
+import { useState } from "react";
 import { Button, Input, Modal, type Key } from "@heroui/react";
 import {
   MappingTargetType,
   parseNumbers,
   TransformType,
-  type CategoryAttribute,
   type MappingTarget,
-  type StagingColumn,
-  type StagingRow,
 } from "@engineering-data-normalizer/shared";
+import type { TransformationDialogProps } from "../model/types";
 import { useApplyTransformMutation } from "@/features/import";
 import { AppSelect } from "@/shared/ui";
-import { useState } from "react";
-
-interface ExtractNumbersDialogProps {
-  attributes: CategoryAttribute[];
-  column: StagingColumn;
-  rows: StagingRow[];
-  sessionId: string;
-  onClose: () => void;
-}
 
 export const ExtractNumbersDialog = ({
   column,
@@ -26,7 +16,7 @@ export const ExtractNumbersDialog = ({
   attributes,
   sessionId,
   onClose,
-}: ExtractNumbersDialogProps) => {
+}: TransformationDialogProps) => {
   const sourceValue = rows[0]?.values[column.id] || "";
   const extractedNumbers = parseNumbers(sourceValue);
 
@@ -69,7 +59,7 @@ export const ExtractNumbersDialog = ({
       <Modal.Header>
         <div>
           <h2 className="text-xl font-semibold">Извлечь числа</h2>
-          <p className="text-sm text-gray-600 mt-1">Колонка: name</p>
+          <p className="text-sm text-gray-600 mt-1">Колонка: {column.label}</p>
         </div>
       </Modal.Header>
       <Modal.Body>
