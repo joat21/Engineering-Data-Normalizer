@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
+  ApplyTransformBody,
+  ApplyTransformParams,
   GetStagingTableParams,
   ImportRowsBody,
   ImportRowsParams,
@@ -70,7 +72,33 @@ export const useMappingMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ["import", "mapping"],
     mutationFn: mapping,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["import", "staging-table", variables.sessionId],
+      });
+    },
+  });
+};
+
+export const applyTransform = (
+  data: ApplyTransformParams & ApplyTransformBody,
+) =>
+  api
+    .post(`/import-sessions/${data.sessionId}/transform`, {
+      colIndex: data.colIndex,
+      transform: data.transform,
+      targets: data.targets,
+    })
+    .then((r) => r.data);
+
+export const useApplyTransformMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ["import", "transfrom"],
+    mutationFn: applyTransform,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["import", "staging-table", variables.sessionId],

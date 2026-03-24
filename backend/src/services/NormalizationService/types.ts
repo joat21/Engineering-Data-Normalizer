@@ -9,8 +9,6 @@ import {
   transformConfigSchema,
 } from "@engineering-data-normalizer/shared";
 
-export type TransformPayload = string | number | null;
-
 export type TransformConfig = z.infer<typeof transformConfigSchema>;
 
 export type TransformPayloadMap = {

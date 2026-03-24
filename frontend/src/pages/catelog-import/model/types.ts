@@ -1,3 +1,8 @@
+import {
+  TransformType,
+  type StagingColumn,
+} from "@engineering-data-normalizer/shared";
+
 export const SelectionMode = {
   HEADER: "header",
   BODY: "body",
@@ -14,3 +19,16 @@ interface CellCoords {
   r: number;
   c: number;
 }
+
+export type ActiveTransformContext = {
+  type: TransformationType;
+  column: StagingColumn;
+};
+
+export const TransformationType = {
+  ...TransformType,
+  AI_PARSE: "AI_PARSE",
+} as const;
+
+export type TransformationType =
+  (typeof TransformationType)[keyof typeof TransformationType];

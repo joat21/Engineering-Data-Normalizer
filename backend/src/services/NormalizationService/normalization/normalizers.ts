@@ -1,6 +1,9 @@
 import { JsonValue } from "@prisma/client/runtime/client";
-import { DataType, NormalizedValue } from "@engineering-data-normalizer/shared";
-import { parseNumbers } from "../transformation/transformers";
+import {
+  DataType,
+  NormalizedValue,
+  parseNumbers,
+} from "@engineering-data-normalizer/shared";
 import { UnnormalizedValue } from "../types";
 import { DIMENSION_SEPARATORS_REGEX } from "../../../config";
 import { isSimpleNumeric } from "../../../helpers/isSimpleNumeric";

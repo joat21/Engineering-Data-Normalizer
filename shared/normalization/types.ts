@@ -2,6 +2,7 @@ import { z } from "zod";
 import { DataType } from "../category";
 import { SYSTEM_FIELDS_CONFIG } from "./constants";
 import {
+  applyTransformSchema,
   attributeTargetSchema,
   mapColToAttrSchema,
   normalizedDataSchema,
@@ -32,6 +33,8 @@ export type EquipmentSystemFieldsDTO = {
       : string;
 };
 
+export type TransformPayload = string | number | null;
+
 export const TransformType = {
   EXTRACT_NUMBERS: "EXTRACT_NUMBERS",
   SPLIT_BY: "SPLIT_BY",
@@ -44,3 +47,10 @@ export type MapColToAttrParams = z.infer<
   typeof mapColToAttrSchema.shape.params
 >;
 export type MapColToAttrBody = z.infer<typeof mapColToAttrSchema.shape.body>;
+
+export type ApplyTransformParams = z.infer<
+  typeof applyTransformSchema.shape.params
+>;
+export type ApplyTransformBody = z.infer<
+  typeof applyTransformSchema.shape.body
+>;
