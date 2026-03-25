@@ -1,20 +1,19 @@
 import { GoogleGenAI, Schema, ThinkingLevel, Type } from "@google/genai";
 import {
   EditedAiParseResult,
-  MappingTargetType,
-  ParseTarget,
+  AIParseTarget,
+  TransformPayload,
 } from "@engineering-data-normalizer/shared";
 import { prisma } from "../../prisma";
 import { Prisma } from "../../generated/prisma/client";
 import { getRawValue } from "../../helpers/getRawValue";
-import { TransformPayload } from "../NormalizationService/types";
 import { StagingImportItemStatus } from "../../types";
 
 export const processAiParsing = async (data: {
   importSessionId: string;
   parsingSessionId?: string;
   colIndex: number;
-  targets: ParseTarget[];
+  targets: AIParseTarget[];
   testRowIds: string[];
 }) => {
   const { importSessionId, parsingSessionId, colIndex, targets, testRowIds } =
@@ -86,28 +85,23 @@ export const processAiParsing = async (data: {
 
   const headers = [
     { key: "sourceString", label: "Исходная строка" },
-    ...targets.map((t) => ({
-      key: t.type === MappingTargetType.ATTRIBUTE ? `attr_${t.key}` : t.key,
-      label: t.label,
-      type: t.type,
-    })),
+    ...targets,
   ];
 
   const resultRows = llmResults.map((result) => {
-    const row: Record<string, string | null> = {
+    const row: {
+      id: string;
+      sourceString: string;
+      values: any[];
+    } = {
       id: result.rowId,
       sourceString: result.sourceString,
+      values: [],
     };
 
     for (const target of targets) {
-      const columnKey =
-        target.type === MappingTargetType.ATTRIBUTE
-          ? `attr_${target.key}`
-          : target.key;
-
       const value = result.extracted[target.key];
-
-      row[columnKey] = String(value ?? "");
+      row.values.push(String(value ?? ""));
     }
 
     return row;
@@ -177,7 +171,7 @@ const callLlmParser = async (
     id: string;
     text: TransformPayload;
   }[],
-  targets: ParseTarget[],
+  targets: AIParseTarget[],
 ): Promise<AiParseResult[]> => {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 

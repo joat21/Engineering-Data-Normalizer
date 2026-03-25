@@ -4,6 +4,8 @@ export {
   useStagingTable,
   useMappingMutation,
   useApplyTransformMutation,
+  useApplyAiParseMutation,
+  useSaveAiParseResultsMutation,
 } from "./api/import.api";
 export { useImportStore } from "./model/store";
 export { CatalogImportStep, SingleImportStep } from "./model/types";

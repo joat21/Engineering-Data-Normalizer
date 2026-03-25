@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
+  AiParseBody,
+  AiParseColumnResult,
   ApplyTransformBody,
   ApplyTransformParams,
   GetStagingTableParams,
@@ -8,9 +10,11 @@ import type {
   InitImportBody,
   MapColToAttrBody,
   MapColToAttrParams,
+  SaveAiParseResultsBody,
+  SaveAiParseResultsParams,
+  StagingTable,
 } from "@engineering-data-normalizer/shared";
 import { api } from "@/shared/api/base";
-import type { StagingTable } from "../model/types";
 
 interface InitImportArgs extends InitImportBody {
   file: File;
@@ -102,6 +106,33 @@ export const useApplyTransformMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["import", "staging-table", variables.sessionId],
+      });
+    },
+  });
+};
+
+export const applyAiParse = (data: AiParseBody) =>
+  api.post<AiParseColumnResult>("/ai-parse", data).then((r) => r.data);
+
+export const useApplyAiParseMutation = () =>
+  useMutation({
+    mutationKey: ["ai-parse"],
+    mutationFn: applyAiParse,
+  });
+
+export const saveAiParseResults = (
+  data: SaveAiParseResultsParams & SaveAiParseResultsBody,
+) => api.post(`/ai-parse/${data.sessionId}/commit`, data).then((r) => r.data);
+
+export const useSaveAiParseResultsMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ["ai-parse", "save"],
+    mutationFn: saveAiParseResults,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["import", "staging-table", variables.importSessionId],
       });
     },
   });

@@ -25,10 +25,13 @@ export const getAttributeInfoMap = async (
 
   const attributes = await db.categoryAttribute.findMany({
     where: { id: { in: attrIds } },
-    select: { id: true, dataType: true, label: true },
+    select: { id: true, dataType: true, label: true, key: true },
   });
 
   return new Map<string, AttributeInfo>(
-    attributes.map((a) => [a.id, { dataType: a.dataType, label: a.label }]),
+    attributes.map((a) => [
+      a.id,
+      { dataType: a.dataType, label: a.label, key: a.key },
+    ]),
   );
 };

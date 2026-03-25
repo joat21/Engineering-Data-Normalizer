@@ -22,10 +22,15 @@ interface CellCoords {
   c: number;
 }
 
-export type ActiveTransformContext = {
-  type: TransformationType;
-  column: StagingColumn;
-};
+export type TransformationContext =
+  | { type: typeof TransformationType.EXTRACT_NUMBERS; column: StagingColumn }
+  | { type: typeof TransformationType.SPLIT_BY; column: StagingColumn }
+  | { type: typeof TransformationType.MULTIPLY; column: StagingColumn }
+  | {
+      type: typeof TransformationType.AI_PARSE;
+      column: StagingColumn;
+      step: "SELECTING_ROWS" | "CONFIG_MODAL";
+    };
 
 export const TransformationType = {
   ...TransformType,

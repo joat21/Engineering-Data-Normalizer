@@ -12,6 +12,7 @@ import { buildSingleNormalizationContext } from "./normalization/context";
 import { executeUpdatePipeline } from "./transformation/executeUpdatePipeline";
 import { cleanValue } from "../../helpers/cleanValue";
 import { getTargetKey } from "../../helpers/getTargetKey";
+import { getAttributeInfoMap } from "../../db/categoryAttribute";
 
 export const mapColumnToAttribute = async (params: {
   sessionId: string;
@@ -119,8 +120,16 @@ export const commitAiParsingResults = async (params: {
 
   const updatedValuesByItem = new Map<string, string[]>();
 
+  // TODO: хотфикс путем получения key атрибута из БД,
+  // надо сделать отдельный тип таргета, который будет содержать key
+  // и являться MappingTarget одновременно (чтобы executeUpdatePipeline его схавал)
+  const attributeInfoMap = await getAttributeInfoMap(targets);
+
   grouped.forEach((targetMap, itemId) => {
-    const values = targets.map((t) => targetMap.get(getTargetKey(t)) ?? "");
+    const values = targets.map(
+      (t) =>
+        targetMap.get(attributeInfoMap.get(getTargetKey(t))?.key ?? "") ?? "",
+    );
     updatedValuesByItem.set(itemId, values);
   });
 

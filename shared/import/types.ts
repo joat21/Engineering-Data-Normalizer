@@ -25,6 +25,11 @@ export type StagingRow = {
   values: Record<string, string>;
 };
 
+export type StagingTable = {
+  columns: StagingColumn[];
+  rows: StagingRow[];
+};
+
 export type InitImportBody = z.infer<typeof initImportSchema.shape.body>;
 
 export type ImportRowsParams = z.infer<typeof importRowsSchema.shape.params>;

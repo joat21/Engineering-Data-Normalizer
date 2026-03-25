@@ -42,6 +42,7 @@ export type NormalizeSingleEntity = {
 export interface AttributeInfo {
   dataType: DataType;
   label: string;
+  key: string;
 }
 
 export const isNormalizedValue = (

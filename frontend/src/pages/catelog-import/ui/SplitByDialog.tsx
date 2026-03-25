@@ -39,7 +39,7 @@ export const SplitByDialog = ({
   const handleSelectAttribute = (value: Key | null, index: number) => {
     if (!value) return;
 
-    const newTargets = [...targets];
+    const newTargets = targets;
     newTargets[index] = {
       type: MappingTargetType.ATTRIBUTE,
       id: String(value),
@@ -120,7 +120,9 @@ export const SplitByDialog = ({
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary">Отмена</Button>
+        <Button onPress={onClose} variant="secondary">
+          Отмена
+        </Button>
         <Button onPress={handleApply}>Применить</Button>
       </Modal.Footer>
     </Modal.Dialog>

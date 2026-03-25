@@ -3,40 +3,51 @@ import type {
   CategoryAttribute,
   StagingRow,
 } from "@engineering-data-normalizer/shared";
-import {
-  TransformationType,
-  type ActiveTransformContext,
-} from "../model/types";
+import { TransformationType, type TransformationContext } from "../model/types";
+import { AIParseDialog } from "./AIParseDialog";
 import { ExtractNumbersDialog } from "./ExtractNumbersDialog";
 import { SplitByDialog } from "./SplitByDialog";
+import {
+  useSelectionStore,
+  useTransformationContextStore,
+} from "../model/store";
 
 interface TransformModalManagerProps {
-  transformContext: ActiveTransformContext | null;
-  onClose: () => void;
   rows: StagingRow[];
   attributes: CategoryAttribute[];
   sessionId: string;
 }
 
 export const TransformModalManager = ({
-  transformContext,
-  onClose,
   rows,
   attributes,
   sessionId,
 }: TransformModalManagerProps) => {
-  const isOpen = transformContext !== null;
+  const activeContext = useTransformationContextStore((s) => s.activeContext);
+  const setContext = useTransformationContextStore((s) => s.setContext);
+
+  const handleClose = () => setContext(null);
+
+  let isOpen = false;
+  if (activeContext?.type === TransformationType.AI_PARSE) {
+    isOpen = activeContext.step === "CONFIG_MODAL";
+  } else {
+    isOpen = activeContext !== null;
+  }
 
   return (
-    <Modal.Backdrop isOpen={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Modal.Backdrop
+      isOpen={isOpen}
+      onOpenChange={(open) => !open && handleClose()}
+    >
       <Modal.Container>
         {isOpen && (
           <ModalContentRouter
-            transformContext={transformContext}
+            activeContext={activeContext}
             rows={rows}
             attributes={attributes}
             sessionId={sessionId}
-            onClose={onClose}
+            onClose={handleClose}
           />
         )}
       </Modal.Container>
@@ -45,22 +56,35 @@ export const TransformModalManager = ({
 };
 
 const ModalContentRouter = ({
-  transformContext,
+  activeContext,
   ...props
-}: TransformModalManagerProps) => {
-  if (!transformContext) return;
+}: TransformModalManagerProps & {
+  activeContext: TransformationContext | null;
+  onClose: () => void;
+}) => {
+  if (!activeContext) return;
 
-  switch (transformContext.type) {
+  const selectedRowIds = useSelectionStore((s) => s.selectedRowIds);
+
+  switch (activeContext.type) {
     case TransformationType.EXTRACT_NUMBERS:
-      return (
-        <ExtractNumbersDialog column={transformContext.column} {...props} />
-      );
+      return <ExtractNumbersDialog column={activeContext.column} {...props} />;
 
     case TransformationType.SPLIT_BY:
-      return <SplitByDialog column={transformContext.column} {...props} />;
+      return <SplitByDialog column={activeContext.column} {...props} />;
 
-    // case TransformationType.AI_PARSE:
-    //   return <AIParseDialog column={transformContext.column} {...props} />;
+    case TransformationType.AI_PARSE:
+      if (activeContext.step === "CONFIG_MODAL") {
+        return (
+          <AIParseDialog
+            column={activeContext.column}
+            selectedRowIds={selectedRowIds}
+            {...props}
+          />
+        );
+      }
+
+      return;
 
     default:
       return null;
