@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Button, Checkbox, Input, Label, Modal } from "@heroui/react";
+import { Button, Checkbox, cn, Input, Label, Modal } from "@heroui/react";
 import { useTransformationContextStore } from "../model/store";
 import type { TransformationDialogProps } from "../model/types";
 import {
@@ -10,6 +10,7 @@ import {
 } from "@engineering-data-normalizer/shared";
 import {
   useApplyAiParseMutation,
+  useEditAiParseResultsMutation,
   useSaveAiParseResultsMutation,
 } from "@/features/import";
 
@@ -36,8 +37,11 @@ export const AIParseDialog = ({
   const [parsingResult, setParsingResult] =
     useState<AiParseColumnResult | null>(null);
 
+  const [edits, setEdits] = useState<Record<string, string>>({});
+
   const applyAiParseMutation = useApplyAiParseMutation();
   const saveAiParseResultsMutation = useSaveAiParseResultsMutation();
+  const editAiParseResultsMutation = useEditAiParseResultsMutation();
 
   const selectedValues = useMemo(
     () =>
@@ -132,8 +136,6 @@ export const AIParseDialog = ({
       targets,
     };
 
-    console.log(payload);
-
     saveAiParseResultsMutation.mutate(payload, {
       onSuccess: (data, variables) => {
         if (data.issues.length > 0) {
@@ -153,12 +155,79 @@ export const AIParseDialog = ({
     });
   };
 
+  const handleCellEdit = (rowId: string, targetKey: string, value: string) => {
+    setEdits((prev) => ({
+      ...prev,
+      [`${rowId}:${targetKey}`]: value,
+    }));
+  };
+
+  const handleSaveEdits = () => {
+    if (!parsingSessionId) return;
+
+    const editedValues = Object.entries(edits).map(([key, value]) => {
+      const [sourceItemId, targetKey] = key.split(":");
+      return {
+        sourceItemId,
+        targetKey: targetKey as any,
+        newRawValue: value,
+      };
+    });
+
+    console.log(editedValues);
+
+    editAiParseResultsMutation.mutate(
+      {
+        sessionId: parsingSessionId,
+        editedValues,
+      },
+      {
+        onSuccess: () => {
+          setParsingResult((prev) => {
+            if (!prev) return prev;
+
+            return {
+              ...prev,
+              rows: prev.rows.map((row) => {
+                const currentEntries = editedValues.filter(
+                  (e) => e.sourceItemId === row.id,
+                );
+                if (currentEntries.length === 0) return row;
+
+                const newValues = [...row.values];
+
+                currentEntries.forEach((entry) => {
+                  const colIndex = prev.headers.findIndex(
+                    (h) => h.key === entry.targetKey,
+                  );
+
+                  // в headers есть еще колонка sourceString, поэтому делаем -1
+                  // (при рендере строк делали +1)
+                  // (костыль)
+                  const valuesIndex = colIndex - 1;
+
+                  if (valuesIndex >= 0) {
+                    newValues[valuesIndex] = entry.newRawValue;
+                  }
+                });
+
+                return { ...row, values: newValues };
+              }),
+            };
+          });
+
+          setEdits({});
+        },
+      },
+    );
+  };
+
   return (
-    <Modal.Dialog aria-label="Извлечь числа">
+    <Modal.Dialog aria-label="ИИ-парсинг">
       <Modal.CloseTrigger />
       <Modal.Header>
         <div>
-          <h2 className="text-xl font-semibold">Извлечь числа</h2>
+          <h2 className="text-xl font-semibold">ИИ-парсинг</h2>
           <p className="text-sm text-gray-600 mt-1">Колонка: {column.label}</p>
         </div>
       </Modal.Header>
@@ -212,9 +281,29 @@ export const AIParseDialog = ({
                 {parsingResult.rows.map((row) => (
                   <tr key={row.id}>
                     <td>{row.sourceString}</td>
-                    {row.values.map((v, i) => (
-                      <td key={i}>{v}</td>
-                    ))}
+                    {row.values.map((v, i) => {
+                      // i + 1 потому что в headers лежит еще и sourceString
+                      const header = parsingResult.headers[i + 1];
+                      const targetKey = header.key;
+                      const cellKey = `${row.id}:${targetKey}`;
+                      const displayValue = edits[cellKey] ?? v;
+
+                      const isEdited = !!edits[`${row.id}:${targetKey}`];
+
+                      return (
+                        <td key={i}>
+                          <Input
+                            value={displayValue}
+                            onChange={(e) =>
+                              handleCellEdit(row.id, targetKey, e.target.value)
+                            }
+                            className={cn(
+                              isEdited && "bg-blue-50 border-blue-200",
+                            )}
+                          />
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>
@@ -234,6 +323,9 @@ export const AIParseDialog = ({
         )}
         {status === "PARSED_ALL" && (
           <Button onPress={handleApply}>Сохранить</Button>
+        )}
+        {Object.keys(edits).length > 0 && (
+          <Button onPress={handleSaveEdits}>Сохранить правки</Button>
         )}
       </Modal.Footer>
     </Modal.Dialog>

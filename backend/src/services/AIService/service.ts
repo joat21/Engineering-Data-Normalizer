@@ -83,29 +83,69 @@ export const processAiParsing = async (data: {
     data: recordsToSave,
   });
 
+  const allResults = await prisma.aiParseResult.findMany({
+    where: { sessionId },
+    include: {
+      sourceItem: {
+        select: {
+          rawRow: true,
+          rowIndex: true,
+        },
+      },
+    },
+    orderBy: {
+      sourceItem: {
+        rowIndex: "asc",
+      },
+    },
+  });
+
+  const groupedMap = new Map<
+    string,
+    { id: string; sourceString: string; valuesMap: Record<string, string> }
+  >();
+
+  for (const res of allResults) {
+    if (!groupedMap.has(res.sourceItemId)) {
+      groupedMap.set(res.sourceItemId, {
+        id: res.sourceItemId,
+        sourceString: getRawValue(res.sourceItem.rawRow, colIndex),
+        valuesMap: {},
+      });
+    }
+
+    groupedMap.get(res.sourceItemId)!.valuesMap[res.targetKey] = res.rawValue;
+  }
+
   const headers = [
     { key: "sourceString", label: "Исходная строка" },
     ...targets,
   ];
 
-  const resultRows = llmResults.map((result) => {
-    const row: {
-      id: string;
-      sourceString: string;
-      values: any[];
-    } = {
-      id: result.rowId,
-      sourceString: result.sourceString,
-      values: [],
-    };
+  const resultRows = Array.from(groupedMap.values()).map((row) => ({
+    id: row.id,
+    sourceString: row.sourceString,
+    values: targets.map((target) => row.valuesMap[target.key] ?? ""),
+  }));
 
-    for (const target of targets) {
-      const value = result.extracted[target.key];
-      row.values.push(String(value ?? ""));
-    }
+  // const resultRows = llmResults.map((result) => {
+  //   const row: {
+  //     id: string;
+  //     sourceString: string;
+  //     values: any[];
+  //   } = {
+  //     id: result.rowId,
+  //     sourceString: result.sourceString,
+  //     values: [],
+  //   };
 
-    return row;
-  });
+  //   for (const target of targets) {
+  //     const value = result.extracted[target.key];
+  //     row.values.push(String(value ?? ""));
+  //   }
+
+  //   return row;
+  // });
 
   return {
     parsingSessionId: sessionId,
@@ -235,6 +275,10 @@ const callLlmParser = async (
     `[LOG]: ${new Date(Date.now()).toLocaleString()}\nTOKENS USAGE:`,
     response.usageMetadata,
   );
+
+  console.log(`[LOG]: Promt:\n${prompt}`);
+
+  console.log(`[LOG]: Response text:\n${response.text}`);
 
   return JSON.parse(response.text || "") as AiParseResult[];
 };

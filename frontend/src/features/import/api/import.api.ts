@@ -4,6 +4,8 @@ import type {
   AiParseColumnResult,
   ApplyTransformBody,
   ApplyTransformParams,
+  EditAiParseResultsBody,
+  EditAiParseResultsParams,
   GetStagingTableParams,
   ImportRowsBody,
   ImportRowsParams,
@@ -164,3 +166,12 @@ export const useResolveNormalizationIssuesMutation = () => {
     },
   });
 };
+
+export const editAiParseResults = (
+  data: EditAiParseResultsParams & EditAiParseResultsBody,
+) => api.patch(`/ai-parse/${data.sessionId}`, data).then((r) => r.data);
+
+export const useEditAiParseResultsMutation = () =>
+  useMutation({
+    mutationFn: editAiParseResults,
+  });

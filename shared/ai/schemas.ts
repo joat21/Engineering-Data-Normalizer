@@ -1,13 +1,9 @@
 import z from "zod";
-import {
-  mappingTargetSchema,
-  MappingTargetType,
-  SYSTEM_FIELD_KEYS,
-} from "../normalization";
+import { mappingTargetSchema, MappingTargetType } from "../normalization";
 
 export const aiParseTargetSchema = z.object({
   type: z.enum(MappingTargetType),
-  key: z.enum(SYSTEM_FIELD_KEYS).or(z.string()),
+  key: z.string(),
   label: z.string(),
 });
 
@@ -34,7 +30,7 @@ export const saveAiParseSchema = z.object({
 
 export const editedAiParseResultSchema = z.object({
   sourceItemId: z.uuid(),
-  targetKey: z.enum(SYSTEM_FIELD_KEYS).or(z.uuid()),
+  targetKey: z.string(),
   newRawValue: z.string(),
 });
 

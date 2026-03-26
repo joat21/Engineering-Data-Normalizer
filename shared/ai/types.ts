@@ -2,6 +2,7 @@ import z from "zod";
 import {
   aiParseSchema,
   aiParseTargetSchema,
+  editAiParseResultsSchema,
   editedAiParseResultSchema,
   saveAiParseSchema,
 } from "./schemas";
@@ -27,4 +28,11 @@ export type SaveAiParseResultsParams = z.infer<
 >;
 export type SaveAiParseResultsBody = z.infer<
   typeof saveAiParseSchema.shape.body
+>;
+
+export type EditAiParseResultsParams = z.infer<
+  typeof editAiParseResultsSchema.shape.params
+>;
+export type EditAiParseResultsBody = z.infer<
+  typeof editAiParseResultsSchema.shape.body
 >;

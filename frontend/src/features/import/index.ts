@@ -7,6 +7,7 @@ export {
   useApplyAiParseMutation,
   useSaveAiParseResultsMutation,
   useResolveNormalizationIssuesMutation,
+  useEditAiParseResultsMutation,
 } from "./api/import.api";
 export { useImportStore } from "./model/store";
 export { CatalogImportStep, SingleImportStep } from "./model/types";
