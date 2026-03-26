@@ -3,7 +3,12 @@ import {
   ImportStatus,
   ImportItemStatus,
   Equipment,
+  Manufacturer as PrismaManufacturer,
+  Supplier as PrismaSupplier,
 } from "../generated/prisma/client";
+
+export type Manufacturer = PrismaManufacturer;
+export type Supplier = PrismaSupplier;
 
 export const ImportSessionStatus = ImportStatus;
 export type ImportSessionStatus =

@@ -23,7 +23,12 @@ const LIMIT = 20;
 export const createEquipmentFromStaging = async (sessionId: string) => {
   const session = await prisma.importSession.findUnique({
     where: { id: sessionId },
-    select: { categoryId: true, sourceId: true },
+    select: {
+      categoryId: true,
+      sourceId: true,
+      manufacturer: true,
+      supplier: true,
+    },
   });
 
   if (!session) throw new Error("Session not found");
@@ -44,6 +49,8 @@ export const createEquipmentFromStaging = async (sessionId: string) => {
     const { equipmentEntry, entryAttributes } = collectEquipmentAndAttributes({
       categoryId: session.categoryId,
       sourceId: session.sourceId,
+      manufacturer: session.manufacturer,
+      supplier: session.supplier,
       normalizedData: Object.values(transformedRow).flat(),
     });
 
@@ -91,7 +98,12 @@ export const createEquipment = async (data: {
 
   const session = await prisma.importSession.findUnique({
     where: { id: sessionId },
-    select: { sourceId: true, categoryId: true },
+    select: {
+      categoryId: true,
+      sourceId: true,
+      manufacturer: true,
+      supplier: true,
+    },
   });
 
   if (!session) throw new Error("Session not found");
@@ -99,6 +111,8 @@ export const createEquipment = async (data: {
   const { equipmentEntry, entryAttributes } = collectEquipmentAndAttributes({
     categoryId: session.categoryId,
     sourceId: session.sourceId,
+    manufacturer: session.manufacturer,
+    supplier: session.supplier,
     normalizedData: normalizedData,
   });
 

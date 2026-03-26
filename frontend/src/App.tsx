@@ -25,7 +25,7 @@ function App() {
           <Route
             path="mapping"
             element={
-              <MapColumns sessionId="72fe9398-a4a7-4b19-9b16-dbbd4aa7b0bc" />
+              <MapColumns sessionId="f02ea520-0f6b-4614-b6b4-99782b5049dc" />
             }
           />
         </Route>

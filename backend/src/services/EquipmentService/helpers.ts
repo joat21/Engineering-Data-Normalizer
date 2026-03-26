@@ -12,7 +12,7 @@ import {
 import { prisma } from "../../prisma";
 import { SYSTEM_FIELDS } from "../../config";
 import { Prisma } from "../../generated/prisma/client";
-import { EquipmentSystemFields } from "../../types";
+import { EquipmentSystemFields, Manufacturer, Supplier } from "../../types";
 import { getCacheableCleanedValues } from "../../helpers/cache";
 import { getAttributeInfoMap } from "../../db/categoryAttribute";
 
@@ -71,9 +71,11 @@ export const getOrderBy = (
 export const collectEquipmentAndAttributes = (data: {
   categoryId: string;
   sourceId: string;
+  manufacturer: Manufacturer | null;
+  supplier: Supplier | null;
   normalizedData: NormalizedData[];
 }) => {
-  const { categoryId, sourceId, normalizedData } = data;
+  const { categoryId, sourceId, manufacturer, supplier, normalizedData } = data;
   const equipmentId = uuidv4();
 
   const equipmentEntry: Prisma.EquipmentCreateManyInput = {
@@ -84,8 +86,10 @@ export const collectEquipmentAndAttributes = (data: {
     article: null,
     model: null,
     externalCode: null,
-    manufacturerName: null,
-    supplierName: null,
+    manufacturerId: manufacturer?.id || null,
+    manufacturerName: manufacturer?.name || null,
+    supplierName: supplier?.name || null,
+    supplierId: supplier?.id || null,
     price: new Prisma.Decimal(0),
   };
 
