@@ -1,5 +1,8 @@
 import {
   DataType,
+  EquipmentHeader,
+  EquipmentRow,
+  EquipmentTableResponse,
   FilterValue,
   MappingTargetType,
   NormalizedData,
@@ -149,7 +152,7 @@ export const getEquipmentTable = async (data: {
   limit?: number;
   sortBy?: string;
   filters?: Record<string, FilterValue>;
-}) => {
+}): Promise<EquipmentTableResponse> => {
   const { categoryId, page = 1, limit = LIMIT, sortBy, filters } = data;
 
   const categoryFilters = await prisma.categoryFilter.findMany({
@@ -210,7 +213,7 @@ export const getEquipmentTable = async (data: {
     }),
   ]);
 
-  const headers = [
+  const headers: EquipmentHeader[] = [
     ...categoryFilters.map((f) => ({
       key: f.systemField || `attr_${f.attributeId}`,
       label: f.label,
@@ -221,7 +224,7 @@ export const getEquipmentTable = async (data: {
   ];
 
   const rows = equipment.map((item) => {
-    const row: any = { id: item.id };
+    const row: EquipmentRow = { id: item.id };
 
     categoryFilters
       .filter((f) => f.systemField)

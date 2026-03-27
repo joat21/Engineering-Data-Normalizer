@@ -5,7 +5,7 @@ import { LoginPage } from "@/pages/login";
 import { ImportPage } from "@/pages/import";
 import { SingleImportPage } from "@/pages/single-import";
 import { CatalogImportPage } from "@/pages/catelog-import";
-import { MapColumns } from "./pages/catelog-import/ui/MapColumns";
+import { EquipmentPage } from "./pages/equipment";
 
 function App() {
   return (
@@ -22,12 +22,7 @@ function App() {
             <Route path="single" element={<SingleImportPage />} />
           </Route>
 
-          <Route
-            path="mapping"
-            element={
-              <MapColumns sessionId="f02ea520-0f6b-4614-b6b4-99782b5049dc" />
-            }
-          />
+          <Route path="equipment" element={<EquipmentPage />} />
         </Route>
       </Route>
     </Routes>
