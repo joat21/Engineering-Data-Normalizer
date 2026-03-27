@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button } from "@heroui/react";
+import { Button, useOverlayState } from "@heroui/react";
 import { cn } from "@heroui/styles";
 import * as XLSX from "xlsx";
 import { SourceType } from "@engineering-data-normalizer/shared";
@@ -16,12 +16,15 @@ import {
   useImportStore,
   useInitImportMutation,
 } from "@/features/import";
+import { CatalogCommonDataModal } from "./CatalogCommonDataModal";
 
 interface InitTableProps {
   categoryId: string;
 }
 
 export const InitTable = ({ categoryId }: InitTableProps) => {
+  const commonDataModal = useOverlayState();
+
   const initImportMutation = useInitImportMutation();
   const importRowsMutation = useImportRowsMutation();
 
@@ -90,7 +93,12 @@ export const InitTable = ({ categoryId }: InitTableProps) => {
     setData(sheetData);
   }, [workbook, activeSheet]);
 
-  const handleConfirmSelection = async () => {
+  const handleConfirmSelection = () => commonDataModal.open();
+
+  const handleInitTable = async (payload: {
+    manufacturerId?: string;
+    supplierId?: string;
+  }) => {
     if (!headerRange || !bodyRange || !file) return;
 
     const { headers, body } = extractTableData(data, headerRange, bodyRange);
@@ -101,6 +109,8 @@ export const InitTable = ({ categoryId }: InitTableProps) => {
         categoryId,
         sourceType: SourceType.CATALOG,
         originHeader: headers,
+        manufacturerId: payload.manufacturerId,
+        supplierId: payload.supplierId,
       });
 
       setSessionId(sessionId);
@@ -119,79 +129,86 @@ export const InitTable = ({ categoryId }: InitTableProps) => {
   if (isLoading) return <div>Парсинг таблицы...</div>;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-2 p-2 bg-default-100 rounded-lg">
-        <div className="flex gap-2 mb-4 overflow-x-auto">
-          {workbook?.SheetNames.map((name) => (
-            <Button key={name} onPress={() => setActiveSheet(name)}>
-              {name}
-            </Button>
-          ))}
+    <>
+      <div className="flex flex-col gap-4">
+        <div className="flex gap-2 p-2 bg-default-100 rounded-lg">
+          <div className="flex gap-2 mb-4 overflow-x-auto">
+            {workbook?.SheetNames.map((name) => (
+              <Button key={name} onPress={() => setActiveSheet(name)}>
+                {name}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-2 p-2 bg-default-100 rounded-lg">
+          <Button
+            onPress={() => setMode("header")}
+            className={cn(
+              mode === "header"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+            )}
+          >
+            1. Выделить шапку
+          </Button>
+          <Button
+            onPress={() => setMode("body")}
+            className={cn(
+              mode === "body"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+            )}
+          >
+            2. Выделить данные
+          </Button>
+          <Button
+            onPress={() => {
+              setHeaderRange(null);
+              setBodyRange(null);
+            }}
+          >
+            Сбросить всё
+          </Button>
+          <Button
+            onPress={handleConfirmSelection}
+            isDisabled={!headerRange || !bodyRange}
+          >
+            Продолжить
+          </Button>
+        </div>
+
+        <div
+          className="overflow-auto border rounded-xl"
+          onMouseLeave={handleMouseUp}
+        >
+          <table className="select-none cursor-crosshair">
+            <tbody>
+              {data.map((row, r) => (
+                <tr key={r}>
+                  {row.some((c) => !!c) &&
+                    row.map((cell, c) => (
+                      <td
+                        key={c}
+                        className={`border p-2 transition-colors ${getCellClass(r, c, tempRange, headerRange, bodyRange)}`}
+                        onMouseDown={() => handleMouseDown(r, c)}
+                        onMouseEnter={() => handleMouseEnter(r, c)}
+                        onMouseUp={handleMouseUp}
+                      >
+                        {String(cell)}
+                      </td>
+                    ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div className="flex gap-2 p-2 bg-default-100 rounded-lg">
-        <Button
-          onPress={() => setMode("header")}
-          className={cn(
-            mode === "header"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200",
-          )}
-        >
-          1. Выделить шапку
-        </Button>
-        <Button
-          onPress={() => setMode("body")}
-          className={cn(
-            mode === "body"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200",
-          )}
-        >
-          2. Выделить данные
-        </Button>
-        <Button
-          onPress={() => {
-            setHeaderRange(null);
-            setBodyRange(null);
-          }}
-        >
-          Сбросить всё
-        </Button>
-        <Button
-          onPress={handleConfirmSelection}
-          isDisabled={!headerRange || !bodyRange}
-        >
-          Продолжить
-        </Button>
-      </div>
-
-      <div
-        className="overflow-auto border rounded-xl"
-        onMouseLeave={handleMouseUp}
-      >
-        <table className="select-none cursor-crosshair">
-          <tbody>
-            {data.map((row, r) => (
-              <tr key={r}>
-                {row.some((c) => !!c) &&
-                  row.map((cell, c) => (
-                    <td
-                      key={c}
-                      className={`border p-2 transition-colors ${getCellClass(r, c, tempRange, headerRange, bodyRange)}`}
-                      onMouseDown={() => handleMouseDown(r, c)}
-                      onMouseEnter={() => handleMouseEnter(r, c)}
-                      onMouseUp={handleMouseUp}
-                    >
-                      {String(cell)}
-                    </td>
-                  ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <CatalogCommonDataModal
+        isOpen={commonDataModal.isOpen}
+        onConfirm={handleInitTable}
+      />
+    </>
   );
 };

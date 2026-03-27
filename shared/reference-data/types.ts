@@ -7,3 +7,13 @@ export type CreateManufacturerBody = z.infer<
 export type CreateSupplierBody = z.infer<
   typeof createSupplierSchema.shape.body
 >;
+
+export interface Manufacturer {
+  id: string;
+  name: string;
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+}

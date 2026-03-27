@@ -31,11 +31,15 @@ export const initImport = async ({ file, ...data }: InitImportArgs) => {
 
   formData.append("file", file);
 
-  formData.append("categoryId", data.categoryId);
-  formData.append("sourceType", data.sourceType);
-  if (data.originHeader) {
-    formData.append("originHeader", JSON.stringify(data.originHeader));
-  }
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+
+    if (typeof value === "object") {
+      formData.append(key, JSON.stringify(value));
+    } else {
+      formData.append(key, String(value));
+    }
+  });
 
   const response = await api.post<{ sessionId: string }>(
     "/import/init",
