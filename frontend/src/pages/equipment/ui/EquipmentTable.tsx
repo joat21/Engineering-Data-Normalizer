@@ -1,64 +1,26 @@
-import { useMemo, useState } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-  type ColumnOrderState,
-  type ColumnPinningState,
-  type VisibilityState,
-} from "@tanstack/react-table";
-import type {
-  EquipmentHeader,
-  EquipmentRow,
-} from "@engineering-data-normalizer/shared";
-import { Pin, PinOff } from "lucide-react";
-import { cn } from "@heroui/styles";
-import { getPinningStyles } from "../model/utils";
+import { flexRender, type Column, type Table } from "@tanstack/react-table";
 import { Button } from "@heroui/react";
+import { cn } from "@heroui/styles";
+import { EyeOff, Pin, PinOff } from "lucide-react";
+import type { EquipmentRow } from "@engineering-data-normalizer/shared";
+import { getPinningStyles } from "../model/utils";
 
 interface EquipmentTableProps {
-  headers: EquipmentHeader[];
-  rows: EquipmentRow[];
+  table: Table<EquipmentRow>;
 }
 
-export const EquipmentTable = ({ headers, rows }: EquipmentTableProps) => {
-  const columns = useMemo<ColumnDef<EquipmentRow, any>[]>(() => {
-    return headers.map((header) => ({
-      accessorKey: header.key,
-      id: header.key,
-      header: header.label,
-      cell: (info) => {
-        const value = info.getValue();
-        return value !== null && value !== undefined ? String(value) : "—";
-      },
-    }));
-  }, [headers]);
+export const EquipmentTable = ({ table }: EquipmentTableProps) => {
+  const handleChangeColumnPin = (column: Column<EquipmentRow, unknown>) => {
+    const pinningPost = column.getIsPinned();
+    column.pin(pinningPost === "left" ? false : "left");
+  };
 
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-
-  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(
-    headers.map((h) => h.key),
-  );
-
-  const [columnPinning, setColumnPinning] = useState<ColumnPinningState>({
-    left: [],
-    right: [],
-  });
-
-  const table = useReactTable({
-    columns,
-    data: rows,
-    state: {
-      columnVisibility,
-      columnOrder,
-      columnPinning,
-    },
-    getCoreRowModel: getCoreRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onColumnOrderChange: setColumnOrder,
-    onColumnPinningChange: setColumnPinning,
-  });
+  const handleChangeColumnVisibility = (
+    column: Column<EquipmentRow, unknown>,
+  ) => {
+    if (table.getVisibleLeafColumns().length === 1) return;
+    column.toggleVisibility();
+  };
 
   return (
     <div className="w-full overflow-x-auto rounded-xl border border-default-200">
@@ -67,36 +29,43 @@ export const EquipmentTable = ({ headers, rows }: EquipmentTableProps) => {
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
-                const isPinned = header.column.getIsPinned();
+                const col = header.column;
 
                 return (
                   <th
                     key={header.id}
                     className={cn(
                       "px-4 py-3 font-semibold bg-gray-400",
-                      isPinned && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
+                      col.getIsPinned() &&
+                        "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
                     )}
-                    style={getPinningStyles(header.column)}
+                    style={getPinningStyles(col)}
                   >
                     <div className="flex flex-col gap-2">
                       <span>
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
+                              col.columnDef.header,
                               header.getContext(),
                             )}
                       </span>
-                      <Button
-                        onPress={() =>
-                          header.column.pin(
-                            isPinned === "left" ? false : "left",
-                          )
-                        }
-                        isIconOnly
-                      >
-                        {isPinned ? <PinOff /> : <Pin />}
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          onPress={() => handleChangeColumnPin(col)}
+                          isIconOnly
+                        >
+                          {col.getIsPinned() ? <PinOff /> : <Pin />}
+                        </Button>
+                        <Button
+                          onPress={() =>
+                            handleChangeColumnVisibility(header.column)
+                          }
+                          isIconOnly
+                        >
+                          {col.getIsVisible() && <EyeOff />}
+                        </Button>
+                      </div>
                     </div>
                   </th>
                 );
