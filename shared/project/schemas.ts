@@ -1,12 +1,12 @@
 import z from "zod";
 
-const projectBody = z.object({
+export const projectBodySchema = z.object({
   name: z.string().min(1),
   description: z.string(),
 });
 
 export const createProjectSchema = z.object({
-  body: projectBody,
+  body: projectBodySchema,
 });
 
 export const getProjectByIdSchema = z.object({
@@ -19,7 +19,7 @@ export const updateProjectSchema = z.object({
   params: z.object({
     id: z.uuid(),
   }),
-  body: projectBody.partial().extend({
+  body: projectBodySchema.partial().extend({
     isArchived: z.boolean().optional(),
   }),
 });

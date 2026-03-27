@@ -6,6 +6,7 @@ import { ImportPage } from "@/pages/import";
 import { SingleImportPage } from "@/pages/single-import";
 import { CatalogImportPage } from "@/pages/catelog-import";
 import { EquipmentPage } from "./pages/equipment";
+import { ProjectsPage } from "./pages/projects";
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
           </Route>
 
           <Route path="equipment" element={<EquipmentPage />} />
+
+          <Route path="projects" element={<ProjectsPage />} />
         </Route>
       </Route>
     </Routes>
