@@ -37,6 +37,15 @@ export interface CategoryAttribute {
   options: AttributeOption[];
 }
 
+export interface CategoryFilter {
+  key: string;
+  label: string;
+  type: DataType;
+  min: number | null;
+  max: number | null;
+  options: string[];
+}
+
 export type GetCategoryFiltersParams = z.infer<
   typeof getCategoryFiltersSchema.shape.params
 >;

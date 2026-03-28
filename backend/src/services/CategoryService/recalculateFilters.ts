@@ -32,6 +32,7 @@ export const recalculateFilters = async (categoryId: string) => {
           type: DataType.NUMBER,
           minValue: agg._min[systemField],
           maxValue: agg._max[systemField],
+          options: [],
         };
       }
 

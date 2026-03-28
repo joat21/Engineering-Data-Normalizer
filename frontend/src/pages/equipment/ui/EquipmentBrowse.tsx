@@ -7,18 +7,23 @@ import {
   type ColumnPinningState,
   type VisibilityState,
 } from "@tanstack/react-table";
+import type { EquipmentRow } from "@engineering-data-normalizer/shared";
 import { ColumnVisibility } from "./ColumnVisibility";
 import { EquipmentTable } from "./EquipmentTable";
+import { Filters } from "./Filters";
 import { buildColumns } from "../model/utils";
+import { useCategoryFilters } from "@/entities/category-filters";
 import { useEquipmentTable } from "@/entities/equipment";
-import type { EquipmentRow } from "@engineering-data-normalizer/shared";
 
 interface EquipmentBrowseProps {
   categoryId: string;
 }
 
 export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
-  const { data: equipmentData, isPending } = useEquipmentTable(categoryId);
+  const { data: equipmentData, isPending: isEquipmentPending } =
+    useEquipmentTable(categoryId);
+  const { data: categoryFilters, isPending: isFiltersPending } =
+    useCategoryFilters(categoryId);
 
   const columns = useMemo(() => {
     if (!equipmentData?.headers) return [];
@@ -54,19 +59,12 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
     onColumnPinningChange: setColumnPinning,
   });
 
-  if (isPending) return <Spinner />;
+  if (isEquipmentPending || isFiltersPending) return <Spinner />;
   if (!equipmentData) return "Произошла ошибка";
 
   return (
     <div className="flex gap-4 h-full items-start">
-      <aside className="w-72 shrink-0 sticky top-0">
-        <div className="p-4 bg-white rounded-2xl border border-default-200 shadow-sm">
-          <h3 className="font-semibold mb-4 text-default-700">Фильтры</h3>
-          <div className="flex flex-col gap-4">
-            <span>фильтры</span>
-          </div>
-        </div>
-      </aside>
+      <Filters filters={categoryFilters} />
       <div className="flex flex-col flex-1 gap-4  min-w-0">
         <div className="flex justify-between items-center bg-white p-3 rounded-2xl border border-default-200">
           <div className="text-sm text-default-500">
