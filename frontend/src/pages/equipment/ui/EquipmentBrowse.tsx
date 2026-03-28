@@ -15,6 +15,7 @@ import { useEquipmentTableQuery } from "../model/useEquipmentTableQuery";
 import { buildColumns } from "../model/utils";
 import { useCategoryFilters } from "@/entities/category-filters";
 import { useEquipmentTable } from "@/entities/equipment";
+import { Pagination } from "./Pagination";
 
 interface EquipmentBrowseProps {
   categoryId: string;
@@ -68,7 +69,7 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
   return (
     <div className="flex gap-4 h-full items-start">
       <Filters filters={categoryFilters} />
-      <div className="flex flex-col flex-1 gap-4  min-w-0">
+      <div className="flex flex-col flex-1 gap-4 min-w-0">
         <div className="flex justify-between items-center bg-white p-3 rounded-2xl border border-default-200">
           <div className="text-sm text-default-500">
             Найдено позиций: {equipmentData.pagination.total}
@@ -76,6 +77,7 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
           <ColumnVisibility table={table} />
         </div>
         <EquipmentTable table={table} />
+        <Pagination pagination={equipmentData.pagination} />
       </div>
     </div>
   );

@@ -34,15 +34,17 @@ export interface EquipmentRow {
   [key: string]: string | number | boolean | null;
 }
 
+export interface PaginationData {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface EquipmentTableResponse {
   headers: EquipmentHeader[];
   rows: EquipmentRow[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+  pagination: PaginationData;
 }
 
 export type GetEquipmentTableQuery = z.infer<
