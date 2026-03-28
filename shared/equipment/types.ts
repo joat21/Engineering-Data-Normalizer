@@ -48,3 +48,4 @@ export interface EquipmentTableResponse {
 export type GetEquipmentTableQuery = z.infer<
   typeof getEquipmentTableSchema.shape.query
 >;
+export type EquipmentTableQuery = GetEquipmentTableQuery;

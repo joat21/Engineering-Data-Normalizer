@@ -1,15 +1,24 @@
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import qs from "qs";
+import type {
+  EquipmentTableResponse,
+  GetEquipmentTableQuery,
+} from "@engineering-data-normalizer/shared";
 import { api } from "@/shared/api/base";
-import type { EquipmentTableResponse } from "@engineering-data-normalizer/shared";
-import { useQuery } from "@tanstack/react-query";
+import { qsOptions } from "@/config";
 
-export const getEquipmentTable = (categoryId: string | null) =>
+export const getEquipmentTable = (data: GetEquipmentTableQuery) =>
   api
-    .get<EquipmentTableResponse>(`/equipment?categoryId=${categoryId}`)
+    .get<EquipmentTableResponse>("/equipment", {
+      params: data,
+      paramsSerializer: (params) => qs.stringify(params, qsOptions),
+    })
     .then((r) => r.data);
 
-export const useEquipmentTable = (categoryId: string | null) =>
+export const useEquipmentTable = (data: GetEquipmentTableQuery) =>
   useQuery({
-    queryKey: ["equipment", categoryId],
-    queryFn: () => getEquipmentTable(categoryId),
-    enabled: !!categoryId,
+    queryKey: ["equipment", data],
+    queryFn: () => getEquipmentTable(data),
+    enabled: !!data.categoryId,
+    placeholderData: keepPreviousData,
   });

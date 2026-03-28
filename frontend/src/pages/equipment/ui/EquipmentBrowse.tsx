@@ -11,6 +11,7 @@ import type { EquipmentRow } from "@engineering-data-normalizer/shared";
 import { ColumnVisibility } from "./ColumnVisibility";
 import { EquipmentTable } from "./EquipmentTable";
 import { Filters } from "./Filters";
+import { useEquipmentTableQuery } from "../model/useEquipmentTableQuery";
 import { buildColumns } from "../model/utils";
 import { useCategoryFilters } from "@/entities/category-filters";
 import { useEquipmentTable } from "@/entities/equipment";
@@ -20,8 +21,10 @@ interface EquipmentBrowseProps {
 }
 
 export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
+  const { query } = useEquipmentTableQuery();
+
   const { data: equipmentData, isPending: isEquipmentPending } =
-    useEquipmentTable(categoryId);
+    useEquipmentTable(query);
   const { data: categoryFilters, isPending: isFiltersPending } =
     useCategoryFilters(categoryId);
 
