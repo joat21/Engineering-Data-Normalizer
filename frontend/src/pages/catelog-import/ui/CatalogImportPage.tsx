@@ -17,7 +17,12 @@ export const CatalogImportPage = () => {
         return <InitTable categoryId={categoryId ?? ""} />;
 
       case CatalogImportStep.MAP_COLUMNS:
-        return <MapColumns sessionId={sessionId ?? ""} />;
+        return (
+          <MapColumns
+            sessionId={sessionId ?? ""}
+            categoryId={categoryId ?? ""}
+          />
+        );
     }
   };
 

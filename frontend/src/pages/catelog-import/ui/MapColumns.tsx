@@ -1,20 +1,31 @@
-import { Button, Spinner } from "@heroui/react";
+import { useNavigate } from "react-router";
+import { Button, Spinner, useOverlayState } from "@heroui/react";
+import { ImportSuccessModal } from "./ImportSuccessModal";
+import { ResolveNormalizationIssuesModal } from "./ResolveNormalizationIssuesModal";
 import { RowsSelectionPanel } from "./RowsSelectionPanel";
 import { TableBody } from "./TableBody";
 import { TableHeader } from "./TableHeader";
 import { TransformModalManager } from "./TransformModalManager";
 import {
+  CatalogImportStep,
   useCreateEquipmentFromStagingMutation,
+  useImportStore,
   useStagingTable,
 } from "@/features/import";
 import { useCategoryAttributes } from "@/entities/category-attribute";
-import { ResolveNormalizationIssuesModal } from "./ResolveNormalizationIssuesModal";
 
 interface MapColumnsProps {
   sessionId: string;
+  categoryId: string;
 }
 
-export const MapColumns = ({ sessionId }: MapColumnsProps) => {
+export const MapColumns = ({ sessionId, categoryId }: MapColumnsProps) => {
+  const navigate = useNavigate();
+  const successModal = useOverlayState();
+
+  const resetImport = useImportStore((s) => s.reset);
+  const setStep = useImportStore((s) => s.setStep);
+
   const createEquipmentFromStagingMutation =
     useCreateEquipmentFromStagingMutation();
 
@@ -23,7 +34,7 @@ export const MapColumns = ({ sessionId }: MapColumnsProps) => {
   });
 
   const { data: attributes, isPending: isAttributesPending } =
-    useCategoryAttributes("84eb045d-ca69-4446-9d2f-8f8184c72180");
+    useCategoryAttributes(categoryId);
 
   if (isTablePending || isAttributesPending) return <Spinner />;
   if (!table || !attributes) return "Произошла ошибка";
@@ -31,8 +42,19 @@ export const MapColumns = ({ sessionId }: MapColumnsProps) => {
   const handleSave = () => {
     createEquipmentFromStagingMutation.mutate(
       { sessionId },
-      { onSuccess: () => alert("Оборудование сохранено") },
+      { onSuccess: () => successModal.open() },
     );
+  };
+
+  const handleFinish = () => {
+    resetImport();
+    successModal.close();
+    navigate("/");
+  };
+
+  const handleAddMore = () => {
+    successModal.close();
+    setStep(CatalogImportStep.INIT_TABLE);
   };
 
   return (
@@ -53,6 +75,12 @@ export const MapColumns = ({ sessionId }: MapColumnsProps) => {
       <RowsSelectionPanel />
 
       <ResolveNormalizationIssuesModal />
+
+      <ImportSuccessModal
+        isOpen={successModal.isOpen}
+        onFinish={handleFinish}
+        onAddMore={handleAddMore}
+      />
 
       <TransformModalManager
         attributes={attributes}

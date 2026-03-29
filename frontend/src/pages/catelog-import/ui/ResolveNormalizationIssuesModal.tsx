@@ -61,8 +61,6 @@ export const ResolveNormalizationIssuesModal = () => {
       resolutions,
     };
 
-    console.log(payload);
-
     resolveNormalizationIssuesMutation.mutate(payload, {
       onSuccess: () => setNormalizationContext(null),
     });
