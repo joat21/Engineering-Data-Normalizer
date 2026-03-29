@@ -1,12 +1,12 @@
 import { memo, useCallback, useState } from "react";
 import { Accordion, Button, ScrollShadow } from "@heroui/react";
+import { ChevronDown } from "lucide-react";
 import type {
   CategoryFilter,
   FilterValue,
 } from "@engineering-data-normalizer/shared";
-import { ChevronDown } from "lucide-react";
-import { FilterField } from "./FilterField";
 import { useEquipmentTableQuery } from "../model/useEquipmentTableQuery";
+import { FilterField } from "@/entities/category-filters";
 
 interface FiltersProps {
   filters: CategoryFilter[] | undefined;
