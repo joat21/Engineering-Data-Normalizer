@@ -18,9 +18,9 @@ export const MenuItem: FC<MenuItemProps> = ({ collapsed, item }) => {
           to={path}
           className={({ isActive }) =>
             cn(
-              "flex items-center gap-3 px-3 py-2 rounded-xl text-lg transition-colors duration-400",
-              "hover:bg-default-hover",
-              isActive && "bg-default font-medium",
+              "flex items-center gap-3 px-3 py-2 rounded-xl text-lg transition-colors duration-200",
+              "hover:bg-accent/10",
+              isActive && "bg-accent/10 text-accent",
             )
           }
         >
@@ -28,7 +28,7 @@ export const MenuItem: FC<MenuItemProps> = ({ collapsed, item }) => {
 
           <span
             className={cn(
-              "max-w-full opacity-100 whitespace-nowrap overflow-hidden transition-all duration-400",
+              "max-w-full opacity-100 whitespace-nowrap overflow-hidden transition-all duration-200",
               collapsed && "max-w-0 opacity-0",
             )}
           >
