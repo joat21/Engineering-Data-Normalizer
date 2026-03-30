@@ -11,9 +11,9 @@ import { ProjectsPage } from "./pages/projects";
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<MainLayout />}>
-        <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage />} />
 
+      <Route path="/" element={<MainLayout />}>
         <Route path="/" element={<RequireAuth />}>
           <Route index element={<h1>Main</h1>} />
 
@@ -24,10 +24,13 @@ function App() {
           </Route>
 
           <Route path="equipment" element={<EquipmentPage />} />
-
+          <Route path="comparison" element={<h1>Сравнение</h1>} />
+          <Route path="categories" element={<h1>Категории</h1>} />
           <Route path="projects" element={<ProjectsPage />} />
         </Route>
       </Route>
+
+      <Route path="*" element={<h1>404 Страница не найдена</h1>} />
     </Routes>
   );
 }

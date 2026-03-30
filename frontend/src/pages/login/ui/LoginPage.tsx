@@ -33,21 +33,33 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center w-full">
-      <Card className="items-center rounded-xl max-w-80 w-full">
-        <h1 className="text-2xl font-medium">Авторизация</h1>
-        <Form onSubmit={handleLogin} className="flex flex-col  gap-4 w-full">
-          <Input name="email" inputMode="email" placeholder="Email" />
-          <Input name="password" type="password" placeholder="Пароль" />
-          <Button
-            type="submit"
-            className="w-full"
-            isPending={loginMutation.isPending}
-          >
-            Войти
-          </Button>
-        </Form>
-      </Card>
+    <div className="flex h-screen w-full bg-linear-to-br from-blue-50 to-indigo-100 overflow-hidden">
+      <div className="flex justify-center items-center w-full">
+        <Card className="items-center rounded-xl max-w-80 w-full">
+          <h1 className="text-2xl font-medium">Авторизация</h1>
+          <Form onSubmit={handleLogin} className="flex flex-col  gap-4 w-full">
+            <Input
+              name="email"
+              inputMode="email"
+              placeholder="Email"
+              variant="secondary"
+            />
+            <Input
+              name="password"
+              type="password"
+              placeholder="Пароль"
+              variant="secondary"
+            />
+            <Button
+              type="submit"
+              className="w-full"
+              isPending={loginMutation.isPending}
+            >
+              Войти
+            </Button>
+          </Form>
+        </Card>
+      </div>
     </div>
   );
 };
