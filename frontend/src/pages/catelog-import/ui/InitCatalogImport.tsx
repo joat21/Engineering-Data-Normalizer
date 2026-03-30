@@ -13,5 +13,7 @@ export const InitCatalogImport = () => {
     setStep(CatalogImportStep.INIT_TABLE);
   };
 
-  return <InitImportForm onSubmit={handleNext} />;
+  return (
+    <InitImportForm onSubmit={handleNext} sourceType={SourceType.CATALOG} />
+  );
 };

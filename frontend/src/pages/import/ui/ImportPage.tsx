@@ -8,7 +8,7 @@ export const ImportPage = () => {
     <div className="w-full max-w-5xl mx-auto px-6 py-10">
       <div className="mb-6">
         <h1 className="text-3xl font-semibold mb-2">Импорт данных</h1>
-        <p className="text-default-foreground/60">
+        <p className="text-default-foreground">
           Выберите тип документа для загрузки. В зависимости от формата будет
           использоваться разный сценарий обработки данных.
         </p>

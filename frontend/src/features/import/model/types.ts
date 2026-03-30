@@ -1,7 +1,6 @@
 export const SingleImportStep = {
   TYPE_SELECTION: "TYPE_SELECTION",
   FILL_ATTRIBUTES: "FILL_ATTRIBUTES",
-  SUCCESS: "SUCCESS",
 } as const;
 
 export type SingleImportStep =
@@ -11,7 +10,6 @@ export const CatalogImportStep = {
   TYPE_SELECTION: "TYPE_SELECTION",
   INIT_TABLE: "INIT_TABLE",
   MAP_COLUMNS: "MAP_COLUMNS",
-  SUCCESS: "SUCCESS",
 };
 
 export type CatalogImportStep =

@@ -1,35 +1,29 @@
+import { useState } from "react";
+import { Button, Card, Form } from "@heroui/react";
+import type { SourceType } from "@engineering-data-normalizer/shared";
 import { useCategories } from "@/entities/category";
-import {
-  Button,
-  Card,
-  Collection,
-  Form,
-  Input,
-  Label,
-  ListBox,
-  Select,
-} from "@heroui/react";
+import { AppSelect, FileDropzone } from "@/shared/ui";
+import { ACCEPTED_FORMATS } from "../model/config";
 
 interface InitImportFormProps {
   onSubmit: (data: { file: File; categoryId: string }) => void;
   isLoading?: boolean;
+  sourceType: SourceType;
 }
 
 export const InitImportForm = ({
   onSubmit,
   isLoading,
+  sourceType,
 }: InitImportFormProps) => {
+  const [file, setFile] = useState<File | null>(null);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+
   const { data: categories, isPending } = useCategories();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-
-    const fileInput = e.currentTarget.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
-
-    const file = fileInput?.files?.[0];
     const categoryId = String(formData.get("category"));
 
     if (!file) return alert("Выберите файл");
@@ -38,29 +32,46 @@ export const InitImportForm = ({
   };
 
   return (
-    <Card>
-      <Form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <Input type="file" required />
-        <Select name="category" placeholder="Выберите категорию" isRequired>
-          <Label>Категория оборудования</Label>
-          <Select.Trigger isPending={isPending}>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              <Collection items={categories}>
-                {(item) => (
-                  <ListBox.Item id={item.id} textValue={item.name}>
-                    {item.name}
-                    <ListBox.ItemIndicator />
-                  </ListBox.Item>
-                )}
-              </Collection>
-            </ListBox>
-          </Select.Popover>
-        </Select>
-        <Button type="submit" isPending={isLoading}>
+    <Card className="flex-col gap-5 p-6 self-center max-w-125 w-full">
+      <div className="text-center">
+        <h2 className="mb-2 text-xl font-semibold">Выбор файла и категории</h2>
+        <p className="text-default-foreground/60">
+          Загрузите файл и укажите категорию оборудования для дальнейшей
+          обработки
+        </p>
+      </div>
+
+      <Form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <FileDropzone
+          onFileSelect={setFile}
+          accept={ACCEPTED_FORMATS[sourceType]}
+        />
+        {file && (
+          <p className="text-sm text-default-foreground/60">
+            Выбран файл: {file.name}
+          </p>
+        )}
+
+        <AppSelect
+          name="category"
+          label="Категория оборудования"
+          placeholder="Выберите категорию"
+          items={categories ?? []}
+          isPending={isPending}
+          getItemKey={(item) => item.id}
+          getItemLabel={(item) => item.name}
+          value={categoryId}
+          onChange={(value) => setCategoryId(String(value))}
+          variant="secondary"
+          isRequired
+        />
+
+        <Button
+          className="self-end"
+          type="submit"
+          isDisabled={!file || !categoryId}
+          isPending={isLoading}
+        >
           Продолжить
         </Button>
       </Form>

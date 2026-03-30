@@ -27,7 +27,7 @@ export const CatalogImportPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center w-full">
+    <div className="flex justify-center items-center w-full h-full">
       {renderContent()}
     </div>
   );

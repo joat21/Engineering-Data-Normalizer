@@ -27,7 +27,7 @@ export const AppSelect = <T extends object>({
 }: AppSelectProps<T>) => {
   return (
     <Select {...props}>
-      {label && <Label>{label}</Label>}
+      {label && <Label className="text-lg">{label}</Label>}
 
       <Select.Trigger isPending={isPending}>
         <Select.Value />

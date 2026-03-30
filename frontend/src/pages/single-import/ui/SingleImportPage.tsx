@@ -33,11 +33,12 @@ export const SingleImportPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center w-full">
+    <div className="flex justify-center items-center w-full h-full">
       {step === SingleImportStep.TYPE_SELECTION && (
         <InitImportForm
           onSubmit={handleInitImport}
           isLoading={initImportMutation.isPending}
+          sourceType={SourceType.SINGLE_ITEM}
         />
       )}
 
