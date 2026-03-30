@@ -1,8 +1,18 @@
 import { useEffect, useState } from "react";
-import { Button, useOverlayState } from "@heroui/react";
+import {
+  Button,
+  ButtonGroup,
+  Card,
+  Chip,
+  Tabs,
+  Tooltip,
+  useOverlayState,
+} from "@heroui/react";
 import { cn } from "@heroui/styles";
 import * as XLSX from "xlsx";
+import { ArrowRight, LayoutGrid, RotateCcw, Table } from "lucide-react";
 import { SourceType } from "@engineering-data-normalizer/shared";
+import { CatalogCommonDataModal } from "./CatalogCommonDataModal";
 import { SelectionMode, type SelectionRange } from "../model/types";
 import {
   extractTableData,
@@ -16,7 +26,6 @@ import {
   useImportStore,
   useInitImportMutation,
 } from "@/features/import";
-import { CatalogCommonDataModal } from "./CatalogCommonDataModal";
 
 interface InitTableProps {
   categoryId: string;
@@ -130,78 +139,153 @@ export const InitTable = ({ categoryId }: InitTableProps) => {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
-        <div className="flex gap-2 p-2 bg-default-100 rounded-lg">
-          <div className="flex gap-2 mb-4 overflow-x-auto">
-            {workbook?.SheetNames.map((name) => (
-              <Button key={name} onPress={() => setActiveSheet(name)}>
-                {name}
-              </Button>
-            ))}
+      {/* h-[calc(100dvh-48px)] - здесь 48px = суммарный вертикальный паддинг обертки из MainLayout */}
+      <div className="flex flex-col gap-4 w-full h-[calc(100dvh-48px)]">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-semibold">Инициализация импорта</h1>
+          <p>
+            Выделите области в таблице: сначала строку заголовков, затем
+            диапазон с данными. Это поможет системе корректно распознать
+            характеристики оборудования.
+          </p>
+        </div>
+
+        <Card className="flex flex-row justify-between shrink-0 p-4 rounded-xl">
+          <div className="flex flex-wrap justify-between items-center gap-4">
+            <div className="flex items-center gap-3">
+              <ButtonGroup variant="outline">
+                <Button
+                  className={cn(
+                    mode === SelectionMode.HEADER && "bg-accent-soft",
+                  )}
+                  onPress={() => setMode(SelectionMode.HEADER)}
+                >
+                  <Table />
+                  1. Шапка
+                </Button>
+
+                <Button
+                  onPress={() => setMode(SelectionMode.BODY)}
+                  className={cn(
+                    mode === SelectionMode.BODY && "bg-success-soft",
+                  )}
+                >
+                  <LayoutGrid />
+                  2. Данные
+                </Button>
+              </ButtonGroup>
+
+              <Tooltip delay={0} closeDelay={0}>
+                <Tooltip.Trigger>
+                  <Button
+                    isIconOnly
+                    variant="danger-soft"
+                    onPress={() => {
+                      setHeaderRange(null);
+                      setBodyRange(null);
+                    }}
+                  >
+                    <RotateCcw />
+                  </Button>
+                </Tooltip.Trigger>
+                <Tooltip.Content>Сбросить все выделение</Tooltip.Content>
+              </Tooltip>
+            </div>
           </div>
-        </div>
 
-        <div className="flex gap-2 p-2 bg-default-100 rounded-lg">
-          <Button
-            onPress={() => setMode("header")}
-            className={cn(
-              mode === "header"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
-            )}
-          >
-            1. Выделить шапку
-          </Button>
-          <Button
-            onPress={() => setMode("body")}
-            className={cn(
-              mode === "body"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
-            )}
-          >
-            2. Выделить данные
-          </Button>
-          <Button
-            onPress={() => {
-              setHeaderRange(null);
-              setBodyRange(null);
-            }}
-          >
-            Сбросить всё
-          </Button>
-          <Button
-            onPress={handleConfirmSelection}
-            isDisabled={!headerRange || !bodyRange}
-          >
-            Продолжить
-          </Button>
-        </div>
+          <div className="flex items-center gap-4">
+            <div className="flex gap-2">
+              <Chip
+                className={cn(
+                  "px-4 py-1 text-base",
+                  headerRange && "bg-blue-200",
+                )}
+              >
+                Шапка: {headerRange ? "Выбрана" : "—"}
+              </Chip>
+              <Chip
+                className={cn(
+                  "px-4 py-1 text-base",
+                  bodyRange && "bg-emerald-200",
+                )}
+              >
+                Данные: {bodyRange ? "Выбраны" : "—"}
+              </Chip>
+            </div>
 
-        <div
-          className="overflow-auto border rounded-xl"
-          onMouseLeave={handleMouseUp}
-        >
-          <table className="select-none cursor-crosshair">
-            <tbody>
-              {data.map((row, r) => (
-                <tr key={r}>
-                  {row.some((c) => !!c) &&
-                    row.map((cell, c) => (
-                      <td
-                        key={c}
-                        className={`border p-2 transition-colors ${getCellClass(r, c, tempRange, headerRange, bodyRange)}`}
-                        onMouseDown={() => handleMouseDown(r, c)}
-                        onMouseEnter={() => handleMouseEnter(r, c)}
-                        onMouseUp={handleMouseUp}
-                      >
-                        {String(cell)}
-                      </td>
-                    ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            <Button
+              size="lg"
+              className="font-semibold px-8"
+              onPress={handleConfirmSelection}
+              isDisabled={!headerRange || !bodyRange}
+            >
+              Продолжить
+              <ArrowRight />
+            </Button>
+          </div>
+        </Card>
+
+        <div className="flex flex-col flex-1 rounded-xl overflow-hidden">
+          <div
+            className="flex-1 border border-b-0 rounded-br-none rounded-bl-none rounded-xl overflow-auto"
+            onMouseLeave={handleMouseUp}
+          >
+            <table className="w-full border-collapse select-none cursor-crosshair">
+              <tbody className="divide-y">
+                {data.map((row, r) => (
+                  <tr key={r}>
+                    {row.some((c) => !!c) &&
+                      row.map((cell, c) => (
+                        <td
+                          key={c}
+                          className={cn(
+                            "border p-2 min-w-30 max-w-62.5 truncate transition-colors",
+                            getCellClass(
+                              r,
+                              c,
+                              tempRange,
+                              headerRange,
+                              bodyRange,
+                            ),
+                          )}
+                          onMouseDown={() => handleMouseDown(r, c)}
+                          onMouseEnter={() => handleMouseEnter(r, c)}
+                          onMouseUp={handleMouseUp}
+                        >
+                          {String(cell)}
+                        </td>
+                      ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <Tabs
+            className="border-2 border-b rounded-b-xl bg-white overflow-auto"
+            variant="secondary"
+            selectedKey={activeSheet}
+            onSelectionChange={(key) => setActiveSheet(key as string)}
+            aria-label="Excel Sheets"
+          >
+            <Tabs.ListContainer className="w-fit">
+              <Tabs.List aria-label="Excel Sheets">
+                {workbook?.SheetNames.slice().map((name) => (
+                  <Tabs.Tab
+                    key={name}
+                    id={name}
+                    className={cn(
+                      "whitespace-nowrap",
+                      activeSheet === name && "bg-accent/5",
+                    )}
+                  >
+                    {name}
+                    <Tabs.Indicator />
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs.ListContainer>
+          </Tabs>
         </div>
       </div>
 

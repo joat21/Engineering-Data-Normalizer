@@ -10,7 +10,7 @@ export const MainLayout = () => {
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 p-6 h-full overflow-y-auto">
           <Outlet />
         </div>
       </main>
