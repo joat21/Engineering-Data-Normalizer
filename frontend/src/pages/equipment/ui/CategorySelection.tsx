@@ -1,6 +1,7 @@
 import { Spinner } from "@heroui/react";
 import { useCategories } from "@/entities/category";
 import { AppLink } from "@/shared/ui";
+import { CategoryCard } from "./CategoryCard";
 
 export const CategorySelection = () => {
   const { data: categories, isPending } = useCategories();
@@ -8,20 +9,20 @@ export const CategorySelection = () => {
   if (isPending) return <Spinner />;
 
   return (
-    <div>
-      <ul className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-8 mx-auto px-4 w-full max-w-350">
+      <h1 className="text-3xl font-semibold">Каталог оборудования</h1>
+
+      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {categories?.map((category) => (
-          <li key={category.id}>
+          <li key={category.id} className="w-full list-none">
             <AppLink
               to={{
                 pathname: "/equipment",
                 search: `?categoryId=${category.id}`,
               }}
-              className="group p-4 border rounded-xl hover:shadow-lg transition-all"
+              className="w-full no-underline"
             >
-              <div className="text-lg font-bold group-hover:text-primary">
-                {category.name}
-              </div>
+              <CategoryCard categoryName={category.name} />
             </AppLink>
           </li>
         ))}

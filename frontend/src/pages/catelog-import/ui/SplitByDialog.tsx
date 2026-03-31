@@ -93,14 +93,8 @@ export const SplitByDialog = ({
   return (
     <Modal.Dialog aria-label="Разбиение по символу">
       <Modal.CloseTrigger onPress={onClose} />
-      <Modal.Header className="mb-2">
-        <div>
-          <h2 className="mb-1 text-2xl font-semibold">Разбиение по символу</h2>
-          <p className="text-gray-600">Колонка: {column.label}</p>
-        </div>
-      </Modal.Header>
       <ModalHeader
-        title="Извлечение чисел"
+        title="Разбиение по символу"
         columnName={column.label}
         icon={Scissors}
       />
