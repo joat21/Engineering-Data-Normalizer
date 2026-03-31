@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Spinner } from "@heroui/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Spinner, useOverlayState } from "@heroui/react";
 import {
   getCoreRowModel,
   useReactTable,
@@ -14,15 +14,22 @@ import { EquipmentTable } from "./EquipmentTable";
 import { Pagination } from "./Pagination";
 import { Filters } from "./Filters";
 import { useEquipmentTableQuery } from "../model/useEquipmentTableQuery";
-import { buildColumns } from "../model/utils";
+import { buildColumns } from "../model/buildColumns";
 import { useCategoryFilters } from "@/entities/category-filters";
+import { useAddToComparisonMutation } from "@/entities/comparison";
 import { useEquipmentTable } from "@/entities/equipment";
+import { AddToProjectModal } from "./AddToProjectModal";
 
 interface EquipmentBrowseProps {
   categoryId: string;
 }
 
 export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
+  const addToProjectModal = useOverlayState();
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(
+    null,
+  );
+
   const { query } = useEquipmentTableQuery();
 
   const { data: equipmentData, isPending: isEquipmentPending } =
@@ -30,10 +37,39 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
   const { data: categoryFilters, isPending: isFiltersPending } =
     useCategoryFilters(categoryId);
 
+  const addToComparisonMutation = useAddToComparisonMutation();
+
+  const handleAddToProject = useCallback(
+    (equipmentId: string) => {
+      setSelectedEquipmentId(equipmentId);
+      addToProjectModal.open();
+    },
+    [addToProjectModal.open],
+  );
+
+  const handleAddToComparison = useCallback(
+    (equipmentId: string) => {
+      addToComparisonMutation.mutate(
+        { equipmentId },
+        { onSuccess: () => alert("Оборудование добавлено в сравнение") },
+      );
+    },
+    [addToComparisonMutation.mutate],
+  );
+
   const columns = useMemo(() => {
     if (!equipmentData?.headers) return [];
-    return buildColumns(equipmentData.headers);
-  }, [equipmentData?.headers]);
+    return buildColumns(
+      equipmentData.headers,
+      handleAddToProject,
+      handleAddToComparison,
+    );
+  }, [
+    equipmentData?.headers,
+    buildColumns,
+    handleAddToProject,
+    handleAddToComparison,
+  ]);
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(
@@ -41,7 +77,7 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
   );
   const [columnPinning, setColumnPinning] = useState<ColumnPinningState>({
     left: [],
-    right: [],
+    right: ["actions"],
   });
 
   useEffect(() => {
@@ -68,37 +104,45 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
   if (!equipmentData) return "Произошла ошибка";
 
   return (
-    <div className="relative flex gap-4 h-full items-start">
-      <Filters filters={categoryFilters} />
+    <>
+      <div className="relative flex gap-4 h-full items-start">
+        <Filters filters={categoryFilters} />
 
-      <div className="flex flex-col gap-4 min-w-0">
-        <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 rounded-2xl border bg-white ">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border">
-              <Database size={20} className="text-primary" />
-              <span className="font-semibold">
-                {equipmentData.pagination.total}
-                <span className="ml-1 font-normal text-sm uppercase">
-                  позиций
+        <div className="flex flex-col gap-4 min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 rounded-2xl border bg-white ">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border">
+                <Database size={20} className="text-primary" />
+                <span className="font-semibold">
+                  {equipmentData.pagination.total}
+                  <span className="ml-1 font-normal text-sm uppercase">
+                    позиций
+                  </span>
                 </span>
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <div className="flex items-center gap-1 mr-2 font-medium">
-              <Settings2 />
-              Вид таблицы:
+              </div>
             </div>
 
-            <ColumnVisibility table={table} />
+            <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 mr-2 font-medium">
+                <Settings2 />
+                Вид таблицы:
+              </div>
+
+              <ColumnVisibility table={table} />
+            </div>
           </div>
-        </div>
-        <div className="flex flex-col gap-2 rounded-xl bg-white">
-          <EquipmentTable table={table} />
-          <Pagination pagination={equipmentData.pagination} />
+          <div className="flex flex-col gap-2 rounded-xl bg-white">
+            <EquipmentTable table={table} />
+            <Pagination pagination={equipmentData.pagination} />
+          </div>
         </div>
       </div>
-    </div>
+
+      <AddToProjectModal
+        selectedEquipmentId={selectedEquipmentId}
+        isOpen={addToProjectModal.isOpen}
+        onClose={addToProjectModal.close}
+      />
+    </>
   );
 };
