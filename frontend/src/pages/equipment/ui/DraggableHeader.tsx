@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Button, ButtonGroup, Toolbar } from "@heroui/react";
+import { Button, ButtonGroup, cn, Toolbar } from "@heroui/react";
 import { flexRender, type Column, type Header } from "@tanstack/react-table";
 import { EyeOff, GripVertical, Pin, PinOff } from "lucide-react";
 import type { EquipmentRow } from "@engineering-data-normalizer/shared";
@@ -28,42 +28,49 @@ export const DraggableHeader = ({ header, onPin, onHide }: HeaderProps) => {
     disabled: !!isPinned,
   });
 
+  const pinningStyles = getPinningStyles({ column, isHeader: true });
+
   const style: React.CSSProperties = {
-    ...getPinningStyles(column),
+    ...pinningStyles,
     transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 100 : undefined,
+    zIndex: isDragging ? 100 : pinningStyles.zIndex,
+    width: column.getSize(),
   };
+
+  const headerTitle = header.isPlaceholder
+    ? null
+    : flexRender(column.columnDef.header, header.getContext());
 
   return (
     <th
       ref={setNodeRef}
       style={style}
-      className="px-4 py-3 font-semibold bg-default-100 border-b border-default-200"
+      className={cn("px-4 py-3 font-semibold bg-gray-100 border-b group")}
     >
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="truncate">
-            {header.isPlaceholder
-              ? null
-              : flexRender(column.columnDef.header, header.getContext())}
+          <span
+            title={String(headerTitle ?? "")}
+            className="text-xs uppercase tracking-wider text-default-600 leading-tight line-clamp-2 min-w-0"
+          >
+            {headerTitle}
           </span>
           {!isPinned && (
             <div
               {...attributes}
               {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1 hover:bg-default-200 rounded"
+              className="p-1 opacity-30 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
             >
-              <GripVertical size={14} className="text-default-400" />
+              <GripVertical size={16} />
             </div>
           )}
         </div>
 
-        <Toolbar aria-label="Text formatting">
-          <ButtonGroup variant="tertiary">
+        <Toolbar className="opacity-30 group-hover:opacity-100 transition-opacity">
+          <ButtonGroup variant="outline">
             <Button
-              size="sm"
               isIconOnly
               onPress={() => onPin(column)}
               className="h-7 w-7"
@@ -71,7 +78,6 @@ export const DraggableHeader = ({ header, onPin, onHide }: HeaderProps) => {
               {isPinned ? <PinOff size={14} /> : <Pin size={14} />}
             </Button>
             <Button
-              size="sm"
               isIconOnly
               onPress={() => onHide(column)}
               className="h-7 w-7"

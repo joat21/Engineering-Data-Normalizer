@@ -7,15 +7,16 @@ import {
   type ColumnPinningState,
   type VisibilityState,
 } from "@tanstack/react-table";
+import { Database, Settings2 } from "lucide-react";
 import type { EquipmentRow } from "@engineering-data-normalizer/shared";
 import { ColumnVisibility } from "./ColumnVisibility";
 import { EquipmentTable } from "./EquipmentTable";
+import { Pagination } from "./Pagination";
 import { Filters } from "./Filters";
 import { useEquipmentTableQuery } from "../model/useEquipmentTableQuery";
 import { buildColumns } from "../model/utils";
 import { useCategoryFilters } from "@/entities/category-filters";
 import { useEquipmentTable } from "@/entities/equipment";
-import { Pagination } from "./Pagination";
 
 interface EquipmentBrowseProps {
   categoryId: string;
@@ -67,17 +68,36 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
   if (!equipmentData) return "Произошла ошибка";
 
   return (
-    <div className="flex gap-4 h-full items-start">
+    <div className="relative flex gap-4 h-full items-start">
       <Filters filters={categoryFilters} />
-      <div className="flex flex-col flex-1 gap-4 min-w-0">
-        <div className="flex justify-between items-center bg-white p-3 rounded-2xl border border-default-200">
-          <div className="text-sm text-default-500">
-            Найдено позиций: {equipmentData.pagination.total}
+
+      <div className="flex flex-col gap-4 min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 rounded-2xl border bg-white ">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border">
+              <Database size={20} className="text-primary" />
+              <span className="font-semibold">
+                {equipmentData.pagination.total}
+                <span className="ml-1 font-normal text-sm uppercase">
+                  позиций
+                </span>
+              </span>
+            </div>
           </div>
-          <ColumnVisibility table={table} />
+
+          <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 mr-2 font-medium">
+              <Settings2 />
+              Вид таблицы:
+            </div>
+
+            <ColumnVisibility table={table} />
+          </div>
         </div>
-        <EquipmentTable table={table} />
-        <Pagination pagination={equipmentData.pagination} />
+        <div className="flex flex-col gap-2 rounded-xl bg-white">
+          <EquipmentTable table={table} />
+          <Pagination pagination={equipmentData.pagination} />
+        </div>
       </div>
     </div>
   );

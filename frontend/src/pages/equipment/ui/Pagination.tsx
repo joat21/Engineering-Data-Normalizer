@@ -24,7 +24,7 @@ export const Pagination = ({ pagination }: PaginationProps) => {
   };
 
   return (
-    <HeroPagination>
+    <HeroPagination className="self-center w-fit">
       <HeroPagination.Content>
         <HeroPagination.Item>
           <HeroPagination.Previous

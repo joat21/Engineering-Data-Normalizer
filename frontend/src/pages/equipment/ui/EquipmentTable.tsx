@@ -58,9 +58,9 @@ export const EquipmentTable = ({ table }: EquipmentTableProps) => {
       modifiers={[restrictToHorizontalAxis]}
       onDragEnd={handleDragEnd}
     >
-      <div className="w-full overflow-x-auto rounded-xl border border-default-200">
-        <table className="w-full text-sm text-left table-fixed border-separate border-spacing-0">
-          <thead className="bg-default-100 text-default-700 uppercase text-xs">
+      <div className="rounded-xl border w-full h-full overflow-x-auto">
+        <table className="relative w-full h-full table-fixed border-separate border-spacing-0">
+          <thead className="sticky top-0">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 <SortableContext
@@ -79,9 +79,9 @@ export const EquipmentTable = ({ table }: EquipmentTableProps) => {
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-default-100">
+          <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="hover:bg-default-50">
+              <tr key={row.id} className="hover:bg-gray-100 transition-colors">
                 <SortableContext
                   items={table.getState().columnOrder}
                   strategy={horizontalListSortingStrategy}

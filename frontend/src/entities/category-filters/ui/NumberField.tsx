@@ -44,18 +44,13 @@ export const NumberFilter = memo(
         </div>
 
         {filter.options.length > 0 && (
-          <div className="flex flex-col gap-2">
-            <p className="text-[10px] uppercase text-default-400 font-bold">
-              Значения
-            </p>
-            <OptionsList
-              filter={filter}
-              value={current.options}
-              onChange={(_, values) =>
-                handleChange({ options: values as string[] })
-              }
-            />
-          </div>
+          <OptionsList
+            filter={filter}
+            value={current.options}
+            onChange={(_, values) =>
+              handleChange({ options: values as string[] })
+            }
+          />
         )}
       </div>
     );

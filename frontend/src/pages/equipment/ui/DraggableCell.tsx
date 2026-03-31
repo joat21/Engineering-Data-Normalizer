@@ -4,6 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { flexRender, type Cell } from "@tanstack/react-table";
 import type { EquipmentRow } from "@engineering-data-normalizer/shared";
 import { getPinningStyles } from "../model/utils";
+import { cn } from "@heroui/styles";
 
 interface DraggableCellProps {
   cell: Cell<EquipmentRow, unknown>;
@@ -19,14 +20,21 @@ export const DraggableCell = ({ cell }: DraggableCellProps) => {
   });
 
   const style: React.CSSProperties = {
-    ...getPinningStyles(column),
+    ...getPinningStyles({ column, isHeader: false }),
     transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
 
   return (
-    <td ref={setNodeRef} style={style} className="px-4 py-3">
+    <td
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "px-4 py-3 border-b text-center bg-white",
+        isPinned && "shadow-2xl",
+      )}
+    >
       <CellContent cell={cell} />
     </td>
   );

@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from "react";
-import { Accordion, Button, ScrollShadow } from "@heroui/react";
-import { ChevronDown } from "lucide-react";
+import { Accordion, Button } from "@heroui/react";
+import { Filter } from "lucide-react";
 import type {
   CategoryFilter,
   FilterValue,
@@ -48,35 +48,50 @@ export const Filters = memo(({ filters }: FiltersProps) => {
   };
 
   return (
-    <aside className="w-72 shrink-0 sticky top-0">
-      <div className="p-4 bg-white rounded-2xl border border-default-200 shadow-sm">
-        <h3 className="font-semibold mb-4 text-default-700">Фильтры</h3>
-        <div className="flex flex-col gap-4">
-          <ScrollShadow className="flex-1 -mx-2 px-2">
-            <Accordion className="gap-2 px-0">
-              {filters.map((filter) => (
-                <Accordion.Item key={filter.key} aria-label={filter.label}>
-                  <Accordion.Heading>
-                    <Accordion.Trigger>{filter.label}</Accordion.Trigger>
-                    <Accordion.Indicator>
-                      <ChevronDown />
-                    </Accordion.Indicator>
-                  </Accordion.Heading>
-                  <Accordion.Panel>
-                    <FilterField
-                      filter={filter}
-                      value={draftFilters[filter.key]}
-                      onChange={handleFilterChange}
-                    />
-                  </Accordion.Panel>
-                </Accordion.Item>
-              ))}
-            </Accordion>
-          </ScrollShadow>
+    <aside className="w-80 shrink-0 sticky top-4">
+      <div className="flex flex-col h-full rounded-2xl border bg-white overflow-hidden">
+        <div className="flex items-center gap-2 p-5 pb-2">
+          <div className="p-2 bg-primary-50 text-primary rounded-lg">
+            <Filter size={20} />
+          </div>
+          <h3 className="font-semibold text-lg">Фильтры</h3>
+        </div>
 
-          <div className="mt-4 pt-4 border-t border-default-100 flex flex-col gap-2">
-            <Button onPress={handleApplyFilters}>Применить</Button>
-            <Button onPress={handleResetAll} variant="secondary">
+        <div className="relative flex flex-col gap-4">
+          <Accordion className="gap-2 px-2">
+            {filters.map((filter) => (
+              <Accordion.Item key={filter.key} aria-label={filter.label}>
+                <Accordion.Heading className="items-center pl-3">
+                  <Accordion.Indicator />
+                  <Accordion.Trigger className="text-base font-semibold">
+                    {filter.label}
+                  </Accordion.Trigger>
+                </Accordion.Heading>
+                <Accordion.Panel className="px-4">
+                  <FilterField
+                    filter={filter}
+                    value={draftFilters[filter.key]}
+                    onChange={handleFilterChange}
+                  />
+                </Accordion.Panel>
+              </Accordion.Item>
+            ))}
+          </Accordion>
+
+          <div className="sticky bottom-0 flex flex-col gap-2 p-4 border-t">
+            <Button
+              className="font-bold"
+              onPress={handleApplyFilters}
+              fullWidth
+            >
+              Применить
+            </Button>
+            <Button
+              className="font-medium"
+              variant="outline"
+              fullWidth
+              onPress={handleResetAll}
+            >
               Сбросить
             </Button>
           </div>

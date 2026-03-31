@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { Table, VisibilityState } from "@tanstack/react-table";
 import { Dropdown, Button, type Selection } from "@heroui/react";
+import { Eye } from "lucide-react";
 
 interface ColumnVisibilityProps<TData> {
   table: Table<TData>;
@@ -35,7 +36,10 @@ export const ColumnVisibility = <TData,>({
 
   return (
     <Dropdown>
-      <Button aria-label="Видимость колонок">Видимость колонок</Button>
+      <Button aria-label="Видимость колонок">
+        <Eye />
+        Колонки ({selectedKeys.size})
+      </Button>
       <Dropdown.Popover placement="bottom right">
         <Dropdown.Menu
           aria-label="Настройка видимости"

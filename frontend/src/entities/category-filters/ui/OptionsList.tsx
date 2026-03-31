@@ -12,13 +12,11 @@ export const OptionsList = memo(
     };
 
     if (filter.options.length === 0) {
-      return (
-        <span className="text-xs text-default-400 italic">Нет вариантов</span>
-      );
+      return <span className="text-sm italic">Нет вариантов</span>;
     }
 
     return (
-      <div className="max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-default-200">
+      <div className="max-h-48 overflow-y-auto">
         <CheckboxGroup
           value={selected}
           onChange={(values) => handleChange(values)}
@@ -30,7 +28,7 @@ export const OptionsList = memo(
                 <Checkbox.Indicator />
               </Checkbox.Control>
               <Checkbox.Content>
-                <Label>{option}</Label>
+                <Label className="font-normal">{option}</Label>
               </Checkbox.Content>
             </Checkbox>
           ))}

@@ -4,9 +4,22 @@ import type {
 } from "@engineering-data-normalizer/shared";
 import type { Column, ColumnDef } from "@tanstack/react-table";
 
-export const getPinningStyles = (column: Column<any>): React.CSSProperties => {
+export const getPinningStyles = ({
+  column,
+  isHeader,
+}: {
+  column: Column<any>;
+  isHeader: boolean;
+}): React.CSSProperties => {
   const isPinned = column.getIsPinned();
   const size = column.getSize();
+
+  let zIndex = 0;
+  if (isPinned) {
+    zIndex = isHeader ? 35 : 25; // Закрепленные выше всего
+  } else if (isHeader) {
+    zIndex = 10; // Обычная шапка выше обычных ячеек
+  }
 
   return {
     left: isPinned === "left" ? `${column.getStart("left")}px` : undefined,
@@ -15,7 +28,7 @@ export const getPinningStyles = (column: Column<any>): React.CSSProperties => {
     width: size,
     minWidth: size,
     maxWidth: size,
-    zIndex: isPinned ? 1 : 0,
+    zIndex: zIndex,
   };
 };
 
@@ -30,6 +43,7 @@ export const buildColumns = (
       const value = info.getValue();
       return value !== null && value !== undefined ? String(value) : "—";
     },
+    size: 200,
   }));
 
 export const getPageNumbers = (currentPage: number, totalPages: number) => {
