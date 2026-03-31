@@ -21,6 +21,9 @@ export const useAddToComparisonMutation = () => {
     mutationFn: addToComparison,
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["comparison"] }),
+    meta: {
+      successMessage: "Оборудование добавлено в сравнение",
+    },
   });
 };
 

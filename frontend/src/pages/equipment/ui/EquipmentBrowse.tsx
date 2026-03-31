@@ -49,10 +49,7 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
 
   const handleAddToComparison = useCallback(
     (equipmentId: string) => {
-      addToComparisonMutation.mutate(
-        { equipmentId },
-        { onSuccess: () => alert("Оборудование добавлено в сравнение") },
-      );
+      addToComparisonMutation.mutate({ equipmentId });
     },
     [addToComparisonMutation.mutate],
   );

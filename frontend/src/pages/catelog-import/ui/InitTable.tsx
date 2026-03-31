@@ -129,7 +129,6 @@ export const InitTable = ({ categoryId }: InitTableProps) => {
         { onSuccess: () => setStep(CatalogImportStep.MAP_COLUMNS) },
       );
     } catch (error) {
-      alert("Не удалось инициализировать импорт");
       console.error(error);
     }
   };

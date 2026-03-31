@@ -24,4 +24,7 @@ export const useAddToProjectMutation = () =>
   useMutation({
     mutationKey: ["projects", "add-item"],
     mutationFn: addToProject,
+    meta: {
+      successMessage: "Оборудование добавлено в проект",
+    },
   });

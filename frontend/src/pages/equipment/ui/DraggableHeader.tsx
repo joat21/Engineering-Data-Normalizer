@@ -68,24 +68,26 @@ export const DraggableHeader = ({ header, onPin, onHide }: HeaderProps) => {
           )}
         </div>
 
-        <Toolbar className="opacity-30 group-hover:opacity-100 transition-opacity">
-          <ButtonGroup variant="outline">
-            <Button
-              isIconOnly
-              onPress={() => onPin(column)}
-              className="h-7 w-7"
-            >
-              {isPinned ? <PinOff size={14} /> : <Pin size={14} />}
-            </Button>
-            <Button
-              isIconOnly
-              onPress={() => onHide(column)}
-              className="h-7 w-7"
-            >
-              <EyeOff size={14} />
-            </Button>
-          </ButtonGroup>
-        </Toolbar>
+        {column.id !== "actions" && (
+          <Toolbar className="opacity-30 group-hover:opacity-100 transition-opacity">
+            <ButtonGroup variant="outline">
+              <Button
+                isIconOnly
+                onPress={() => onPin(column)}
+                className="h-7 w-7"
+              >
+                {isPinned ? <PinOff size={14} /> : <Pin size={14} />}
+              </Button>
+              <Button
+                isIconOnly
+                onPress={() => onHide(column)}
+                className="h-7 w-7"
+              >
+                <EyeOff size={14} />
+              </Button>
+            </ButtonGroup>
+          </Toolbar>
+        )}
       </div>
     </th>
   );

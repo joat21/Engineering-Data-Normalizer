@@ -24,14 +24,11 @@ export const AddToProjectModal = ({
   const handleAddToProject = () => {
     if (!selectedEquipmentId || !selectedProjectId) return;
 
-    addToProjectMutation.mutate(
-      {
-        equipmentId: selectedEquipmentId,
-        projectId: selectedProjectId,
-        amount: 1,
-      },
-      { onSuccess: () => alert("Оборудование добавлено в проект") },
-    );
+    addToProjectMutation.mutate({
+      equipmentId: selectedEquipmentId,
+      projectId: selectedProjectId,
+      amount: 1,
+    });
     onClose();
   };
 

@@ -128,6 +128,9 @@ export const useApplyAiParseMutation = () =>
   useMutation({
     mutationKey: ["ai-parse"],
     mutationFn: applyAiParse,
+    meta: {
+      successMessage: "Обработка завершена успешно",
+    },
   });
 
 export const saveAiParseResults = (
@@ -169,6 +172,9 @@ export const useResolveNormalizationIssuesMutation = () => {
         queryKey: ["import", "staging-table", variables.sessionId],
       });
     },
+    meta: {
+      successMessage: "Данные сохранены",
+    },
   });
 };
 
@@ -179,6 +185,9 @@ export const editAiParseResults = (
 export const useEditAiParseResultsMutation = () =>
   useMutation({
     mutationFn: editAiParseResults,
+    meta: {
+      successMessage: "Изменения сохранены",
+    },
   });
 
 export const createEquipmentFromStaging = (

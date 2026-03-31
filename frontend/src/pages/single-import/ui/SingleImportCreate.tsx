@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Button, Card, useOverlayState } from "@heroui/react";
+import { Button, Card, toast, useOverlayState } from "@heroui/react";
 import { ArrowLeft, FileText } from "lucide-react";
 import {
   MappingTargetType,
@@ -82,7 +82,7 @@ export const SingleImportCreate = ({
     };
 
     if (!payload.normalizedData.length) {
-      return alert("Заполните хотя бы один атрибут");
+      return toast.danger("Заполните хотя бы один атрибут");
     }
 
     createEquipmentMutation.mutate(payload, {

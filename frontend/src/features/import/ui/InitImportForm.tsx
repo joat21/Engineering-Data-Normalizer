@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, Form } from "@heroui/react";
+import { Button, Card, Form, toast } from "@heroui/react";
 import type { SourceType } from "@engineering-data-normalizer/shared";
 import { useCategories } from "@/entities/category";
 import { AppSelect, FileDropzone } from "@/shared/ui";
@@ -29,7 +29,7 @@ export const InitImportForm = ({
     e.preventDefault();
 
     if (!categoryId) return;
-    if (!file) return alert("Выберите файл");
+    if (!file) return toast.danger("Выберите файл");
 
     onSubmit({
       file,

@@ -158,7 +158,6 @@ export const AIParseDialog = ({
             },
           });
         }
-        alert("Данные сохранены");
         onClose();
       },
     });
