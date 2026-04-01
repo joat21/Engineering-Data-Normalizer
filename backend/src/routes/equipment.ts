@@ -3,6 +3,7 @@ import {
   createEquipmentSchema,
   getEquipmentTableSchema,
   createEquipmentFromStagingSchema,
+  getEquipmentDetailsSchema,
 } from "@engineering-data-normalizer/shared";
 import * as EquipmentController from "../controllers/EquipmentController";
 import { validate } from "../middleware/validate";
@@ -26,6 +27,12 @@ router.post(
   "/",
   validate(createEquipmentSchema),
   EquipmentController.createEquipmentHandler,
+);
+
+router.get(
+  "/:id",
+  validate(getEquipmentDetailsSchema),
+  EquipmentController.getEquipmentDetailsHandler,
 );
 
 router.post("/recalc", EquipmentController._recalculateFiltersHandler);

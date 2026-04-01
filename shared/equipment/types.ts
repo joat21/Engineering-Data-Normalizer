@@ -7,6 +7,7 @@ import {
   createEquipmentSchema,
   createEquipmentFromStagingSchema,
   getEquipmentTableSchema,
+  getEquipmentDetailsSchema,
 } from "./schemas";
 import type { MappingTargetType } from "../normalization";
 
@@ -51,3 +52,26 @@ export type GetEquipmentTableQuery = z.infer<
   typeof getEquipmentTableSchema.shape.query
 >;
 export type EquipmentTableQuery = GetEquipmentTableQuery;
+
+export type GetEquipmentDetailsParams = z.infer<
+  typeof getEquipmentDetailsSchema.shape.params
+>;
+
+export interface EquipmentDetailResponse {
+  id: string;
+  name: string | null;
+  source: {
+    fileName: string;
+    url: string;
+    uploadedAt: Date;
+  };
+  systemFields: Array<{
+    label: string;
+    value: string | null;
+  }>;
+  attributes: Array<{
+    label: string;
+    value: string;
+    unit: string | null;
+  }>;
+}

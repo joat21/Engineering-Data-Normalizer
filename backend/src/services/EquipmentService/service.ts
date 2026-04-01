@@ -7,6 +7,7 @@ import {
   MappingTargetType,
   NormalizedData,
   NumericFilterValue,
+  SYSTEM_FIELDS_CONFIG,
 } from "@engineering-data-normalizer/shared";
 import { FIELD_MAP } from "./config";
 import {
@@ -19,7 +20,7 @@ import { prisma } from "../../prisma";
 import { Prisma } from "../../generated/prisma/client";
 import { TransformedRow } from "../NormalizationService/types";
 import { recalculateFilters } from "../CategoryService/recalculateFilters";
-import { ImportSessionStatus } from "../../types";
+import { EquipmentSystemFields, ImportSessionStatus } from "../../types";
 
 const LIMIT = 20;
 
@@ -252,5 +253,57 @@ export const getEquipmentTable = async (data: {
       limit,
       totalPages: Math.ceil(total / limit),
     },
+  };
+};
+
+export const getEquipmentDetails = async (id: string) => {
+  const item = await prisma.equipment.findUnique({
+    where: { id },
+    include: {
+      source: true,
+      attributes: {
+        include: {
+          attribute: true,
+        },
+      },
+    },
+  });
+
+  if (!item) {
+    throw new Error("Equipment nor found");
+  }
+
+  const systemFields = Object.entries(SYSTEM_FIELDS_CONFIG).map(
+    ([key, config]) => {
+      const systemField = key as keyof EquipmentSystemFields;
+      const value = item[systemField] ? String(item[systemField]) : null;
+
+      return {
+        label: config.label,
+        value,
+      };
+    },
+  );
+
+  const attributes = item.attributes.map((attrVal) => {
+    const { attribute, valueString } = attrVal;
+
+    return {
+      label: attribute.label,
+      value: valueString,
+      unit: attribute.unit,
+    };
+  });
+
+  return {
+    id: item.id,
+    name: item.name,
+    source: {
+      fileName: item.source.fileName,
+      url: item.source.url,
+      uploadedAt: item.source.uploadedAt,
+    },
+    systemFields,
+    attributes,
   };
 };

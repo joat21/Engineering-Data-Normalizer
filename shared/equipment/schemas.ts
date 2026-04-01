@@ -37,3 +37,9 @@ export const getEquipmentTableSchema = z.object({
     filters: z.record(z.string(), filterValueSchema).optional(),
   }),
 });
+
+export const getEquipmentDetailsSchema = z.object({
+  params: z.object({
+    id: z.uuid(),
+  }),
+});

@@ -2,12 +2,14 @@ import {
   createEquipmentSchema,
   getEquipmentTableSchema,
   createEquipmentFromStagingSchema,
+  getEquipmentDetailsSchema,
 } from "@engineering-data-normalizer/shared";
 import { recalculateFilters } from "../services/CategoryService/recalculateFilters";
 import {
   getEquipmentTable,
   createEquipmentFromStaging,
   createEquipment,
+  getEquipmentDetails,
 } from "../services/EquipmentService/service";
 import { HandlerFromSchema } from "../types/zod";
 
@@ -37,10 +39,19 @@ export const getEquipmentTableHandler: HandlerFromSchema<
   typeof getEquipmentTableSchema
 > = async (req, res, next) => {
   try {
-    const equipmentTable = await getEquipmentTable({
-      ...req.query,
-    });
+    const equipmentTable = await getEquipmentTable(req.query);
     res.json(equipmentTable);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getEquipmentDetailsHandler: HandlerFromSchema<
+  typeof getEquipmentDetailsSchema
+> = async (req, res, next) => {
+  try {
+    const details = await getEquipmentDetails(req.params.id);
+    res.json(details);
   } catch (error) {
     next(error);
   }
