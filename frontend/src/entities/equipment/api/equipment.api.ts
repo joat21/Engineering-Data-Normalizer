@@ -1,7 +1,9 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import qs from "qs";
 import type {
+  EquipmentDetailResponse,
   EquipmentTableResponse,
+  GetEquipmentDetailsParams,
   GetEquipmentTableQuery,
 } from "@engineering-data-normalizer/shared";
 import { api } from "@/shared/api/base";
@@ -21,4 +23,14 @@ export const useEquipmentTable = (data: GetEquipmentTableQuery) =>
     queryFn: () => getEquipmentTable(data),
     enabled: !!data.categoryId,
     placeholderData: keepPreviousData,
+  });
+
+export const getEquipmentDetails = (data: GetEquipmentDetailsParams) =>
+  api.get<EquipmentDetailResponse>(`/equipment/${data.id}`).then((r) => r.data);
+
+export const useEquipmentDetails = (data: GetEquipmentDetailsParams) =>
+  useQuery({
+    queryKey: ["equipment", data.id],
+    queryFn: () => getEquipmentDetails(data),
+    enabled: !!data.id,
   });

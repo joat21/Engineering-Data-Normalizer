@@ -17,7 +17,10 @@ import { useEquipmentTableQuery } from "../model/useEquipmentTableQuery";
 import { buildColumns } from "../model/buildColumns";
 import { useCategoryFilters } from "@/entities/category-filters";
 import { useAddToComparisonMutation } from "@/entities/comparison";
-import { useEquipmentTable } from "@/entities/equipment";
+import {
+  EquipmentDetailsDrawer,
+  useEquipmentTable,
+} from "@/entities/equipment";
 import { AddToProjectModal } from "./AddToProjectModal";
 
 interface EquipmentBrowseProps {
@@ -26,6 +29,7 @@ interface EquipmentBrowseProps {
 
 export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
   const addToProjectModal = useOverlayState();
+  const equipmentDetailsDrawer = useOverlayState();
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(
     null,
   );
@@ -38,6 +42,14 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
     useCategoryFilters(categoryId);
 
   const addToComparisonMutation = useAddToComparisonMutation();
+
+  const handleViewDetails = useCallback(
+    (equipmentId: string) => {
+      setSelectedEquipmentId(equipmentId);
+      equipmentDetailsDrawer.open();
+    },
+    [equipmentDetailsDrawer.open],
+  );
 
   const handleAddToProject = useCallback(
     (equipmentId: string) => {
@@ -58,6 +70,7 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
     if (!equipmentData?.headers) return [];
     return buildColumns(
       equipmentData.headers,
+      handleViewDetails,
       handleAddToProject,
       handleAddToComparison,
     );
@@ -139,6 +152,12 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
         selectedEquipmentId={selectedEquipmentId}
         isOpen={addToProjectModal.isOpen}
         onClose={addToProjectModal.close}
+      />
+
+      <EquipmentDetailsDrawer
+        equipmentId={selectedEquipmentId}
+        isOpen={equipmentDetailsDrawer.isOpen}
+        onClose={equipmentDetailsDrawer.close}
       />
     </>
   );

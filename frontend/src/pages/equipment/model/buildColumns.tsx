@@ -4,10 +4,11 @@ import type {
 } from "@engineering-data-normalizer/shared";
 import { Button } from "@heroui/react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { BarChart2, Plus } from "lucide-react";
+import { BarChart2, Eye, Plus } from "lucide-react";
 
 export const buildColumns = (
   headers: EquipmentHeader[],
+  onViewDetails: (equipmentId: string) => void,
   onAddToProject: (equipmentId: string) => void,
   onCompare: (equipmentId: string) => void,
 ): ColumnDef<EquipmentRow, any>[] => {
@@ -34,6 +35,13 @@ export const buildColumns = (
 
       return (
         <div className="flex gap-2 justify-center">
+          <Button
+            variant="ghost"
+            isIconOnly
+            onPress={() => onViewDetails(equipment.id)}
+          >
+            <Eye size={18} />
+          </Button>
           <Button
             variant="ghost"
             isIconOnly
