@@ -1,7 +1,6 @@
 import { Spinner } from "@heroui/react";
 import { useCategories } from "@/entities/category";
-import { AppLink } from "@/shared/ui";
-import { CategoryCard } from "./CategoryCard";
+import { AppLink, CategoryCard } from "@/shared/ui";
 
 export const CategorySelection = () => {
   const { data: categories, isPending } = useCategories();

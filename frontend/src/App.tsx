@@ -7,6 +7,7 @@ import { SingleImportPage } from "@/pages/single-import";
 import { CatalogImportPage } from "@/pages/catelog-import";
 import { EquipmentPage } from "@/pages/equipment";
 import { ProjectsPage } from "@/pages/projects";
+import { CategoriesPage } from "@/pages/categories";
 
 function App() {
   return (
@@ -25,7 +26,7 @@ function App() {
 
           <Route path="equipment" element={<EquipmentPage />} />
           <Route path="comparison" element={<h1>Сравнение</h1>} />
-          <Route path="categories" element={<h1>Категории</h1>} />
+          <Route path="categories" element={<CategoriesPage />} />
           <Route path="projects" element={<ProjectsPage />} />
         </Route>
       </Route>
