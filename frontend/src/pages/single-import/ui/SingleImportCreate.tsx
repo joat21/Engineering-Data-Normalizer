@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button, Card, toast, useOverlayState } from "@heroui/react";
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, FileText, Plus } from "lucide-react";
 import {
   MappingTargetType,
   type CategoryAttribute,
@@ -13,6 +13,7 @@ import { SingleImportForm } from "./SingleImportForm";
 import { useCreateEquipmentMutation } from "../api/single-import.api";
 import { transformAttribute } from "../model/transformAttribute";
 import { SingleImportStep, useImportStore } from "@/features/import";
+import { CreateCategoryAttributeModal } from "@/features/create-category-attibute";
 
 interface SingleImportCreateProps {
   attributes: CategoryAttribute[] | undefined;
@@ -33,6 +34,7 @@ export const SingleImportCreate = ({
 
   const navigate = useNavigate();
   const successModal = useOverlayState();
+  const createCategoryAttributeModal = useOverlayState();
 
   const [formKey, setFormKey] = useState(0);
 
@@ -116,17 +118,23 @@ export const SingleImportCreate = ({
         {/* тут будет просмотр загруженного документа */}
 
         <div className="flex flex-col gap-6">
-          <div>
-            <h1 className="mb-2 text-2xl font-bold">Добавление оборудования</h1>
-            <p className="text-lg">
-              Заполните характеристики для категории:{" "}
-              <span className="font-semibold text-foreground">
-                {categoryName}
+          <div className="flex flex-col gap-2">
+            <h1 className="mb-2 text-2xl font-semibold">
+              Добавление оборудования
+            </h1>
+            <div className="flex items-center gap-2 ">
+              <span>
+                Категория: <b>{categoryName}</b>
               </span>
-            </p>
+              <span> |</span>
+              <Button onPress={createCategoryAttributeModal.open} size="sm">
+                <Plus size={16} />
+                Добавить новый атрибут
+              </Button>
+            </div>
           </div>
 
-          <div className="bg-white border rounded-lg p-4 flex items-center gap-4">
+          <div className="flex items-center gap-4 p-4 border rounded-lg w-full bg-white">
             <FileText className="text-primary" size={32} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{file?.name}</p>
@@ -146,6 +154,12 @@ export const SingleImportCreate = ({
           </Card>
         </div>
       </div>
+
+      <CreateCategoryAttributeModal
+        categoryId={categoryId}
+        isOpen={createCategoryAttributeModal.isOpen}
+        onClose={createCategoryAttributeModal.close}
+      />
 
       <ImportSuccessModal
         isOpen={successModal.isOpen}

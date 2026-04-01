@@ -5,7 +5,7 @@ import { AppSelect } from "@/shared/ui";
 import { DataType } from "@engineering-data-normalizer/shared";
 
 interface CreateCategoryAttributeModalProps {
-  categoryId: string;
+  categoryId: string | null;
   onClose: () => void;
   isOpen: boolean;
 }
@@ -21,6 +21,9 @@ export const CreateCategoryAttributeModal = ({
     e: React.FormEvent<HTMLFormElement>,
   ) => {
     e.preventDefault();
+
+    if (!categoryId) return;
+
     const formData = new FormData(e.currentTarget);
 
     const payload = {

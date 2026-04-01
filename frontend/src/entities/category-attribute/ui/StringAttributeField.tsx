@@ -14,7 +14,7 @@ export const StringAttributeField = ({
   const [isManualInput, setIsManualInput] = useState(!hasOptions);
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2">
       <Label className="text-base">{label}</Label>
 
       <div className="flex gap-1">

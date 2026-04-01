@@ -14,9 +14,19 @@ export const useCreateCategoryAttributeMutation = () => {
 
   return useMutation({
     mutationFn: createCategoryAttribute,
-    onSuccess: (_data, variables) =>
+    onSuccess: (_data, variables) => {
+      const categoryId = variables.id;
+
       queryClient.invalidateQueries({
-        queryKey: ["category-with-attributes", variables.id],
-      }),
+        queryKey: ["category-with-attributes", categoryId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["categories", categoryId, "attributes"],
+      });
+    },
+    meta: {
+      successMessage: "Атрибут добавлен",
+    },
   });
 };
