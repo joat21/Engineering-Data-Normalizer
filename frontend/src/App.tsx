@@ -8,6 +8,7 @@ import { CatalogImportPage } from "@/pages/catelog-import";
 import { EquipmentPage } from "@/pages/equipment";
 import { ProjectsPage } from "@/pages/projects";
 import { CategoriesPage } from "@/pages/categories";
+import { CategoryPage } from "@/pages/category";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="equipment" element={<EquipmentPage />} />
           <Route path="comparison" element={<h1>Сравнение</h1>} />
           <Route path="categories" element={<CategoriesPage />} />
+          <Route path="categories/:id" element={<CategoryPage />} />
           <Route path="projects" element={<ProjectsPage />} />
         </Route>
       </Route>

@@ -18,6 +18,10 @@ export interface Category {
   name: string;
 }
 
+export interface CategoryWithAttributes extends Category {
+  attributes: CategoryAttribute[];
+}
+
 export const DataType = {
   STRING: "STRING",
   NUMBER: "NUMBER",

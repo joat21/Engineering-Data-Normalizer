@@ -29,13 +29,7 @@ export const CategoriesPage = () => {
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {categories?.map((category) => (
             <li key={category.id} className="w-full list-none">
-              <AppLink
-                to={{
-                  pathname: "/equipment",
-                  search: `?categoryId=${category.id}`,
-                }}
-                className="w-full no-underline"
-              >
+              <AppLink to={category.id} className="w-full no-underline">
                 <CategoryCard categoryName={category.name} />
               </AppLink>
             </li>

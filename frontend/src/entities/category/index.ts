@@ -1,1 +1,1 @@
-export { useCategories } from "./api";
+export { useCategories, useCategory } from "./api";

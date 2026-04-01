@@ -1,4 +1,4 @@
-import z, { boolean } from "zod";
+import z from "zod";
 import { DataType } from "./types";
 
 export const getCategoryFiltersSchema = z.object({
@@ -31,7 +31,7 @@ export const createCategoryAttributeSchema = z.object({
   }),
   body: z.object({
     label: z.string().min(1),
-    unit: z.string().min(1).optional(),
+    unit: z.string().optional(),
     dataType: z.enum(DataType),
     isFilterable: z.boolean(),
   }),
