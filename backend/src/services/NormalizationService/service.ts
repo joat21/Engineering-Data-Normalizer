@@ -15,6 +15,7 @@ import { executeUpdatePipeline } from "./transformation/executeUpdatePipeline";
 import { cleanValue } from "../../helpers/cleanValue";
 import { getTargetKey } from "../../helpers/getTargetKey";
 import { getAttributeInfoMap } from "../../db/categoryAttribute";
+import { ApiError } from "../../exceptions/api-error";
 
 export const mapColumnToAttribute = async (params: {
   sessionId: string;
@@ -55,7 +56,7 @@ const updateColumn = async (params: {
   });
 
   if (!items.length) {
-    throw new Error("Session not found");
+    throw ApiError.NotFound("Сессия импорта не найдена");
   }
 
   const updatedValuesByItem = new Map<string, string[]>();
@@ -95,7 +96,7 @@ export const commitAiParsingResults = async (params: {
   });
 
   if (!aiRows.length) {
-    throw new Error("Parsing session not found");
+    throw ApiError.NotFound("Сессия ИИ-анализа не найдена");
   }
 
   const items = await prisma.stagingImportItem.findMany({
@@ -245,7 +246,9 @@ export const resolveNormalizationIssues = async (params: {
 
   const target = targets.find((t): t is MappingTarget => t !== null);
   if (!target) {
-    throw new Error("Target must not be null");
+    throw ApiError.BadRequest(
+      "Не указана цель маппинга для технического параметра",
+    );
   }
 
   return mapColumnToAttribute({

@@ -14,6 +14,7 @@ import { getAttributeOptionsMap } from "../../helpers/getAttributeOptionsMap";
 import { booleanNormalizationOptions } from "../NormalizationService/config";
 import slugify from "slugify";
 import { handleUpdateCategoryFilter } from "./handleUpdateCategoryFilter";
+import { ApiError } from "../../exceptions/api-error";
 
 export const getCategories = async () => await prisma.category.findMany();
 
@@ -114,7 +115,7 @@ export const getCategoryWithAttributes = async (categoryId: string) => {
   });
 
   if (!category) {
-    throw new Error("Category not found");
+    throw ApiError.NotFound("Категория не найдена");
   }
 
   const systemFields = Object.entries(SYSTEM_FIELDS_CONFIG).map(
@@ -161,8 +162,8 @@ export const createCategoryAttribute = async (
   });
 
   if (existingLabel) {
-    throw new Error(
-      `Атрибут с названием "${label}" уже существует в этой категории`,
+    throw ApiError.BadRequest(
+      `Атрибут с названием "${label}" уже добавлен в эту категорию`,
     );
   }
 

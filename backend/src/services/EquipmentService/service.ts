@@ -21,6 +21,7 @@ import { Prisma } from "../../generated/prisma/client";
 import { TransformedRow } from "../NormalizationService/types";
 import { recalculateFilters } from "../CategoryService/recalculateFilters";
 import { EquipmentSystemFields, ImportSessionStatus } from "../../types";
+import { ApiError } from "../../exceptions/api-error";
 
 const LIMIT = 20;
 
@@ -35,7 +36,9 @@ export const createEquipmentFromStaging = async (sessionId: string) => {
     },
   });
 
-  if (!session) throw new Error("Session not found");
+  if (!session) {
+    throw ApiError.NotFound("Сессия импорта не найдена");
+  }
 
   const items = await prisma.stagingImportItem.findMany({
     where: { sessionId },
@@ -110,7 +113,9 @@ export const createEquipment = async (data: {
     },
   });
 
-  if (!session) throw new Error("Session not found");
+  if (!session) {
+    throw ApiError.NotFound("Сессия импорта не найдена");
+  }
 
   const { equipmentEntry, entryAttributes } = collectEquipmentAndAttributes({
     categoryId: session.categoryId,
@@ -270,7 +275,7 @@ export const getEquipmentDetails = async (id: string) => {
   });
 
   if (!item) {
-    throw new Error("Equipment nor found");
+    throw ApiError.NotFound("Оборудование не найдено");
   }
 
   const systemFields = Object.entries(SYSTEM_FIELDS_CONFIG).map(

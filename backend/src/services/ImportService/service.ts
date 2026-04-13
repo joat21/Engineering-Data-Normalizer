@@ -11,6 +11,7 @@ import { TransformedRow } from "../NormalizationService/types";
 import { getAttributeInfoMap } from "../../db/categoryAttribute";
 import { isSubColumn } from "./types";
 import { getTargetLabel } from "./helpers";
+import { ApiError } from "../../exceptions/api-error";
 
 export const createSession = async (data: {
   categoryId: string;
@@ -67,7 +68,9 @@ export const addItemsToStaging = async (data: {
     where: { id: data.sessionId },
   });
 
-  if (!session) throw new Error("Session not found");
+  if (!session) {
+    throw ApiError.NotFound("Сессия импорта не найдена");
+  }
 
   await prisma.stagingImportItem.createMany({
     data: data.rows.map((row, i) => ({
@@ -84,7 +87,9 @@ export const getStagingTable = async (sessionId: string) => {
     select: { originHeader: true },
   });
 
-  if (!session) throw new Error("Session not found");
+  if (!session) {
+    throw ApiError.NotFound("Сессия импорта не найдена");
+  }
 
   const originHeader = (session.originHeader as string[]) || [];
 

@@ -8,6 +8,7 @@ import { prisma } from "../../prisma";
 import { Prisma } from "../../generated/prisma/client";
 import { getRawValue } from "../../helpers/getRawValue";
 import { StagingImportItemStatus } from "../../types";
+import { ApiError } from "../../exceptions/api-error";
 
 export const processAiParsing = async (data: {
   importSessionId: string;
@@ -169,7 +170,7 @@ export const editAiParseResults = async (
   });
 
   if (!exists) {
-    throw new Error("Parsing session not found");
+    throw ApiError.NotFound("Сессия ИИ-анализа не найдена");
   }
 
   const payload = JSON.stringify(editedValues);

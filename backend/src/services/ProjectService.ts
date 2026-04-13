@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 import { SYSTEM_FIELDS_CONFIG } from "@engineering-data-normalizer/shared";
 import { prisma } from "../prisma";
+import { ApiError } from "../exceptions/api-error";
 
 export const createProject = async (data: {
   name: string;
@@ -23,7 +24,7 @@ export const getProjectById = async (projectId: string) => {
   });
 
   if (!project) {
-    throw new Error("Project not found");
+    throw ApiError.NotFound("Проект не найден");
   }
 
   return {
@@ -64,7 +65,7 @@ export const exportProjectToExcel = async (projectId: string) => {
   });
 
   if (!project || project.items.length === 0) {
-    throw new Error("Project is empty or not found");
+    throw ApiError.NotFound("Проект не найден или не содержит данных");
   }
 
   const workbook = new ExcelJS.Workbook();

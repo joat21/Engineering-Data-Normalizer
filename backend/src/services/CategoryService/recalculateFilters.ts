@@ -6,6 +6,7 @@ import {
 import { EquipmentSystemFields } from "../../types";
 import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../../prisma";
+import { ApiError } from "../../exceptions/api-error";
 
 export const recalculateFilters = async (categoryId: string) => {
   const category = await prisma.category.findUnique({
@@ -13,7 +14,7 @@ export const recalculateFilters = async (categoryId: string) => {
     include: { attributes: { where: { isFilterable: true } } },
   });
 
-  if (!category) throw new Error("Category not found");
+  if (!category) throw ApiError.NotFound("Категория не найдена");
 
   // Системных полей мало, поэтому все запросы через Promise.all
   const systemFieldFilters = await Promise.all(
