@@ -2,14 +2,23 @@ import { useState } from "react";
 import { Button, Card, Form, toast } from "@heroui/react";
 import type { SourceType } from "@engineering-data-normalizer/shared";
 import { useCategories } from "@/entities/category";
-import { AppSelect, FileDropzone } from "@/shared/ui";
+import { AppSelect, FileDropzone, PageLoader } from "@/shared/ui";
 import { ACCEPTED_FORMATS } from "../model/config";
+import { useCreateSupplierMutation, useSuppliers } from "@/entities/supplier";
+import {
+  useCreateManufacturerMutation,
+  useManufacturers,
+} from "@/entities/manufacturer";
+import { ReferenceField } from "./ReferenceField";
+import { resolveEntityId } from "../model/utils";
 
 interface InitImportFormProps {
   onSubmit: (data: {
     file: File;
     categoryId: string;
     categoryName?: string;
+    manufacturerId: string;
+    supplierId: string;
   }) => void;
   isLoading?: boolean;
   sourceType: SourceType;
@@ -24,17 +33,53 @@ export const InitImportForm = ({
   const [categoryId, setCategoryId] = useState<string | null>(null);
 
   const { data: categories, isPending } = useCategories();
+  const { data: manufacturers, isPending: isManufacturersPending } =
+    useManufacturers();
+  const { data: suppliers, isPending: isSuppliersPending } = useSuppliers();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const createManufacturerMutation = useCreateManufacturerMutation();
+  const createSupplierMutation = useCreateSupplierMutation();
+
+  if (isManufacturersPending || isSuppliersPending) return <PageLoader />;
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!categoryId) return;
     if (!file) return toast.danger("Выберите файл");
 
+    // получение поставщика и производителя перенесены из другого компонента
+    // TODO: в идеале все привести к одному виду: state или formData
+
+    const formData = new FormData(e.currentTarget);
+
+    const manufacturerId = String(formData.get("manufacturerId") ?? "");
+    const manufacturerName = String(formData.get("manufacturerName") ?? "");
+
+    const supplierId = String(formData.get("supplierId") ?? "");
+    const supplierName = String(formData.get("supplierName") ?? "");
+
+    const [finalManufacturerId, finalSupplierId] = await Promise.all([
+      resolveEntityId(
+        manufacturerId,
+        manufacturerName,
+        manufacturers ?? [],
+        createManufacturerMutation.mutateAsync,
+      ),
+      resolveEntityId(
+        supplierId,
+        supplierName,
+        suppliers ?? [],
+        createSupplierMutation.mutateAsync,
+      ),
+    ]);
+
     onSubmit({
       file,
       categoryId,
       categoryName: categories?.find((c) => c.id === categoryId)?.name,
+      manufacturerId: finalManufacturerId!,
+      supplierId: finalSupplierId!,
     });
   };
 
@@ -71,6 +116,17 @@ export const InitImportForm = ({
           onChange={(value) => setCategoryId(String(value))}
           variant="secondary"
           isRequired
+        />
+
+        <ReferenceField
+          label="Производитель"
+          name="manufacturer"
+          items={manufacturers ?? []}
+        />
+        <ReferenceField
+          label="Поставщик"
+          name="supplier"
+          items={suppliers ?? []}
         />
 
         <Button

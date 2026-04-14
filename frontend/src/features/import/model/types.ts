@@ -14,3 +14,8 @@ export const CatalogImportStep = {
 
 export type CatalogImportStep =
   (typeof CatalogImportStep)[keyof typeof CatalogImportStep];
+
+export interface BaseReferenceEntity {
+  id: string;
+  name: string;
+}

@@ -89,34 +89,3 @@ const isInRange = (r: number, c: number, range: SelectionRange | null) => {
   const maxC = Math.max(range.start.c, range.end.c);
   return r >= minR && r <= maxR && c >= minC && c <= maxC;
 };
-
-interface BaseReferenceEntity {
-  id: string;
-  name: string;
-}
-
-export async function resolveEntityId<T extends BaseReferenceEntity>(
-  id: string,
-  name: string,
-  existingList: T[],
-  createFn: (data: { name: string }) => Promise<T>,
-) {
-  if (id) return id;
-
-  const trimmedName = name.trim();
-
-  if (!trimmedName) {
-    return undefined;
-  }
-
-  const existing = existingList.find(
-    (item) => item.name.toLowerCase() === trimmedName.toLowerCase(),
-  );
-
-  if (existing) {
-    return existing.id;
-  }
-
-  const newItem = await createFn({ name: trimmedName });
-  return newItem.id;
-}

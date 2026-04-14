@@ -9,11 +9,15 @@ interface ImportState {
   categoryName?: string;
   file: File | null;
   sessionId: string | null;
+  manufacturerId: string | null;
+  supplierId: string | null;
 
   setInitialData: (data: {
     categoryId: string;
     file: File;
     sourceType: SourceType;
+    manufacturerId: string;
+    supplierId: string;
   }) => void;
   setCategoryId: (categoryId: string) => void;
   setCategoryName: (name?: string) => void;
@@ -28,6 +32,8 @@ export const useImportStore = create<ImportState>((set) => ({
   categoryId: null,
   file: null,
   sessionId: null,
+  manufacturerId: null,
+  supplierId: null,
 
   setInitialData: (data) =>
     set({ ...data, step: SingleImportStep.FILL_ATTRIBUTES }),
@@ -41,5 +47,7 @@ export const useImportStore = create<ImportState>((set) => ({
       categoryId: null,
       file: null,
       sessionId: null,
+      manufacturerId: null,
+      supplierId: null,
     }),
 }));

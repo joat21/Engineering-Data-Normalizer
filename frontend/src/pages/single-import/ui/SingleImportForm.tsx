@@ -19,7 +19,14 @@ export const SingleImportForm = ({
 }: SingleImportFormProps) => {
   const [systemFields, technicalFields] = useMemo(() => {
     const systemFields =
-      attributes?.filter((a) => a.type === MappingTargetType.SYSTEM) || [];
+      attributes?.filter(
+        (a) =>
+          a.type === MappingTargetType.SYSTEM &&
+          // костыль для того чтобы не отображать эти поля,
+          // так как они указаны в начале при инициализации импорта
+          a.key !== "manufacturerName" &&
+          a.key !== "supplierName",
+      ) || [];
     const technicalFields =
       attributes?.filter((a) => a.type === MappingTargetType.ATTRIBUTE) || [];
 

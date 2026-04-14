@@ -30,6 +30,8 @@ export const SingleImportPage = () => {
     file: File;
     categoryId: string;
     categoryName?: string;
+    manufacturerId: string;
+    supplierId: string;
   }) => {
     initImportMutation.mutate(
       { ...data, sourceType: SourceType.SINGLE_ITEM },

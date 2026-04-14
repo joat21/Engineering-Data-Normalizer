@@ -17,7 +17,12 @@ import { CreateCategoryAttributeModal } from "@/features/create-category-attibut
 
 interface SingleImportCreateProps {
   attributes: CategoryAttribute[] | undefined;
-  onInitImport: (data: { file: File; categoryId: string }) => void;
+  onInitImport: (data: {
+    file: File;
+    categoryId: string;
+    manufacturerId: string;
+    supplierId: string;
+  }) => void;
   isLoadingSession: boolean;
 }
 
@@ -31,6 +36,8 @@ export const SingleImportCreate = ({
   const categoryId = useImportStore((s) => s.categoryId);
   const categoryName = useImportStore((s) => s.categoryName);
   const setStep = useImportStore((s) => s.setStep);
+  const manufacturerId = useImportStore((s) => s.manufacturerId);
+  const supplierId = useImportStore((s) => s.supplierId);
 
   const navigate = useNavigate();
   const successModal = useOverlayState();
@@ -101,7 +108,12 @@ export const SingleImportCreate = ({
   const handleAddMore = () => {
     successModal.close();
     setFormKey((prev) => prev + 1); // магия реакта для сброса состояния неконтроллируемой формы (reconcilation решает)
-    onInitImport({ file: file!, categoryId: categoryId! });
+    onInitImport({
+      file: file!,
+      categoryId: categoryId!,
+      manufacturerId: manufacturerId!,
+      supplierId: supplierId!,
+    });
   };
 
   return (

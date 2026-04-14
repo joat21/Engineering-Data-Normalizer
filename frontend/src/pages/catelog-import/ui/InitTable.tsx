@@ -1,18 +1,9 @@
 import { useEffect, useState } from "react";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  Chip,
-  Tabs,
-  Tooltip,
-  useOverlayState,
-} from "@heroui/react";
+import { Button, ButtonGroup, Card, Chip, Tabs, Tooltip } from "@heroui/react";
 import { cn } from "@heroui/styles";
 import * as XLSX from "xlsx";
 import { ArrowRight, LayoutGrid, RotateCcw, Table } from "lucide-react";
 import { SourceType } from "@engineering-data-normalizer/shared";
-import { CatalogCommonDataModal } from "./CatalogCommonDataModal";
 import { SelectionMode, type SelectionRange } from "../model/types";
 import {
   extractTableData,
@@ -33,14 +24,15 @@ interface InitTableProps {
 }
 
 export const InitTable = ({ categoryId }: InitTableProps) => {
-  const commonDataModal = useOverlayState();
-
   const initImportMutation = useInitImportMutation();
   const importRowsMutation = useImportRowsMutation();
 
   const file = useImportStore((s) => s.file);
   const setSessionId = useImportStore((s) => s.setSessionId);
   const setStep = useImportStore((s) => s.setStep);
+  const manufacturerId = useImportStore((s) => s.manufacturerId);
+  const supplierId = useImportStore((s) => s.supplierId);
+
   const [data, setData] = useState<any[][]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -103,12 +95,7 @@ export const InitTable = ({ categoryId }: InitTableProps) => {
     setData(sheetData);
   }, [workbook, activeSheet]);
 
-  const handleConfirmSelection = () => commonDataModal.open();
-
-  const handleInitTable = async (payload: {
-    manufacturerId?: string;
-    supplierId?: string;
-  }) => {
+  const handleInitTable = async () => {
     if (!headerRange || !bodyRange || !file) return;
 
     const { headers, body } = extractTableData(data, headerRange, bodyRange);
@@ -119,8 +106,8 @@ export const InitTable = ({ categoryId }: InitTableProps) => {
         categoryId,
         sourceType: SourceType.CATALOG,
         originHeader: headers,
-        manufacturerId: payload.manufacturerId,
-        supplierId: payload.supplierId,
+        manufacturerId: manufacturerId!,
+        supplierId: supplierId!,
       });
 
       setSessionId(sessionId);
@@ -216,7 +203,7 @@ export const InitTable = ({ categoryId }: InitTableProps) => {
             <Button
               size="lg"
               className="font-semibold px-8"
-              onPress={handleConfirmSelection}
+              onPress={handleInitTable}
               isDisabled={!headerRange || !bodyRange}
             >
               Продолжить
@@ -288,11 +275,6 @@ export const InitTable = ({ categoryId }: InitTableProps) => {
           </Tabs>
         </div>
       </div>
-
-      <CatalogCommonDataModal
-        isOpen={commonDataModal.isOpen}
-        onConfirm={handleInitTable}
-      />
     </>
   );
 };
