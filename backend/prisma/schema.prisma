@@ -41,6 +41,7 @@ model Equipment {
   categoryId       String                    @db.Uuid
   source           Source                    @relation(fields: [sourceId], references: [id])
   sourceId         String                    @db.Uuid
+  searchText       String?                   @db.Text
   name             String?
   manufacturerName String?
   supplierName     String?

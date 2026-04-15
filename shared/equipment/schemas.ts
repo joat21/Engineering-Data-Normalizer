@@ -31,6 +31,7 @@ export const filterValueSchema = z.union([
 export const getEquipmentTableSchema = z.object({
   query: z.object({
     categoryId: z.uuid(),
+    search: z.string().optional(),
     page: z.coerce.number().optional(),
     limit: z.coerce.number().optional(),
     sortBy: z.string().optional(),

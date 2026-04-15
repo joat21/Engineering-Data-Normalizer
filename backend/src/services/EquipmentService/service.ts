@@ -154,18 +154,41 @@ export const createEquipment = async (data: {
 
 export const getEquipmentTable = async (data: {
   categoryId: string;
+  search?: string;
   page?: number;
   limit?: number;
   sortBy?: string;
   filters?: Record<string, FilterValue>;
 }): Promise<EquipmentTableResponse> => {
-  const { categoryId, page = 1, limit = LIMIT, sortBy, filters } = data;
+  const { categoryId, search, page = 1, limit = LIMIT, sortBy, filters } = data;
 
   const categoryFilters = await prisma.categoryFilter.findMany({
     where: { categoryId },
   });
 
   const andConditions: Prisma.EquipmentWhereInput[] = [{ categoryId }];
+
+  if (search) {
+    // получаем id через сырой SQL, чтобы задействовать GIN индекс
+    const searchedIds: { id: string }[] = await prisma.$queryRaw`
+      SELECT id FROM "Equipment"
+      WHERE "search_vector" @@ plainto_tsquery('russian', ${search})
+      AND "categoryId" = ${categoryId}
+    `;
+
+    const ids = searchedIds.map((s) => s.id);
+
+    // если ничего не нашли по поиску - возвращаем пустой результат сразу
+    if (ids.length === 0) {
+      return {
+        headers: [],
+        rows: [],
+        pagination: { total: 0, page, limit, totalPages: 0 },
+      };
+    }
+
+    andConditions.push({ id: { in: ids } });
+  }
 
   for (const filter of categoryFilters) {
     if (!filters) break;

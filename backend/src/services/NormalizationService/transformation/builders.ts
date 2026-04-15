@@ -66,7 +66,7 @@ export const buildTransformedRows = async (params: {
       cacheMap,
     );
 
-    // в columnMappings.mappingPlans[i].normalized лежит Array<NormalizedValue | UnnormalizedValue>
+    // в columnMappings[i].normalized лежит Array<NormalizedValue | UnnormalizedValue>
     // из него собираем issues
     // но для TransformedRow нужно этот массив объектов свернуть в один объект
     const finalColumnMappings = columnMappings.map((mapping) => {
