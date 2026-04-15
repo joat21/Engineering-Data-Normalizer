@@ -30,7 +30,10 @@ export const aggregateNormalizedParts = (
 
   // Формируем финальный объект, который строго соответствует NormalizedValue
   return {
-    valueString: originalRawValue, // Например: '1.25"x2"'
+    // если была всего одна часть, берем valueString из нее
+    // это важно например при нормализации строк,
+    // чтобы исходное "нержав. сталь" не затирало "Нерж. сталь из кэша"
+    valueString: parts.length === 1 ? parts[0].valueString : originalRawValue,
     valueMin: allNums.length > 0 ? Math.min(...allNums) : undefined,
     valueMax: allNums.length > 0 ? Math.max(...allNums) : undefined,
     valueArray: allNums.length >= 3 ? allNums : undefined,

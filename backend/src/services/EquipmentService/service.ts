@@ -40,6 +40,20 @@ export const createEquipmentFromStaging = async (sessionId: string) => {
     throw ApiError.NotFound("Сессия импорта не найдена");
   }
 
+  // TODO: есть похожая функция в db/categoryAttributes
+  // в идеале ее переиспользовать
+  const categoryAttributes = await prisma.categoryAttribute.findMany({
+    where: { categoryId: session.categoryId },
+    select: { id: true, dataType: true, unit: true, label: true },
+  });
+
+  const attributeInfoMap = new Map(
+    categoryAttributes.map((a) => [
+      a.id,
+      { dataType: a.dataType, unit: a.unit, label: a.label },
+    ]),
+  );
+
   const items = await prisma.stagingImportItem.findMany({
     where: { sessionId },
     select: { transformedRow: true },
@@ -59,6 +73,7 @@ export const createEquipmentFromStaging = async (sessionId: string) => {
       manufacturer: session.manufacturer,
       supplier: session.supplier,
       normalizedData: Object.values(transformedRow).flat(),
+      attributeInfoMap,
     });
 
     equipmentToCreate.push(equipmentEntry);
@@ -117,12 +132,25 @@ export const createEquipment = async (data: {
     throw ApiError.NotFound("Сессия импорта не найдена");
   }
 
+  const categoryAttributes = await prisma.categoryAttribute.findMany({
+    where: { categoryId: session.categoryId },
+    select: { id: true, dataType: true, unit: true, label: true },
+  });
+
+  const attributeInfoMap = new Map(
+    categoryAttributes.map((a) => [
+      a.id,
+      { dataType: a.dataType, unit: a.unit, label: a.label },
+    ]),
+  );
+
   const { equipmentEntry, entryAttributes } = collectEquipmentAndAttributes({
     categoryId: session.categoryId,
     sourceId: session.sourceId,
     manufacturer: session.manufacturer,
     supplier: session.supplier,
     normalizedData: normalizedData,
+    attributeInfoMap,
   });
 
   const created = await prisma.$transaction(async (tx) => {

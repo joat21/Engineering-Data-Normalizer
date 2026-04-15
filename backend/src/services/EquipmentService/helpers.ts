@@ -8,10 +8,15 @@ import {
   NumericFilterValue,
   StringFilterValue,
   SYSTEM_FIELD_KEYS,
+  SYSTEM_FIELDS_CONFIG,
 } from "@engineering-data-normalizer/shared";
 import { prisma } from "../../prisma";
 import { SYSTEM_FIELDS } from "../../config";
-import { Prisma } from "../../generated/prisma/client";
+import {
+  Equipment,
+  EquipmentAttributeValue,
+  Prisma,
+} from "../../generated/prisma/client";
 import { EquipmentSystemFields, Manufacturer, Supplier } from "../../types";
 import { getCacheableCleanedValues } from "../../helpers/cache";
 import { getAttributeInfoMap } from "../../db/categoryAttribute";
@@ -74,14 +79,26 @@ export const collectEquipmentAndAttributes = (data: {
   manufacturer: Manufacturer | null;
   supplier: Supplier | null;
   normalizedData: NormalizedData[];
+  attributeInfoMap: Map<
+    string,
+    { dataType: DataType; unit: string; label: string }
+  >;
 }) => {
-  const { categoryId, sourceId, manufacturer, supplier, normalizedData } = data;
+  const {
+    categoryId,
+    sourceId,
+    manufacturer,
+    supplier,
+    normalizedData,
+    attributeInfoMap,
+  } = data;
   const equipmentId = uuidv4();
 
   const equipmentEntry: Prisma.EquipmentCreateManyInput = {
     id: equipmentId,
     categoryId: categoryId,
     sourceId: sourceId,
+    searchText: "",
     name: null,
     article: null,
     model: null,
@@ -126,6 +143,12 @@ export const collectEquipmentAndAttributes = (data: {
       });
     }
   });
+
+  equipmentEntry.searchText = buildSearchText(
+    equipmentEntry,
+    entryAttributes,
+    attributeInfoMap,
+  );
 
   return {
     equipmentEntry,
@@ -186,4 +209,54 @@ export const updateCacheFromNormalizedData = async (
       skipDuplicates: true,
     });
   }
+};
+
+export const buildSearchText = (
+  equipmentEntry: Prisma.EquipmentCreateManyInput,
+  attributes: Prisma.EquipmentAttributeValueCreateManyInput[],
+  attributeInfoMap: Map<
+    string,
+    { dataType: DataType; unit: string; label: string }
+  >,
+) => {
+  const parts: string[] = [];
+
+  for (const [key, config] of Object.entries(SYSTEM_FIELDS_CONFIG)) {
+    const field = key as keyof EquipmentSystemFields;
+
+    if (field === SYSTEM_FIELDS.PRICE) continue;
+
+    if (equipmentEntry[field]) {
+      parts.push(config.label);
+      parts.push(equipmentEntry[field]);
+    }
+  }
+
+  attributes.forEach((attr) => {
+    const attrInfo = attributeInfoMap.get(attr.attributeId);
+
+    if (attrInfo?.label) {
+      parts.push(attrInfo.label);
+    }
+
+    parts.push(attr.valueString);
+
+    if (attrInfo?.dataType === DataType.NUMBER && attrInfo.unit) {
+      const unit = attrInfo.unit.toLowerCase();
+
+      if (attr.valueMin !== undefined && attr.valueMin !== null) {
+        parts.push(`${attr.valueMin}${unit}`);
+      }
+
+      if (
+        attr.valueMax !== undefined &&
+        attr.valueMax !== null &&
+        attr.valueMax !== attr.valueMin
+      ) {
+        parts.push(`${attr.valueMax}${unit}`);
+      }
+    }
+  });
+
+  return parts.join(" ").toLowerCase();
 };
