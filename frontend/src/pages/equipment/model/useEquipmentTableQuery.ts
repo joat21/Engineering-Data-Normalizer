@@ -12,7 +12,7 @@ export type FiltersState = Record<string, FilterValue>;
 export const useEquipmentTableQuery = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const query = useMemo<EquipmentTableQuery>(() => {
+  const query = useMemo<EquipmentTableQuery & { details?: string }>(() => {
     const parsed = qs.parse(searchParams.toString(), { allowDots: false });
 
     return {
@@ -22,11 +22,12 @@ export const useEquipmentTableQuery = () => {
       limit: parsed["limit"] ? Number(parsed["limit"]) : undefined,
       sortBy: parsed["sortBy"] ? String(parsed["sortBy"]) : undefined,
       filters: (parsed["filters"] as FiltersState) || {},
+      details: parsed["details"] ? String(parsed["details"]) : undefined,
     };
   }, [searchParams]);
 
   const updateQuery = useCallback(
-    (newParams: EquipmentTableQuery) => {
+    (newParams: EquipmentTableQuery & { details?: string }) => {
       const nextQuery = {
         ...query,
         ...newParams,

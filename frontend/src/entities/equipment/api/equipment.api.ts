@@ -13,13 +13,27 @@ export const getEquipmentTable = (data: GetEquipmentTableQuery) =>
   api
     .get<EquipmentTableResponse>("/equipment", {
       params: data,
-      paramsSerializer: (params) => qs.stringify(params, qsOptions),
+      paramsSerializer: (params) => {
+        const paramEntries = Object.entries(params).filter(
+          ([key]) => key !== "details",
+        );
+
+        return qs.stringify(Object.fromEntries(paramEntries), qsOptions);
+      },
     })
     .then((r) => r.data);
 
 export const useEquipmentTable = (data: GetEquipmentTableQuery) =>
   useQuery({
-    queryKey: ["equipment", data],
+    queryKey: [
+      "equipment",
+      data.categoryId,
+      data.search,
+      data.page,
+      data.limit,
+      data.sortBy,
+      data.filters,
+    ],
     queryFn: () => getEquipmentTable(data),
     enabled: !!data.categoryId,
     placeholderData: keepPreviousData,
