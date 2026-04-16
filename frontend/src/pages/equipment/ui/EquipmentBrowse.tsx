@@ -21,6 +21,7 @@ import { useCategoryFilters } from "@/entities/category-filters";
 import { useAddToComparisonMutation } from "@/entities/comparison";
 import { useEquipmentTable } from "@/entities/equipment";
 import { PageLoader } from "@/shared/ui";
+import { Search } from "./Search";
 
 interface EquipmentBrowseProps {
   categoryId: string;
@@ -33,12 +34,28 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
     null,
   );
 
-  const { query } = useEquipmentTableQuery();
+  const { query, updateQuery } = useEquipmentTableQuery();
 
   const { data: equipmentData, isPending: isEquipmentPending } =
     useEquipmentTable(query);
   const { data: categoryFilters, isPending: isFiltersPending } =
     useCategoryFilters(categoryId);
+
+  const handleSearch = (value: string | undefined) => {
+    updateQuery({
+      ...query,
+      search: value,
+      page: 1,
+    });
+  };
+
+  const handleClearSearch = () => {
+    updateQuery({
+      ...query,
+      search: undefined,
+      page: 1,
+    });
+  };
 
   const addToComparisonMutation = useAddToComparisonMutation();
 
@@ -130,6 +147,12 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
                 </span>
               </div>
             </div>
+
+            <Search
+              searchText={query.search}
+              onSearch={handleSearch}
+              onClear={handleClearSearch}
+            />
 
             <div className="flex items-center gap-1">
               <div className="flex items-center gap-1 mr-2 font-medium">

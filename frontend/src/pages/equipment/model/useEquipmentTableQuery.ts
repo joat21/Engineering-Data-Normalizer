@@ -17,6 +17,7 @@ export const useEquipmentTableQuery = () => {
 
     return {
       categoryId: String(parsed["categoryId"]),
+      search: parsed["search"] ? String(parsed["search"]) : undefined,
       page: parsed["page"] ? Number(parsed["page"]) : undefined,
       limit: parsed["limit"] ? Number(parsed["limit"]) : undefined,
       sortBy: parsed["sortBy"] ? String(parsed["sortBy"]) : undefined,
