@@ -23,6 +23,7 @@
     "libreoffice-convert": "^1.8.1",
     "multer": "^2.1.0",
     "nodemon": "^3.1.14",
+    "openai": "^6.34.0",
     "p-map": "^7.0.4",
     "slugify": "^1.6.8",
     "uuid": "^13.0.0",

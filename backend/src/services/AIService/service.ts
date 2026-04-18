@@ -1,14 +1,13 @@
-import { GoogleGenAI, Schema, ThinkingLevel, Type } from "@google/genai";
 import {
   EditedAiParseResult,
   AIParseTarget,
-  TransformPayload,
 } from "@engineering-data-normalizer/shared";
 import { prisma } from "../../prisma";
 import { Prisma } from "../../generated/prisma/client";
 import { getRawValue } from "../../helpers/getRawValue";
 import { StagingImportItemStatus } from "../../types";
 import { ApiError } from "../../exceptions/api-error";
+import { llmParse } from "./parsers";
 
 export const processAiParsing = async (data: {
   importSessionId: string;
@@ -22,6 +21,19 @@ export const processAiParsing = async (data: {
 
   let sessionId;
   const isTestRun = !parsingSessionId;
+
+  const importSession = await prisma.importSession.findUnique({
+    where: { id: importSessionId },
+    include: {
+      category: {
+        select: { name: true },
+      },
+    },
+  });
+
+  if (!importSession) {
+    throw ApiError.NotFound("Сессия импорта не найдена");
+  }
 
   if (!parsingSessionId) {
     const parsingSession = await prisma.aiParseSession.create({
@@ -60,11 +72,15 @@ export const processAiParsing = async (data: {
     }))
     .filter((line) => !!line.text);
 
-  const llmResults = await callLlmParser(linesToParse, targets);
+  const parseResults = await llmParse(
+    linesToParse,
+    targets,
+    importSession.category.name,
+  );
 
   const recordsToSave: Prisma.AiParseResultCreateManyInput[] = [];
 
-  for (const result of llmResults) {
+  for (const result of parseResults) {
     const { rowId, extracted } = result;
 
     for (const target of targets) {
@@ -129,25 +145,6 @@ export const processAiParsing = async (data: {
     values: targets.map((target) => row.valuesMap[target.key] ?? ""),
   }));
 
-  // const resultRows = llmResults.map((result) => {
-  //   const row: {
-  //     id: string;
-  //     sourceString: string;
-  //     values: any[];
-  //   } = {
-  //     id: result.rowId,
-  //     sourceString: result.sourceString,
-  //     values: [],
-  //   };
-
-  //   for (const target of targets) {
-  //     const value = result.extracted[target.key];
-  //     row.values.push(String(value ?? ""));
-  //   }
-
-  //   return row;
-  // });
-
   return {
     parsingSessionId: sessionId,
     sourceColIndex: colIndex,
@@ -205,87 +202,4 @@ export const editAiParseResults = async (
   `;
 
   return { updated };
-};
-
-const callLlmParser = async (
-  lines: {
-    id: string;
-    text: TransformPayload;
-  }[],
-  targets: AIParseTarget[],
-): Promise<AiParseResult[]> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-  const responseSchema: Schema = {
-    type: Type.ARRAY,
-    items: {
-      type: Type.OBJECT,
-      properties: {
-        sourceString: { type: Type.STRING },
-        rowId: { type: Type.STRING },
-        extracted: {
-          type: Type.OBJECT,
-          properties: targets.reduce(
-            (acc, t) => {
-              acc[t.key] = { type: Type.STRING, nullable: true };
-              return acc;
-            },
-            {} as Record<string, any>,
-          ),
-        },
-      },
-      required: ["rowId", "extracted"],
-    },
-  };
-
-  const prompt = `
-    Ты извлекаешь параметры из строк номенклатуры.
-
-    Правила:
-    - Отвечай СТРОГО валидным JSON
-    - НЕ повторяй значения
-    - НЕ добавляй пояснения
-    - Значения короткие (число или слово)
-    - Если сильно не уверен — пиши атрибуту значение null
-    - Неправильно заполненный атрибут хуже null
-
-    Атрибуты:
-    ${targets.map((t) => `- ${t.key} (${t.label})`).join("\n")}
-
-    Строки:
-    ${lines.map((l) => `${l.id}: ${l.text}`).join("\n")}
-  `;
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3.1-flash-lite-preview",
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
-    config: {
-      responseMimeType: "application/json",
-      responseSchema,
-      temperature: 0,
-      thinkingConfig: {
-        thinkingLevel: ThinkingLevel.MINIMAL,
-      },
-      maxOutputTokens: 10000,
-      systemInstruction:
-        "Ты — инженерный парсер. Твоя задача: извлекать технические характеристики из строк номенклатуры. Если значение не найдено, пиши null. Не выдумывай данные.",
-    },
-  });
-
-  console.log(
-    `[LOG]: ${new Date(Date.now()).toLocaleString()}\nTOKENS USAGE:`,
-    response.usageMetadata,
-  );
-
-  console.log(`[LOG]: Promt:\n${prompt}`);
-
-  console.log(`[LOG]: Response text:\n${response.text}`);
-
-  return JSON.parse(response.text || "") as AiParseResult[];
-};
-
-type AiParseResult = {
-  rowId: string;
-  sourceString: string;
-  extracted: Record<string, string | number | boolean | null>;
 };
