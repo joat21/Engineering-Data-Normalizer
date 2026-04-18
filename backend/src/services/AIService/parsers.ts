@@ -7,14 +7,7 @@ import {
   TransformPayload,
 } from "@engineering-data-normalizer/shared";
 import { generatePrompts } from "./helpers";
-import { AiParseResult } from "./types";
-
-interface Result {
-  tokensUsage: object | string;
-  parsed: AiParseResult[];
-  responseText: string;
-  modelName: string;
-}
+import { AiParseResult, ParseResultData } from "./types";
 
 export const llmParse = async (
   lines: {
@@ -53,7 +46,7 @@ const yandexAiParse = async (
   systemPrompt: string,
   prompt: string,
   targets: AIParseTarget[],
-): Promise<Result> => {
+): Promise<ParseResultData> => {
   const modelName = "qwen3.5-35b-a3b-fp8/latest";
   // const modelName = "aliceai-llm/latest";
 
@@ -96,8 +89,6 @@ const yandexAiParse = async (
     },
   });
 
-  console.log(response);
-
   return {
     tokensUsage: response.usage ?? "No tokens usage metadata",
     parsed: response.output_parsed?.items as AiParseResult[],
@@ -110,7 +101,7 @@ const googleAiParse = async (
   systemPrompt: string,
   prompt: string,
   targets: AIParseTarget[],
-): Promise<Result> => {
+): Promise<ParseResultData> => {
   const modelName = "gemini-3.1-flash-lite-preview";
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 

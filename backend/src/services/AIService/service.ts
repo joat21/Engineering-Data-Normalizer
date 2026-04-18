@@ -8,6 +8,9 @@ import { getRawValue } from "../../helpers/getRawValue";
 import { StagingImportItemStatus } from "../../types";
 import { ApiError } from "../../exceptions/api-error";
 import { llmParse } from "./parsers";
+import { chunkArray } from "./helpers";
+import { CHUNK_SIZE, CONCURRENCY } from "./config";
+import pMap from "p-map";
 
 export const processAiParsing = async (data: {
   importSessionId: string;
@@ -72,11 +75,17 @@ export const processAiParsing = async (data: {
     }))
     .filter((line) => !!line.text);
 
-  const parseResults = await llmParse(
-    linesToParse,
-    targets,
-    importSession.category.name,
+  const chunks = chunkArray(linesToParse, CHUNK_SIZE);
+
+  const batchResults = await pMap(
+    chunks,
+    async (chunk) => {
+      return await llmParse(chunk, targets, importSession.category.name);
+    },
+    { concurrency: CONCURRENCY },
   );
+
+  const parseResults = batchResults.flat();
 
   const recordsToSave: Prisma.AiParseResultCreateManyInput[] = [];
 
