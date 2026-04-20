@@ -154,12 +154,9 @@ export const commitAiParsingResults = async (params: {
   return result;
 };
 
-export const normalizeSingleEntity = async (params: {
-  sessionId: string;
-  inputs: NormalizeSingleEntity[];
-}) => {
-  const { sessionId, inputs } = params;
-
+export const normalizeSingleImport = async (
+  inputs: NormalizeSingleEntity[],
+) => {
   if (!inputs.length) return [];
 
   const { values, cacheMap, mappingPlans } =
@@ -181,12 +178,7 @@ export const normalizeSingleEntity = async (params: {
     })
     .filter((r): r is NormalizedData => r !== null);
 
-  const result = await createEquipment({
-    sessionId,
-    normalizedData: data,
-  });
-
-  return result;
+  return data;
 };
 
 export const resolveNormalizationIssues = async (params: {

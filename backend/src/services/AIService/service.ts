@@ -2,16 +2,25 @@ import pMap from "p-map";
 import {
   EditedAiParseResult,
   AIParseTarget,
+  MappingTargetType,
+  NormalizedValue,
 } from "@engineering-data-normalizer/shared";
 import { downloadFromS3 } from "../S3Service";
 import { llmBatchParse, llmSingleParse } from "./parsers";
-import { chunkArray, extractS3Key, extractTextFromFile } from "./helpers";
+import {
+  chunkArray,
+  extractS3Key,
+  extractTextFromFile,
+  prepareSingleImportTargets,
+  transformAiResponseToNormalizeEntities,
+} from "./helpers";
 import { CHUNK_SIZE, CONCURRENCY } from "./config";
 import { prisma } from "../../prisma";
 import { Prisma } from "../../generated/prisma/client";
 import { getRawValue } from "../../helpers/getRawValue";
 import { StagingImportItemStatus } from "../../types";
 import { ApiError } from "../../exceptions/api-error";
+import { normalizeSingleImport } from "../NormalizationService/service";
 
 export const processAiParsing = async (data: {
   importSessionId: string;
@@ -233,6 +242,7 @@ export const parseFile = async (importSessionId: string) => {
     throw new Error("Файл не найден в сессии импорта");
   }
 
+  const targets = prepareSingleImportTargets(session.category.attributes);
   const fileUrl = session.source.url;
   const extension = fileUrl.split(".").pop()?.toLowerCase();
   const storageKey = extractS3Key(fileUrl);
@@ -244,7 +254,27 @@ export const parseFile = async (importSessionId: string) => {
     extractedText,
     session.category.name,
     session.category.attributes,
+    targets,
   );
 
-  return parseResult;
+  const entitiesToNormalize = transformAiResponseToNormalizeEntities(
+    parseResult,
+    targets,
+  );
+
+  const normalizedData = await normalizeSingleImport(entitiesToNormalize);
+
+  return normalizedData.reduce(
+    (acc, item) => {
+      const key =
+        item.target.type === MappingTargetType.SYSTEM
+          ? item.target.field
+          : item.target.id;
+
+      acc[key] = item.normalized;
+
+      return acc;
+    },
+    {} as Record<string, NormalizedValue>,
+  );
 };

@@ -1,10 +1,12 @@
+import { AIParseTarget } from "@engineering-data-normalizer/shared";
+
 export type AiBatchParseResult = {
   rowId: string;
   sourceString: string;
   extracted: Record<string, string | number | boolean | null>;
 };
 
-export type AiSingleParseResult = Record<string, string>;
+export type AiSingleParseResult = Record<string, string | null>;
 
 export type AiBatchParseResultData = AiParseResultData<AiBatchParseResult[]>;
 
@@ -15,4 +17,8 @@ export type AiParseResultData<T> = {
   parsed: T;
   responseText: string;
   modelName: string;
+};
+
+export type ExtendedAIParseTarget = AIParseTarget & {
+  attributeId?: string;
 };

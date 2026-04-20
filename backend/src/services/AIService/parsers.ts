@@ -18,6 +18,7 @@ import {
   AiBatchParseResultData,
   AiSingleParseResult,
   AiSingleParseResultData,
+  ExtendedAIParseTarget,
 } from "./types";
 
 export const llmBatchParse = async (
@@ -55,6 +56,7 @@ export const llmSingleParse = async (
   categoryName: string,
   // TODO: костыль на деле то, стоит типизацию переработать
   attributes: Omit<CategoryAttribute, "type" | "options">[],
+  targets: ExtendedAIParseTarget[],
 ): Promise<AiSingleParseResult> => {
   const { systemPrompt, prompt } = generateSingleParsePrompts(
     documentText,
@@ -62,7 +64,6 @@ export const llmSingleParse = async (
     attributes,
   );
 
-  const targets = prepareSingleImportTargets(attributes);
   const result = await yandexAiSingleParse(systemPrompt, prompt, targets);
   const { tokensUsage, parsed, responseText, modelName } = result;
 

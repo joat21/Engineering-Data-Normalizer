@@ -3,11 +3,17 @@ import { PDFParse } from "pdf-parse";
 import {
   AIParseTarget,
   CategoryAttribute,
+  MappingTarget,
   MappingTargetType,
   SYSTEM_FIELDS_CONFIG,
   TransformPayload,
 } from "@engineering-data-normalizer/shared";
-import { AiParseResultData } from "./types";
+import {
+  AiParseResultData,
+  AiSingleParseResult,
+  ExtendedAIParseTarget,
+} from "./types";
+import { NormalizeSingleEntity } from "../NormalizationService/types";
 
 export const generateBatchParsePrompts = (
   lines: {
@@ -130,7 +136,7 @@ export const extractS3Key = (url: string): string => {
 
 export const prepareSingleImportTargets = (
   attributes: Omit<CategoryAttribute, "type" | "options">[],
-) => {
+): ExtendedAIParseTarget[] => {
   const systemTargets = Object.entries(SYSTEM_FIELDS_CONFIG).map(
     ([key, config]) => ({
       type: MappingTargetType.SYSTEM,
@@ -163,4 +169,32 @@ export const logAiParseResultData = (
   console.log(`[LOG]: System Prompt:\n${systemPrompt}`);
   console.log(`[LOG]: Prompt:\n${prompt}`);
   console.log(`[LOG]: Response text:\n${data.responseText}`);
+};
+
+export const transformAiResponseToNormalizeEntities = (
+  aiResponse: AiSingleParseResult,
+  targets: ExtendedAIParseTarget[],
+): NormalizeSingleEntity[] => {
+  return targets.map((target) => {
+    const value = aiResponse[target.key];
+
+    let mappingTarget: MappingTarget;
+
+    if (target.type === MappingTargetType.SYSTEM) {
+      mappingTarget = {
+        type: MappingTargetType.SYSTEM,
+        field: target.key as any,
+      };
+    } else {
+      mappingTarget = {
+        type: MappingTargetType.ATTRIBUTE,
+        id: target.attributeId!,
+      };
+    }
+
+    return {
+      target: mappingTarget,
+      value,
+    };
+  });
 };
