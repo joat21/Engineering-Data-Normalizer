@@ -7,21 +7,22 @@ import {
   type ColumnPinningState,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { Database, Settings2 } from "lucide-react";
+import { Settings2 } from "lucide-react";
 import type { EquipmentRow } from "@engineering-data-normalizer/shared";
 import { ColumnVisibility } from "./ColumnVisibility";
 import { EquipmentTable } from "./EquipmentTable";
-import { Pagination } from "./Pagination";
 import { Filters } from "./Filters";
+import { Pagination } from "./Pagination";
+import { Search } from "./Search";
 import { useEquipmentTableQuery } from "../model/useEquipmentTableQuery";
 import { buildColumns } from "../model/buildColumns";
 import { EquipmentDetailsDrawer } from "@/widgets/EquipmentDetailsDrawer";
 import { AddToProjectModal } from "@/features/add-to-project";
+import { useCategories } from "@/entities/category";
 import { useCategoryFilters } from "@/entities/category-filters";
 import { useAddToComparisonMutation } from "@/entities/comparison";
 import { useEquipmentTable } from "@/entities/equipment";
 import { PageLoader } from "@/shared/ui";
-import { Search } from "./Search";
 
 interface EquipmentBrowseProps {
   categoryId: string;
@@ -31,6 +32,8 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
   const addToProjectModal = useOverlayState();
   const equipmentDetailsDrawer = useOverlayState();
 
+  const { data: categories } = useCategories();
+  const categoryName = categories?.find((c) => c.id === categoryId)?.name;
   const { query, updateQuery } = useEquipmentTableQuery();
 
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(
@@ -149,19 +152,15 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
         <Filters filters={categoryFilters} />
 
         <div className="flex flex-col gap-4 min-w-0">
-          <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 rounded-2xl border bg-white ">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border">
-                <Database size={20} className="text-primary" />
-                <span className="font-semibold">
-                  {equipmentData.pagination.total}
-                  <span className="ml-1 font-normal text-sm uppercase">
-                    позиций
-                  </span>
-                </span>
-              </div>
-            </div>
+          <div className="flex items-center gap-3 px-1">
+            <h1 className="text-2xl font-semibold">{categoryName}</h1>
+            <span> |</span>
+            <span className="mt-1 text-lg">
+              Позиций: {equipmentData.pagination.total}
+            </span>
+          </div>
 
+          <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 rounded-2xl border bg-white ">
             <Search
               searchText={query.search}
               onSearch={handleSearch}
