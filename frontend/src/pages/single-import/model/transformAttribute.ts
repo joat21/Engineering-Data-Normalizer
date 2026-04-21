@@ -59,8 +59,9 @@ const transformNumberAttribute = (
   if (min !== null && max === null) max = min;
   if (max !== null && min === null) min = max;
 
+  rawValue = min === max ? `${min}` : `${min} - ${max}`;
   return {
-    rawValue: min === max ? `${min}` : `${min} - ${max}`,
+    rawValue,
     normalized: {
       valueMin: min ?? undefined,
       valueMax: max ?? undefined,

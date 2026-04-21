@@ -31,17 +31,15 @@ export const NumberAttributeField = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 group">
-      <div className="flex justify-between items-end px-1">
-        <Label className="text-base">
-          {label} {unit && `(${unit})`}
-        </Label>
-      </div>
+    <div className="flex flex-col gap-2">
+      <Label className="px-1 text-base">
+        {label} {unit && `(${unit})`}
+      </Label>
 
-      <div className="flex gap-2 items-start">
+      <div className="flex gap-1.5">
         <div className="flex-1">
           {isRange ? (
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               <NumericController
                 name={`${attributeKey}_valueMin`}
                 label="Минимум"

@@ -51,18 +51,36 @@ export const SingleImportForm = forwardRef(
 
     const fillFromAi = () => {
       for (const [key, value] of Object.entries(aiParseResult)) {
-        const currentValue = getValues(key);
-        const isFieldDirty = dirtyFields[key];
+        const attr = attributes?.find((a) => a.id === key || a.key === key);
+        if (!attr) continue;
 
-        if (isFieldDirty || currentValue) continue;
+        const fieldKey =
+          attr.type === MappingTargetType.ATTRIBUTE ? attr.id : attr.key;
+
+        const isNumber = value.valueMin !== undefined;
+        const checkKey = isNumber ? `${fieldKey}_valueMin` : fieldKey;
+
+        const currentValue = getValues(checkKey);
+        const isFieldDirty = dirtyFields[checkKey];
+
+        if (isFieldDirty || (currentValue !== undefined && currentValue !== ""))
+          continue;
 
         if (value.valueBoolean !== undefined) {
-          setValue(key, value.valueBoolean);
-        } else if (value.valueMin !== undefined) {
-          setValue(`${key}_valueMin`, value.valueMin);
-          setValue(`${key}_valueMax`, value.valueMax);
+          setValue(fieldKey, value.valueBoolean);
+        } else if (isNumber) {
+          setValue(`${fieldKey}_valueMin`, value.valueMin);
+          setValue(`${fieldKey}_valueMax`, value.valueMax);
         } else if (value.valueString) {
-          setValue(key, value.valueString);
+          if (attr.options.length === 0) {
+            setValue(fieldKey, value.valueString);
+          }
+
+          const foundOption = attr.options.find(
+            (o) => o.label.toLowerCase() === value.valueString.toLowerCase(),
+          );
+
+          setValue(fieldKey, foundOption ? foundOption.id : value.valueString);
         }
       }
     };

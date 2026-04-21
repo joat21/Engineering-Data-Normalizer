@@ -102,11 +102,9 @@ export const SingleImportCreate = ({
       return toast.danger("Заполните хотя бы один атрибут");
     }
 
-    console.log(payload);
-
-    // createEquipmentMutation.mutate(payload, {
-    //   onSuccess: () => successModal.open(),
-    // });
+    createEquipmentMutation.mutate(payload, {
+      onSuccess: () => successModal.open(),
+    });
   };
 
   const handleFinish = () => {

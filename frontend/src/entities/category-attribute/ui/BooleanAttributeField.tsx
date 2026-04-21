@@ -13,8 +13,8 @@ export const BooleanAttributeField = ({
     <Controller
       name={attributeKey}
       control={control}
-      render={({ field }) => (
-        <Checkbox variant={variant} {...field}>
+      render={({ field: { value, ...props } }) => (
+        <Checkbox variant={variant} isSelected={!!value} {...props}>
           <Checkbox.Control>
             <Checkbox.Indicator />
           </Checkbox.Control>
