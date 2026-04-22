@@ -229,6 +229,7 @@ model Supplier {
 
 model Currency {
   id        String      @id @default(uuid()) @db.Uuid
+  name      String
   code      String      @unique
   symbol    String
   rate      Decimal     @db.Decimal(14, 4)

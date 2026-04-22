@@ -17,3 +17,11 @@ export interface Supplier {
   id: string;
   name: string;
 }
+
+export interface Currency {
+  id: string;
+  name: string;
+  code: string;
+  symbol: string;
+  rate: number;
+}

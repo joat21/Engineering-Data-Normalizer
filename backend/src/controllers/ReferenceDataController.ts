@@ -6,6 +6,7 @@ import {
 import {
   createManufacturer,
   createSupplier,
+  getCurrencies,
   getManufacturers,
   getSuppliers,
 } from "../services/ReferenceDataService/service";
@@ -52,6 +53,15 @@ export const createSupplierHandler: HandlerFromSchema<
     const result = await createSupplier(req.body.name);
 
     res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCurrenciesHandler: RequestHandler = async (_req, res, next) => {
+  try {
+    const currencies = await getCurrencies();
+    res.json(currencies);
   } catch (error) {
     next(error);
   }

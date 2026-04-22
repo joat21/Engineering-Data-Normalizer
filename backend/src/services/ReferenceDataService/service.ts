@@ -19,3 +19,6 @@ export const createSupplier = (name: string) =>
   prisma.supplier.create({
     data: { name },
   });
+
+export const getCurrencies = () =>
+  prisma.currency.findMany({ orderBy: { name: "asc" } });
