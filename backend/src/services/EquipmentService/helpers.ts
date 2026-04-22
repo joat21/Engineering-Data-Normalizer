@@ -2,13 +2,14 @@ import { v4 as uuidv4 } from "uuid";
 import {
   BooleanFilterValue,
   DataType,
+  FieldContext,
   FilterValue,
+  getSystemFields,
   MappingTargetType,
   NormalizedData,
   NumericFilterValue,
   StringFilterValue,
   SYSTEM_FIELD_KEYS,
-  SYSTEM_FIELDS_CONFIG,
 } from "@engineering-data-normalizer/shared";
 import { prisma } from "../../prisma";
 import { SYSTEM_FIELDS } from "../../config";
@@ -228,14 +229,14 @@ export const buildSearchText = (
 ) => {
   const parts: string[] = [];
 
-  for (const [key, config] of Object.entries(SYSTEM_FIELDS_CONFIG)) {
+  for (const [key, config] of Object.entries(
+    getSystemFields(FieldContext.FTS),
+  )) {
     const field = key as keyof EquipmentSystemFields;
-
-    if (field === SYSTEM_FIELDS.PRICE) continue;
 
     if (equipmentEntry[field]) {
       parts.push(config.label);
-      parts.push(equipmentEntry[field]);
+      parts.push(String(equipmentEntry[field]));
     }
   }
 

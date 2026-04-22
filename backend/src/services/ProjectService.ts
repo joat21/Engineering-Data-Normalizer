@@ -1,7 +1,8 @@
 import ExcelJS from "exceljs";
-import { SYSTEM_FIELDS_CONFIG } from "@engineering-data-normalizer/shared";
+import { getSystemFields } from "@engineering-data-normalizer/shared";
 import { prisma } from "../prisma";
 import { ApiError } from "../exceptions/api-error";
+import { SYSTEM_FIELDS } from "../config";
 
 export const createProject = async (data: {
   name: string;
@@ -29,19 +30,10 @@ export const getProjectById = async (projectId: string) => {
     throw ApiError.NotFound("Проект не найден");
   }
 
-  const currencies = await prisma.currency.findMany();
-  const exchangeRatesMap = new Map(
-    currencies.map((curr) => [curr.id, curr.rate]),
-  );
-
   return {
     ...project,
     items: project.items.map((item) => {
       const equipment = item.equipment;
-
-      const rate = equipment.currencyId
-        ? exchangeRatesMap.get(equipment.currencyId)
-        : 1;
 
       return {
         id: item.id,
@@ -53,7 +45,8 @@ export const getProjectById = async (projectId: string) => {
         article: equipment.article,
         model: equipment.model,
         externalCode: equipment.externalCode,
-        price: (Number(equipment.price) * Number(rate)).toFixed(2),
+        price: equipment.price,
+        priceInRub: equipment.priceInRub,
       };
     }),
   };
@@ -87,10 +80,18 @@ export const exportProjectToExcel = async (projectId: string) => {
   const worksheet = workbook.addWorksheet("Оборудование");
 
   const columns = [
-    ...Object.entries(SYSTEM_FIELDS_CONFIG).map(([key, cfg]) => {
-      if (key === "price") {
+    ...Object.entries(getSystemFields()).map(([key, cfg]) => {
+      if (key === SYSTEM_FIELDS.PRICE) {
         return {
           header: "Цена за ед.",
+          key: key,
+          width: 20,
+        };
+      }
+
+      if (key === SYSTEM_FIELDS.PRICEINRUB) {
+        return {
+          header: `Цена за ед. (${cfg.unit})`,
           key: key,
           width: 20,
         };
@@ -120,7 +121,7 @@ export const exportProjectToExcel = async (projectId: string) => {
       total: rowTotal === 0 ? "—" : rowTotal.toFixed(2),
     };
 
-    Object.keys(SYSTEM_FIELDS_CONFIG).forEach((key) => {
+    Object.keys(getSystemFields()).forEach((key) => {
       const val = (item.equipment as any)[key];
       rowData[key] =
         val === null || val === undefined || val === "" ? "—" : val;
@@ -131,7 +132,7 @@ export const exportProjectToExcel = async (projectId: string) => {
 
   worksheet.addRow({});
   const totalRow = worksheet.addRow({
-    [Object.keys(SYSTEM_FIELDS_CONFIG)[0]]: "ОБЩАЯ СТОИМОСТЬ ПРОЕКТА:",
+    [Object.keys(getSystemFields())[0]]: "ОБЩАЯ СТОИМОСТЬ ПРОЕКТА:",
     total: grandTotal.toFixed(2),
   });
 

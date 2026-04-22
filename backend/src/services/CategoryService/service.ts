@@ -3,9 +3,9 @@ import {
   CreateCategoryAttributeParams,
   CreateCategoryBody,
   DataType,
+  getSystemFields,
   MappingTargetType,
   NormalizationOption,
-  SYSTEM_FIELDS_CONFIG,
   UpdateCategoryAttributeBody,
   UpdateCategoryAttributeParams,
 } from "@engineering-data-normalizer/shared";
@@ -54,7 +54,7 @@ export const getCategoryAttributes = async (categoryId: string) => {
 
   const optionsMap = await getAttributeOptionsMap(stringAttrIds);
 
-  const systemFields = Object.entries(SYSTEM_FIELDS_CONFIG).map(
+  const systemFields = Object.entries(getSystemFields()).map(
     ([key, config]) => {
       let options: NormalizationOption[] = [];
 
@@ -118,7 +118,7 @@ export const getCategoryWithAttributes = async (categoryId: string) => {
     throw ApiError.NotFound("Категория не найдена");
   }
 
-  const systemFields = Object.entries(SYSTEM_FIELDS_CONFIG).map(
+  const systemFields = Object.entries(getSystemFields()).map(
     ([key, config]) => ({
       id: key,
       key: key,

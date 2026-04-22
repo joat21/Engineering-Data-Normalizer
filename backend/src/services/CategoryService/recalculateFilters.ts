@@ -1,7 +1,8 @@
 import pMap from "p-map";
 import {
   DataType,
-  SYSTEM_FIELDS_CONFIG,
+  FieldContext,
+  getSystemFields,
 } from "@engineering-data-normalizer/shared";
 import { EquipmentSystemFields } from "../../types";
 import { Prisma } from "../../generated/prisma/client";
@@ -18,41 +19,43 @@ export const recalculateFilters = async (categoryId: string) => {
 
   // Системных полей мало, поэтому все запросы через Promise.all
   const systemFieldFilters = await Promise.all(
-    Object.entries(SYSTEM_FIELDS_CONFIG).map(async ([field, config]) => {
-      const systemField = field as keyof EquipmentSystemFields;
+    Object.entries(getSystemFields(FieldContext.FILTERS)).map(
+      async ([field, config]) => {
+        const systemField = field as keyof EquipmentSystemFields;
 
-      if (config.type === DataType.NUMBER) {
-        const agg = await prisma.equipment.aggregate({
-          where: { categoryId },
-          _min: { [systemField]: true },
-          _max: { [systemField]: true },
+        if (config.type === DataType.NUMBER) {
+          const agg = await prisma.equipment.aggregate({
+            where: { categoryId },
+            _min: { [systemField]: true },
+            _max: { [systemField]: true },
+          });
+
+          return {
+            categoryId,
+            systemField,
+            label: config.label,
+            type: DataType.NUMBER,
+            minValue: agg._min[systemField],
+            maxValue: agg._max[systemField],
+            options: [],
+          };
+        }
+
+        const groups = await prisma.equipment.findMany({
+          where: { categoryId, NOT: { [systemField]: null } },
+          distinct: [systemField],
+          select: { [systemField]: true },
         });
 
         return {
           categoryId,
-          systemField,
+          systemField: field,
           label: config.label,
-          type: DataType.NUMBER,
-          minValue: agg._min[systemField],
-          maxValue: agg._max[systemField],
-          options: [],
+          type: DataType.STRING,
+          options: groups.map((g) => g[systemField]).filter((v) => v !== null),
         };
-      }
-
-      const groups = await prisma.equipment.findMany({
-        where: { categoryId, NOT: { [systemField]: null } },
-        distinct: [systemField],
-        select: { [systemField]: true },
-      });
-
-      return {
-        categoryId,
-        systemField: field,
-        label: config.label,
-        type: DataType.STRING,
-        options: groups.map((g) => g[systemField]).filter((v) => v !== null),
-      };
-    }),
+      },
+    ),
   );
 
   // Атрибутов может быть много, поэтому через p-map запросы будут идти в несколько потоков,

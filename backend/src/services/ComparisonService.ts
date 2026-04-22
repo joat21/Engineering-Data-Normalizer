@@ -1,7 +1,9 @@
-import { SYSTEM_FIELDS_CONFIG } from "@engineering-data-normalizer/shared";
+import {
+  FieldContext,
+  getSystemFields,
+} from "@engineering-data-normalizer/shared";
 import { prisma } from "../prisma";
 import { EquipmentSystemFields } from "../types";
-import { SYSTEM_FIELDS } from "../config";
 
 type ComparisonGroup = {
   categoryId: string;
@@ -82,10 +84,12 @@ export const getComparisonTable = async (userId: string) => {
 
     if (!groupedData.has(category.id)) {
       const fields = [
-        ...Object.entries(SYSTEM_FIELDS_CONFIG).map(([key, config]) => ({
-          key,
-          label: config.label,
-        })),
+        ...Object.entries(getSystemFields(FieldContext.COMPARISON)).map(
+          ([key, config]) => ({
+            key,
+            label: config.label,
+          }),
+        ),
         ...category.attributes.map((attr) => ({
           key: attr.id,
           label: attr.label,
@@ -102,18 +106,9 @@ export const getComparisonTable = async (userId: string) => {
 
     const values: Record<string, string> = {};
 
-    Object.keys(SYSTEM_FIELDS_CONFIG).forEach((key) => {
+    Object.keys(getSystemFields(FieldContext.COMPARISON)).forEach((key) => {
       const fieldName = key as keyof EquipmentSystemFields;
-      let value = equipment[fieldName];
-
-      // костыль? костыль
-      if (fieldName === SYSTEM_FIELDS.PRICE) {
-        const rate = equipment.currencyId
-          ? exchangeRatesMap.get(equipment.currencyId)
-          : 1;
-
-        value = (Number(value) * Number(rate)).toFixed(2);
-      }
+      const value = equipment[fieldName];
 
       values[fieldName] =
         value === null || value === undefined || value === ""

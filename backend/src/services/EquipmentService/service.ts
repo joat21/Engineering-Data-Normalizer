@@ -4,10 +4,10 @@ import {
   EquipmentRow,
   EquipmentTableResponse,
   FilterValue,
+  getSystemFields,
   MappingTargetType,
   NormalizedData,
   NumericFilterValue,
-  SYSTEM_FIELDS_CONFIG,
 } from "@engineering-data-normalizer/shared";
 import { FIELD_MAP } from "./config";
 import {
@@ -300,19 +300,8 @@ export const getEquipmentTable = async (data: {
     categoryFilters
       .filter((f) => f.systemField)
       .forEach((f) => {
-        const fieldName = f.systemField!;
-        let value = (item as any)[fieldName];
-
-        // костыль? костыль
-        if (fieldName === SYSTEM_FIELDS.PRICE) {
-          const rate = item.currencyId
-            ? exchangeRatesMap.get(item.currencyId)
-            : 1;
-
-          value = (Number(value) * Number(rate)).toFixed(2);
-        }
-
-        row[fieldName] = value;
+        const value = (item as any)[f.systemField!];
+        row[f.systemField!] = value;
       });
 
     const valuesMap = new Map(item.attributes.map((a) => [a.attributeId, a]));
@@ -343,7 +332,6 @@ export const getEquipmentDetails = async (id: string) => {
     where: { id },
     include: {
       source: true,
-      currency: true,
       attributes: {
         include: {
           attribute: true,
@@ -356,20 +344,10 @@ export const getEquipmentDetails = async (id: string) => {
     throw ApiError.NotFound("Оборудование не найдено");
   }
 
-  const priceInRub =
-    item.price && item.currency
-      ? Number(item.price) * Number(item.currency.rate)
-      : null;
-
-  const systemFields = Object.entries(SYSTEM_FIELDS_CONFIG).map(
+  const systemFields = Object.entries(getSystemFields()).map(
     ([key, config]) => {
       const systemField = key as keyof EquipmentSystemFields;
-      let value = item[systemField] ? String(item[systemField]) : null;
-
-      // костыль? костыль
-      if (systemField === SYSTEM_FIELDS.PRICE && priceInRub !== null) {
-        value = String(priceInRub.toFixed(2));
-      }
+      const value = item[systemField] ? String(item[systemField]) : null;
 
       return {
         label: config.label,

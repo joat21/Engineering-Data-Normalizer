@@ -10,6 +10,7 @@ import {
   systemTargetSchema,
   transformConfigSchema,
 } from "./schemas";
+import type { SYSTEM_FIELDS_CONFIG } from "./constants";
 
 export type NormalizedValue = z.infer<typeof normalizedValueSchema>;
 export type NormalizedData = z.infer<typeof normalizedDataSchema>;
@@ -67,6 +68,25 @@ export const PrevActionType = {
 
 export type PrevActionType =
   (typeof PrevActionType)[keyof typeof PrevActionType];
+
+export const FieldContext = {
+  STAGING: "staging", // Промежуточная таблица маппинга
+  FILTERS: "filters", // Фильтры + таблица поиска
+  FTS: "fts", // Полнотекстовый поиск
+  COMPARISON: "comparison", // Сравнение
+  AI: "ai", // Извлечение данных с помощью ИИ
+} as const;
+
+export type FieldContext = (typeof FieldContext)[keyof typeof FieldContext];
+
+export type SystemFieldKey = keyof typeof SYSTEM_FIELDS_CONFIG;
+
+export interface SystemFieldMetadata {
+  label: string;
+  type: DataType;
+  unit?: string;
+  contexts?: FieldContext[];
+}
 
 export type MapColToAttrParams = z.infer<
   typeof mapColToAttrSchema.shape.params

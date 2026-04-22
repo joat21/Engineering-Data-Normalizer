@@ -3,9 +3,10 @@ import { PDFParse } from "pdf-parse";
 import {
   AIParseTarget,
   CategoryAttribute,
+  FieldContext,
+  getSystemFields,
   MappingTarget,
   MappingTargetType,
-  SYSTEM_FIELDS_CONFIG,
   TransformPayload,
 } from "@engineering-data-normalizer/shared";
 import {
@@ -137,7 +138,7 @@ export const extractS3Key = (url: string): string => {
 export const prepareSingleImportTargets = (
   attributes: Omit<CategoryAttribute, "type" | "options">[],
 ): ExtendedAIParseTarget[] => {
-  const systemTargets = Object.entries(SYSTEM_FIELDS_CONFIG).map(
+  const systemTargets = Object.entries(getSystemFields(FieldContext.AI)).map(
     ([key, config]) => ({
       type: MappingTargetType.SYSTEM,
       key: key,
