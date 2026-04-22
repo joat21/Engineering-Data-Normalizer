@@ -78,6 +78,7 @@ export const collectEquipmentAndAttributes = (data: {
   sourceId: string;
   manufacturer: Manufacturer | null;
   supplier: Supplier | null;
+  currencyId: string | null;
   normalizedData: NormalizedData[];
   attributeInfoMap: Map<
     string,
@@ -89,6 +90,7 @@ export const collectEquipmentAndAttributes = (data: {
     sourceId,
     manufacturer,
     supplier,
+    currencyId,
     normalizedData,
     attributeInfoMap,
   } = data;
@@ -96,8 +98,8 @@ export const collectEquipmentAndAttributes = (data: {
 
   const equipmentEntry: Prisma.EquipmentCreateManyInput = {
     id: equipmentId,
-    categoryId: categoryId,
-    sourceId: sourceId,
+    categoryId,
+    sourceId,
     searchText: "",
     name: null,
     article: null,
@@ -107,6 +109,7 @@ export const collectEquipmentAndAttributes = (data: {
     manufacturerName: manufacturer?.name || null,
     supplierName: supplier?.name || null,
     supplierId: supplier?.id || null,
+    currencyId,
     price: new Prisma.Decimal(0),
   };
 

@@ -157,12 +157,14 @@ model ImportSession {
   createdAt       DateTime            @default(now()) @db.Timestamptz()
   status          ImportStatus        @default(PENDING)
   originHeader    Json?               @default("[]")
-  items           StagingImportItem[]
-  aiParseSessions AiParseSession[]
   manufacturer    Manufacturer?       @relation(fields: [manufacturerId], references: [id])
   manufacturerId  String?             @db.Uuid
   supplier        Supplier?           @relation(fields: [supplierId], references: [id])
   supplierId      String?             @db.Uuid
+  currency        Currency?           @relation(fields: [currencyId], references: [id])
+  currencyId      String?             @db.Uuid
+  items           StagingImportItem[]
+  aiParseSessions AiParseSession[]
 }
 
 model StagingImportItem {
@@ -228,13 +230,14 @@ model Supplier {
 }
 
 model Currency {
-  id        String      @id @default(uuid()) @db.Uuid
-  name      String
-  code      String      @unique
-  symbol    String
-  rate      Decimal     @db.Decimal(14, 4)
-  updatedAt DateTime    @updatedAt @db.Timestamptz()
-  equipment Equipment[]
+  id             String          @id @default(uuid()) @db.Uuid
+  name           String
+  code           String          @unique
+  symbol         String
+  rate           Decimal         @db.Decimal(14, 4)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz()
+  equipment      Equipment[]
+  importSessions ImportSession[]
 }
 
 enum DataType {

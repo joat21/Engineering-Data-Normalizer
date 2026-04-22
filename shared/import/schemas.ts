@@ -7,6 +7,7 @@ export const initImportSchema = z.object({
     sourceType: z.enum(SourceType),
     manufacturerId: z.string().optional(),
     supplierId: z.string().optional(),
+    currencyId: z.string(),
     originHeader: z.preprocess((val) => {
       if (typeof val === "string") {
         try {
