@@ -6,7 +6,7 @@ import {
 } from "@engineering-data-normalizer/shared";
 import { prisma } from "../../prisma";
 import { calculateHashAsync } from "../../helpers/calculateHashAsync";
-import { uploadFile, uploadToS3 } from "../S3Service";
+import { uploadToS3 } from "../S3Service";
 import { createSource } from "../SourceService";
 import { TransformedRow } from "../NormalizationService/types";
 import { getAttributeInfoMap } from "../../db/categoryAttribute";
@@ -22,6 +22,7 @@ export const createSession = async (data: {
   originHeader?: string[];
   manufacturerId?: string;
   supplierId?: string;
+  currencyId: string;
 }) => {
   const {
     categoryId,
@@ -30,6 +31,7 @@ export const createSession = async (data: {
     originHeader,
     manufacturerId,
     supplierId,
+    currencyId,
   } = data;
 
   const fileHash = await calculateHashAsync(file.buffer);
@@ -88,6 +90,7 @@ export const createSession = async (data: {
       originHeader,
       manufacturerId,
       supplierId,
+      currencyId,
     },
   });
 

@@ -24,4 +24,6 @@ router.post(
   ReferenceDataController.createSupplierHandler,
 );
 
+router.get("/currencies", ReferenceDataController.getCurrenciesHandler);
+
 export default router;

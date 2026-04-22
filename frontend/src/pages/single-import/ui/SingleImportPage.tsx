@@ -34,6 +34,7 @@ export const SingleImportPage = () => {
     categoryName?: string;
     manufacturerId: string;
     supplierId: string;
+    currencyId: string;
   }) => {
     initImportMutation.mutate(
       { ...data, sourceType: SourceType.SINGLE_ITEM },

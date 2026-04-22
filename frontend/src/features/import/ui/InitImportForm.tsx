@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Card, Form, toast } from "@heroui/react";
 import type { SourceType } from "@engineering-data-normalizer/shared";
 import { useCategories } from "@/entities/category";
+import { useCurrencies } from "@/entities/currency";
 import { AppSelect, FileDropzone, PageLoader } from "@/shared/ui";
 import { ACCEPTED_FORMATS } from "../model/config";
 import { useCreateSupplierMutation, useSuppliers } from "@/entities/supplier";
@@ -19,6 +20,7 @@ interface InitImportFormProps {
     categoryName?: string;
     manufacturerId: string;
     supplierId: string;
+    currencyId: string;
   }) => void;
   isLoading?: boolean;
   sourceType: SourceType;
@@ -31,11 +33,13 @@ export const InitImportForm = ({
 }: InitImportFormProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [currencyId, setCurrencyId] = useState<string | null>(null);
 
   const { data: categories, isPending } = useCategories();
   const { data: manufacturers, isPending: isManufacturersPending } =
     useManufacturers();
   const { data: suppliers, isPending: isSuppliersPending } = useSuppliers();
+  const { data: currencies, isPending: isCurrenciesPending } = useCurrencies();
 
   const createManufacturerMutation = useCreateManufacturerMutation();
   const createSupplierMutation = useCreateSupplierMutation();
@@ -45,7 +49,7 @@ export const InitImportForm = ({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!categoryId) return;
+    if (!categoryId || !currencyId) return;
     if (!file) return toast.danger("Выберите файл");
 
     // получение поставщика и производителя перенесены из другого компонента
@@ -80,6 +84,7 @@ export const InitImportForm = ({
       categoryName: categories?.find((c) => c.id === categoryId)?.name,
       manufacturerId: finalManufacturerId!,
       supplierId: finalSupplierId!,
+      currencyId,
     });
   };
 
@@ -129,10 +134,24 @@ export const InitImportForm = ({
           items={suppliers ?? []}
         />
 
+        <AppSelect
+          name="currency"
+          label="Валюта"
+          placeholder="Выберите валюту"
+          items={currencies ?? []}
+          isPending={isCurrenciesPending}
+          getItemKey={(item) => item.id}
+          getItemLabel={(item) => `${item.name} (${item.code})`}
+          value={currencyId}
+          onChange={(value) => setCurrencyId(String(value))}
+          variant="secondary"
+          isRequired
+        />
+
         <Button
           className="self-end"
           type="submit"
-          isDisabled={!file || !categoryId}
+          isDisabled={!file}
           isPending={isLoading}
         >
           Продолжить

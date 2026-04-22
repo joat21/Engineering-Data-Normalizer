@@ -11,6 +11,7 @@ interface ImportState {
   sessionId: string | null;
   manufacturerId: string | null;
   supplierId: string | null;
+  currencyId: string | null;
 
   setInitialData: (data: {
     categoryId: string;
@@ -18,6 +19,7 @@ interface ImportState {
     sourceType: SourceType;
     manufacturerId: string;
     supplierId: string;
+    currencyId: string;
   }) => void;
   setCategoryId: (categoryId: string) => void;
   setCategoryName: (name?: string) => void;
@@ -34,6 +36,7 @@ export const useImportStore = create<ImportState>((set) => ({
   sessionId: null,
   manufacturerId: null,
   supplierId: null,
+  currencyId: null,
 
   setInitialData: (data) =>
     set({ ...data, step: SingleImportStep.FILL_ATTRIBUTES }),
@@ -49,5 +52,6 @@ export const useImportStore = create<ImportState>((set) => ({
       sessionId: null,
       manufacturerId: null,
       supplierId: null,
+      currencyId: null,
     }),
 }));

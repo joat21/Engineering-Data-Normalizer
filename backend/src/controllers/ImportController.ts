@@ -14,22 +14,13 @@ export const initImportHandler: HandlerFromSchema<
   typeof initImportSchema
 > = async (req, res, next) => {
   try {
-    const { categoryId, sourceType, originHeader, manufacturerId, supplierId } =
-      req.body;
     const file = req.file;
 
     if (!file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const result = await createSession({
-      categoryId,
-      sourceType,
-      file,
-      originHeader,
-      manufacturerId,
-      supplierId,
-    });
+    const result = await createSession({ file, ...req.body });
 
     res.json(result);
   } catch (error) {

@@ -28,6 +28,7 @@ interface SingleImportCreateProps {
     categoryId: string;
     manufacturerId: string;
     supplierId: string;
+    currencyId: string;
   }) => void;
   isLoadingSession: boolean;
   fileUrl: string;
@@ -46,6 +47,7 @@ export const SingleImportCreate = ({
   const setStep = useImportStore((s) => s.setStep);
   const manufacturerId = useImportStore((s) => s.manufacturerId);
   const supplierId = useImportStore((s) => s.supplierId);
+  const currencyId = useImportStore((s) => s.currencyId);
 
   const navigate = useNavigate();
   const successModal = useOverlayState();
@@ -121,6 +123,7 @@ export const SingleImportCreate = ({
       categoryId: categoryId!,
       manufacturerId: manufacturerId!,
       supplierId: supplierId!,
+      currencyId: currencyId!,
     });
   };
 

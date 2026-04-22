@@ -40,6 +40,7 @@ export const InitTable = ({ categoryId }: InitTableProps) => {
   const setStep = useImportStore((s) => s.setStep);
   const manufacturerId = useImportStore((s) => s.manufacturerId);
   const supplierId = useImportStore((s) => s.supplierId);
+  const currencyId = useImportStore((s) => s.currencyId);
 
   const [data, setData] = useState<any[][]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -122,6 +123,7 @@ export const InitTable = ({ categoryId }: InitTableProps) => {
         originHeader: headers,
         manufacturerId: manufacturerId!,
         supplierId: supplierId!,
+        currencyId: currencyId!,
       });
 
       setSessionId(sessionId);
