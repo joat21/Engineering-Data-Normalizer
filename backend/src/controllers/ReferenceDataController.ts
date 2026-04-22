@@ -8,7 +8,7 @@ import {
   createSupplier,
   getManufacturers,
   getSuppliers,
-} from "../services/ReferenceDataService";
+} from "../services/ReferenceDataService/service";
 import { HandlerFromSchema } from "../types/zod";
 
 export const getManufacturersHandler: RequestHandler = async (
