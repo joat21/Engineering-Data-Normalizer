@@ -161,17 +161,40 @@ export const createCategoryAttribute = async (
 export const updateCategoryAttribute = async (
   data: UpdateCategoryAttributeParams & UpdateCategoryAttributeBody,
 ) => {
-  const attribute = await prisma.categoryAttribute.update({
+  const { id, label } = data;
+
+  const existingAttribute = await prisma.categoryAttribute.findUnique({
+    where: { id },
+  });
+
+  if (!existingAttribute) {
+    throw ApiError.NotFound("Атрибут не найден");
+  }
+
+  const isLabelExist = await checkIsLabelExist(
+    existingAttribute?.categoryId,
+    label ?? "",
+  );
+
+  if (isLabelExist) {
+    throw ApiError.BadRequest(
+      `Атрибут с названием "${label}" уже добавлен в эту категорию`,
+    );
+  }
+
+  const updatedAttribute = await prisma.categoryAttribute.update({
     where: { id: data.id },
     data: data,
   });
 
-  await handleUpdateCategoryFilter(attribute.categoryId, attribute, {
-    // TODO: в идеале сперва получать сам атрибут,
-    // чтобы сравнить лейблы
-    labelChanged: !!data.label,
-    isFilterable: attribute.isFilterable,
-  });
+  await handleUpdateCategoryFilter(
+    updatedAttribute.categoryId,
+    updatedAttribute,
+    {
+      labelChanged: label !== updatedAttribute.label,
+      isFilterable: updatedAttribute.isFilterable,
+    },
+  );
 
-  return attribute;
+  return updatedAttribute;
 };
