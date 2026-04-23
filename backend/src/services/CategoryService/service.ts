@@ -7,7 +7,6 @@ import {
   FieldContext,
   getSystemFields,
   MappingTargetType,
-  NormalizationOption,
   UpdateCategoryAttributeBody,
   UpdateCategoryAttributeParams,
 } from "@engineering-data-normalizer/shared";
@@ -16,7 +15,10 @@ import { getAttributeOptionsMap } from "../../helpers/getAttributeOptionsMap";
 import { booleanNormalizationOptions } from "../NormalizationService/config";
 import { handleUpdateCategoryFilter } from "./handleUpdateCategoryFilter";
 import { ApiError } from "../../exceptions/api-error";
-import { transformSystemFieldsToAttributes } from "./helpers";
+import {
+  checkIsLabelExist,
+  transformSystemFieldsToAttributes,
+} from "./helpers";
 
 export const getCategories = async () => await prisma.category.findMany();
 
@@ -109,14 +111,8 @@ export const createCategoryAttribute = async (
 ) => {
   const { id: categoryId, isFilterable, label, unit, dataType } = data;
 
-  const existingLabel = await prisma.categoryAttribute.findFirst({
-    where: {
-      categoryId,
-      label,
-    },
-  });
-
-  if (existingLabel) {
+  const isLabelExist = await checkIsLabelExist(categoryId, label);
+  if (isLabelExist) {
     throw ApiError.BadRequest(
       `Атрибут с названием "${label}" уже добавлен в эту категорию`,
     );
