@@ -23,25 +23,31 @@ export const transformSystemFieldsToAttributes = (
   });
 };
 
-export const checkIsLabelExist = async (categoryId: string, label: string) => {
+export const getExistingAttributeLabel = async (
+  categoryId: string,
+  label: string,
+) => {
   for (const value of Object.values(getSystemFields())) {
     const config = value as SystemFieldMetadata;
 
     if (config.label.toLowerCase() === label.toLowerCase()) {
-      return true;
+      return config.label;
     }
   }
 
   const existingAttribute = await prisma.categoryAttribute.findFirst({
     where: {
       categoryId,
-      label,
+      label: {
+        equals: label,
+        mode: "insensitive",
+      },
     },
   });
 
-  if (existingAttribute?.label.toLowerCase() === label.toLowerCase()) {
-    return true;
+  if (existingAttribute) {
+    return existingAttribute.label;
   }
 
-  return false;
+  return null;
 };

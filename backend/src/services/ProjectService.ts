@@ -7,7 +7,24 @@ import { SYSTEM_FIELDS } from "../config";
 export const createProject = async (data: {
   name: string;
   description: string;
-}) => await prisma.project.create({ data });
+}) => {
+  const existingProject = await prisma.project.findFirst({
+    where: {
+      name: {
+        equals: data.name,
+        mode: "insensitive",
+      },
+    },
+  });
+
+  if (existingProject) {
+    throw ApiError.BadRequest(
+      `Проект с названием "${existingProject.name}" уже существует`,
+    );
+  }
+
+  return prisma.project.create({ data });
+};
 
 export const getProjects = async () => await prisma.project.findMany();
 
@@ -60,7 +77,22 @@ export const updateProject = async (
     isArchived?: boolean;
   },
 ) => {
-  return await prisma.project.update({
+  const existingProject = await prisma.project.findFirst({
+    where: {
+      name: {
+        equals: data.name,
+        mode: "insensitive",
+      },
+    },
+  });
+
+  if (existingProject) {
+    throw ApiError.BadRequest(
+      `Проект с названием "${existingProject.name}" уже существует`,
+    );
+  }
+
+  return prisma.project.update({
     where: { id: projectId },
     data,
   });

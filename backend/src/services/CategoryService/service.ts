@@ -16,7 +16,7 @@ import { booleanNormalizationOptions } from "../NormalizationService/config";
 import { handleUpdateCategoryFilter } from "./handleUpdateCategoryFilter";
 import { ApiError } from "../../exceptions/api-error";
 import {
-  checkIsLabelExist,
+  getExistingAttributeLabel,
   transformSystemFieldsToAttributes,
 } from "./helpers";
 
@@ -99,10 +99,25 @@ export const getCategoryWithAttributes = async (categoryId: string) => {
 };
 
 export const createCategory = async (data: CreateCategoryBody) => {
-  return prisma.category.create({
-    data: {
-      name: data.name,
+  const { name } = data;
+
+  const existingCategory = await prisma.category.findFirst({
+    where: {
+      name: {
+        equals: name,
+        mode: "insensitive",
+      },
     },
+  });
+
+  if (existingCategory) {
+    throw ApiError.BadRequest(
+      `Категория с названием "${existingCategory.name}" уже существует`,
+    );
+  }
+
+  return prisma.category.create({
+    data,
   });
 };
 
@@ -111,10 +126,10 @@ export const createCategoryAttribute = async (
 ) => {
   const { id: categoryId, isFilterable, label, unit, dataType } = data;
 
-  const isLabelExist = await checkIsLabelExist(categoryId, label);
-  if (isLabelExist) {
+  const existingLabel = await getExistingAttributeLabel(categoryId, label);
+  if (existingLabel) {
     throw ApiError.BadRequest(
-      `Атрибут с названием "${label}" уже добавлен в эту категорию`,
+      `Атрибут с названием "${existingLabel}" уже добавлен в эту категорию`,
     );
   }
 
@@ -171,14 +186,14 @@ export const updateCategoryAttribute = async (
     throw ApiError.NotFound("Атрибут не найден");
   }
 
-  const isLabelExist = await checkIsLabelExist(
+  const existingLabel = await getExistingAttributeLabel(
     existingAttribute?.categoryId,
     label ?? "",
   );
 
-  if (isLabelExist) {
+  if (existingLabel) {
     throw ApiError.BadRequest(
-      `Атрибут с названием "${label}" уже добавлен в эту категорию`,
+      `Атрибут с названием "${existingLabel}" уже добавлен в эту категорию`,
     );
   }
 
