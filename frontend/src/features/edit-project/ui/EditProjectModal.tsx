@@ -10,17 +10,16 @@ import {
 } from "@heroui/react";
 import type { Project } from "@engineering-data-normalizer/shared";
 import { useEditProjectMutation } from "../api/edit-project.api";
+import { AppModal, type AppModalProps } from "@/shared/ui";
 
-interface EditProjectModalProps {
+interface EditProjectModalProps extends AppModalProps {
   project: Project;
-  onClose: () => void;
-  isOpen: boolean;
 }
 
 export const EditProjectModal = ({
   project,
-  onClose,
-  isOpen,
+  state,
+  ...props
 }: EditProjectModalProps) => {
   const editProjectMutation = useEditProjectMutation();
 
@@ -37,92 +36,90 @@ export const EditProjectModal = ({
     };
 
     await editProjectMutation.mutateAsync(payload);
-    onClose();
+    state.close();
   };
 
   return (
-    <Modal.Backdrop isOpen={isOpen}>
-      <Modal.Container>
-        <Modal.Dialog>
-          <Modal.CloseTrigger onPress={onClose} />
-          <Modal.Header>
-            <Modal.Heading className="text-2xl">
-              Редактирование проекта
-            </Modal.Heading>
-          </Modal.Header>
-          <Modal.Body>
-            <Form
-              id="edit-category-attribute"
-              onSubmit={handleEditProject}
-              className="flex flex-col gap-4"
+    <AppModal state={state} {...props}>
+      <Modal.Dialog>
+        <Modal.CloseTrigger />
+        <Modal.Header>
+          <Modal.Heading className="text-2xl">
+            Редактирование проекта
+          </Modal.Heading>
+        </Modal.Header>
+        <Modal.Body>
+          <Form
+            id="edit-category-attribute"
+            onSubmit={handleEditProject}
+            className="flex flex-col gap-4"
+          >
+            <Label htmlFor="name" className="flex flex-col gap-1 text-lg">
+              Название
+              <Input
+                id="name"
+                name="name"
+                placeholder="Введите название..."
+                defaultValue={project.name}
+                variant="secondary"
+                required
+              />
+            </Label>
+            <Label
+              htmlFor="description"
+              className="flex flex-col gap-1 text-lg"
             >
-              <Label htmlFor="name" className="flex flex-col gap-1 text-lg">
-                Название
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Введите название..."
-                  defaultValue={project.name}
-                  variant="secondary"
-                  required
-                />
-              </Label>
-              <Label
-                htmlFor="description"
-                className="flex flex-col gap-1 text-lg"
+              Описание
+              <TextArea
+                id="description"
+                name="description"
+                placeholder="Введите описание..."
+                defaultValue={project.description}
+                variant="secondary"
+                required
+              />
+            </Label>
+            <Label htmlFor="status" className="flex flex-col gap-1 text-lg">
+              Статус
+              <RadioGroup
+                defaultValue={project.isArchived ? "archived" : "active"}
+                name="status"
+                orientation="horizontal"
+                variant="secondary"
               >
-                Описание
-                <TextArea
-                  id="description"
-                  name="description"
-                  placeholder="Введите описание..."
-                  defaultValue={project.description}
-                  variant="secondary"
-                  required
-                />
-              </Label>
-              <Label htmlFor="status" className="flex flex-col gap-1 text-lg">
-                Статус
-                <RadioGroup
-                  defaultValue={project.isArchived ? "archived" : "active"}
-                  name="status"
-                  orientation="horizontal"
-                  variant="secondary"
-                >
-                  <Radio value="active">
-                    <Radio.Control>
-                      <Radio.Indicator />
-                    </Radio.Control>
-                    <Radio.Content>
-                      <Label>Активен</Label>
-                    </Radio.Content>
-                  </Radio>
-                  <Radio value="archived">
-                    <Radio.Control>
-                      <Radio.Indicator />
-                    </Radio.Control>
-                    <Radio.Content>
-                      <Label>В архиве</Label>
-                    </Radio.Content>
-                  </Radio>
-                </RadioGroup>
-              </Label>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onPress={onClose} variant="secondary">
-              Отмена
-            </Button>
-            <Button
-              form="edit-category-attribute"
-              type="submit"
-              isDisabled={editProjectMutation.isPending}
-            >
-              Подтвердить
-            </Button>
-          </Modal.Footer>
-        </Modal.Dialog>
-      </Modal.Container>
-    </Modal.Backdrop>
+                <Radio value="active">
+                  <Radio.Control>
+                    <Radio.Indicator />
+                  </Radio.Control>
+                  <Radio.Content>
+                    <Label>Активен</Label>
+                  </Radio.Content>
+                </Radio>
+                <Radio value="archived">
+                  <Radio.Control>
+                    <Radio.Indicator />
+                  </Radio.Control>
+                  <Radio.Content>
+                    <Label>В архиве</Label>
+                  </Radio.Content>
+                </Radio>
+              </RadioGroup>
+            </Label>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onPress={state.close} variant="secondary">
+            Отмена
+          </Button>
+          <Button
+            form="edit-category-attribute"
+            type="submit"
+            isDisabled={editProjectMutation.isPending}
+          >
+            Подтвердить
+          </Button>
+        </Modal.Footer>
+      </Modal.Dialog>
+    </AppModal>
   );
 };

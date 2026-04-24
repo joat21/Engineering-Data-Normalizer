@@ -2,9 +2,9 @@ import { useProjects } from "@/entities/project";
 import { AppLink, PageLoader } from "@/shared/ui";
 import { Button, useOverlayState } from "@heroui/react";
 import { Plus } from "lucide-react";
+import { CreateProjectModal } from "@/features/create-project";
 import { ProjectCard } from "./ProjectCard";
 import { EmptyState } from "./EmptyState";
-import { CreateProjectModal } from "@/features/create-project";
 
 export const ProjectsPage = () => {
   const createProjectModal = useOverlayState();
@@ -44,10 +44,7 @@ export const ProjectsPage = () => {
         )}
       </div>
 
-      <CreateProjectModal
-        onClose={createProjectModal.close}
-        isOpen={createProjectModal.isOpen}
-      />
+      <CreateProjectModal state={createProjectModal} />
     </>
   );
 };

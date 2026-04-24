@@ -10,7 +10,6 @@ import {
   type MappingTarget,
 } from "@engineering-data-normalizer/shared";
 import { PdfViewer } from "./PdfViewer";
-import { ImportSuccessModal } from "./ImportSuccessModal";
 import { SingleImportForm } from "./SingleImportForm";
 import {
   useAiParseFile,
@@ -20,6 +19,7 @@ import { transformAttribute } from "../model/transformAttribute";
 import { SingleImportStep, useImportStore } from "@/features/import";
 import { CreateCategoryAttributeModal } from "@/features/create-category-attibute";
 import { AiParsingAlert } from "./AiParsingAlert";
+import { ImportSuccessModal } from "@/shared/ui";
 
 interface SingleImportCreateProps {
   attributes: CategoryAttribute[] | undefined;
@@ -186,8 +186,7 @@ export const SingleImportCreate = ({
 
       <CreateCategoryAttributeModal
         categoryId={categoryId}
-        isOpen={createCategoryAttributeModal.isOpen}
-        onClose={createCategoryAttributeModal.close}
+        state={createCategoryAttributeModal}
       />
 
       <ImportSuccessModal

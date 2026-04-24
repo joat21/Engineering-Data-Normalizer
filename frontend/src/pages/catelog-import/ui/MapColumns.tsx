@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router";
 import { Button, useOverlayState } from "@heroui/react";
 import { Plus, Save } from "lucide-react";
-import { ImportSuccessModal } from "./ImportSuccessModal";
 import { ResolveNormalizationIssuesModal } from "./ResolveNormalizationIssuesModal";
 import { RowsSelectionPanel } from "./RowsSelectionPanel";
 import { TableBody } from "./TableBody";
@@ -15,7 +14,7 @@ import {
 } from "@/features/import";
 import { useCategoryAttributes } from "@/entities/category-attribute";
 import { CreateCategoryAttributeModal } from "@/features/create-category-attibute";
-import { PageLoader } from "@/shared/ui";
+import { PageLoader, ImportSuccessModal } from "@/shared/ui";
 
 interface MapColumnsProps {
   sessionId: string;
@@ -129,8 +128,7 @@ export const MapColumns = ({ sessionId, categoryId }: MapColumnsProps) => {
 
       <CreateCategoryAttributeModal
         categoryId={categoryId}
-        isOpen={createCategoryAttributeModal.isOpen}
-        onClose={createCategoryAttributeModal.close}
+        state={createCategoryAttributeModal}
       />
     </>
   );

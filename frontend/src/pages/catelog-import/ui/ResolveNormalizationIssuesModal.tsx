@@ -1,4 +1,5 @@
 import { Button, Form, Modal } from "@heroui/react";
+import { FormProvider, useForm, type FieldValues } from "react-hook-form";
 import {
   MappingTargetType,
   type MappingTarget,
@@ -12,6 +13,11 @@ const getTargetKey = (target: MappingTarget) =>
   target.type === MappingTargetType.ATTRIBUTE ? target.id : target.field;
 
 export const ResolveNormalizationIssuesModal = () => {
+  // компонент AttributeField использует RHF,
+  // поэтому здесь тоже нужен провайдер
+  // TODO: переписать handleSubmit под работу с RHF (убрать formData)
+  const methods = useForm<FieldValues>({ mode: "onChange" });
+
   const resolveNormalizationIssuesMutation =
     useResolveNormalizationIssuesMutation();
 
@@ -67,7 +73,7 @@ export const ResolveNormalizationIssuesModal = () => {
   };
 
   return (
-    <Modal.Backdrop isOpen={isOpen} onOpenChange={(open) => !open}>
+    <Modal.Backdrop isOpen={isOpen}>
       <Modal.Container>
         <Modal.Dialog>
           <Modal.CloseTrigger />
@@ -75,11 +81,10 @@ export const ResolveNormalizationIssuesModal = () => {
             <Modal.Heading>Требуется уточнение данных</Modal.Heading>
           </Modal.Header>
           <Modal.Body>
-            <Form id="resolve-normalization-issues" onSubmit={handleSubmit}>
-              {normalizationContext?.issues.map((issue) =>
-                issue.unnormalizedValues.map((val) => (
-                  <div className="flex flex-col gap-1" key={issue.target.label}>
-                    <span>{issue.target.label}</span>
+            <FormProvider {...methods}>
+              <Form id="resolve-normalization-issues" onSubmit={handleSubmit}>
+                {normalizationContext?.issues.map((issue) =>
+                  issue.unnormalizedValues.map((val) => (
                     <AttributeField
                       key={getTargetKey(issue.target)}
                       attributeKey={`${getTargetKey(issue.target)}|${val}`}
@@ -88,11 +93,12 @@ export const ResolveNormalizationIssuesModal = () => {
                       unit=""
                       options={issue.normalizationOptions}
                       dataType={issue.target.dataType}
+                      variant="secondary"
                     />
-                  </div>
-                )),
-              )}
-            </Form>
+                  )),
+                )}
+              </Form>
+            </FormProvider>
           </Modal.Body>
           <Modal.Footer>
             <Button type="submit" form="resolve-normalization-issues">

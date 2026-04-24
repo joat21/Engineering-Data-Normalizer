@@ -1,17 +1,16 @@
 import { Button, Checkbox, Form, Input, Label, Modal } from "@heroui/react";
 import { type CategoryAttribute } from "@engineering-data-normalizer/shared";
 import { useEditCategoryAttributeMutation } from "../api/edit-category-attribute.api";
+import { AppModal, type AppModalProps } from "@/shared/ui";
 
-interface EditCategoryAttributeModalProps {
+interface EditCategoryAttributeModalProps extends AppModalProps {
   attribute: CategoryAttribute | undefined;
-  onClose: () => void;
-  isOpen: boolean;
 }
 
 export const EditCategoryAttributeModal = ({
   attribute,
-  onClose,
-  isOpen,
+  state,
+  ...props
 }: EditCategoryAttributeModalProps) => {
   const editCategoryAttributeMutation = useEditCategoryAttributeMutation();
 
@@ -29,64 +28,62 @@ export const EditCategoryAttributeModal = ({
     };
 
     await editCategoryAttributeMutation.mutateAsync(payload);
-    onClose();
+    state.close();
   };
 
   return (
-    <Modal.Backdrop isOpen={isOpen}>
-      <Modal.Container>
-        <Modal.Dialog>
-          <Modal.CloseTrigger onPress={onClose} />
-          <Modal.Header>
-            <Modal.Heading className="text-2xl">
-              Редактирование атрибута
-            </Modal.Heading>
-          </Modal.Header>
-          <Modal.Body>
-            <Form
-              id="edit-category-attribute"
-              onSubmit={handleEditAttribute}
-              className="flex flex-col gap-4"
-            >
-              <Label htmlFor="label" className="flex flex-col gap-1 text-lg">
-                Название атрибута*
-                <Input
-                  id="label"
-                  name="label"
-                  placeholder="Введите название..."
-                  defaultValue={attribute?.label}
-                  variant="secondary"
-                  required
-                />
-              </Label>
-              <Checkbox
-                name="isFilterable"
-                defaultSelected={attribute?.isFilterable}
+    <AppModal state={state} {...props}>
+      <Modal.Dialog>
+        <Modal.CloseTrigger />
+        <Modal.Header>
+          <Modal.Heading className="text-2xl">
+            Редактирование атрибута
+          </Modal.Heading>
+        </Modal.Header>
+        <Modal.Body>
+          <Form
+            id="edit-category-attribute"
+            onSubmit={handleEditAttribute}
+            className="flex flex-col gap-4"
+          >
+            <Label htmlFor="label" className="flex flex-col gap-1 text-lg">
+              Название атрибута*
+              <Input
+                id="label"
+                name="label"
+                placeholder="Введите название..."
+                defaultValue={attribute?.label}
                 variant="secondary"
-              >
-                <Checkbox.Control>
-                  <Checkbox.Indicator />
-                </Checkbox.Control>
-                <Checkbox.Content>
-                  <Label className="text-lg">Использовать в фильтрации</Label>
-                </Checkbox.Content>
-              </Checkbox>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onPress={onClose} variant="secondary">
-              Отмена
-            </Button>
-            <Button
-              form="edit-category-attribute"
-              type="submit"
-              isDisabled={editCategoryAttributeMutation.isPending}
+                required
+              />
+            </Label>
+            <Checkbox
+              name="isFilterable"
+              defaultSelected={attribute?.isFilterable}
+              variant="secondary"
             >
-              Подтвердить
-            </Button>
-          </Modal.Footer>
-        </Modal.Dialog>
-      </Modal.Container>
-    </Modal.Backdrop>
+              <Checkbox.Control>
+                <Checkbox.Indicator />
+              </Checkbox.Control>
+              <Checkbox.Content>
+                <Label className="text-lg">Использовать в фильтрации</Label>
+              </Checkbox.Content>
+            </Checkbox>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onPress={state.close} variant="secondary">
+            Отмена
+          </Button>
+          <Button
+            form="edit-category-attribute"
+            type="submit"
+            isDisabled={editCategoryAttributeMutation.isPending}
+          >
+            Подтвердить
+          </Button>
+        </Modal.Footer>
+      </Modal.Dialog>
+    </AppModal>
   );
 };

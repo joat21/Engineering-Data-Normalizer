@@ -36,10 +36,7 @@ export const CategoriesPage = () => {
           ))}
         </ul>
       </div>
-      <CreateCategoryModal
-        onClose={createCategoryModal.close}
-        isOpen={createCategoryModal.isOpen}
-      />
+      <CreateCategoryModal state={createCategoryModal} />
     </>
   );
 };

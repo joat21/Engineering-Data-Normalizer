@@ -185,8 +185,7 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
 
       <AddToProjectModal
         selectedEquipmentId={selectedEquipmentId}
-        isOpen={addToProjectModal.isOpen}
-        onClose={addToProjectModal.close}
+        state={addToProjectModal}
       />
 
       <EquipmentDetailsDrawer
