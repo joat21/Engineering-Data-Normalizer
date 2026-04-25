@@ -60,6 +60,7 @@ export const mapColToAttrSchema = z.object({
   }),
   body: z.object({
     colIndex: z.number(),
+    subIndex: z.number().optional(),
     target: mappingTargetSchema,
   }),
 });

@@ -47,8 +47,7 @@ export const mapColToAttrHandler: HandlerFromSchema<
   try {
     const result = await mapColumnToAttribute({
       sessionId: req.params.sessionId,
-      colIndex: req.body.colIndex,
-      target: req.body.target,
+      ...req.body,
     });
 
     res.json(result);

@@ -162,16 +162,6 @@ export const getStagingTable = async (sessionId: string) => {
       ];
     }
 
-    if (mappings.length === 1) {
-      return [
-        {
-          id: `c${index}`,
-          label: getTargetLabel(mappings[0].target, attributeInfoMap),
-          originIndex: index,
-        },
-      ];
-    }
-
     return mappings.map((mapping, subIndex) => ({
       id: `c${index}_v${subIndex}`,
       label: getTargetLabel(mapping.target, attributeInfoMap),
