@@ -65,7 +65,6 @@ const updateColumn = async (params: {
   }
 
   const updatedValuesByItem = new Map<string, string[]>();
-  const rawValueByItem = new Map<string, string>();
 
   items.forEach((item) => {
     let rawValue = "";
@@ -77,7 +76,7 @@ const updateColumn = async (params: {
         rawValue = mappedCol[subIndex].normalized.valueString;
       }
     } else {
-      rawValue = getRawValue(item.rawRow, colIndex);
+      rawValue = String(getRawValue(item.rawRow, colIndex) ?? "");
     }
 
     const updated = getUpdatedData(rawValue);
@@ -86,8 +85,6 @@ const updateColumn = async (params: {
       item.id,
       updated.map((v) => String(v ?? "")),
     );
-
-    rawValueByItem.set(item.id, String(rawValue ?? ""));
   });
 
   return executeUpdatePipeline({
@@ -96,7 +93,6 @@ const updateColumn = async (params: {
     subIndex,
     targets,
     updatedValuesByItem,
-    rawValueByItem,
   });
 };
 
@@ -104,9 +100,16 @@ export const commitAiParsingResults = async (params: {
   importSessionId: string;
   parsingSessionId: string;
   sourceColIndex: number;
+  subIndex?: number;
   targets: MappingTarget[];
 }) => {
-  const { importSessionId, parsingSessionId, sourceColIndex, targets } = params;
+  const {
+    importSessionId,
+    parsingSessionId,
+    sourceColIndex,
+    subIndex,
+    targets,
+  } = params;
 
   const aiRows = await prisma.aiParseResult.findMany({
     where: { sessionId: parsingSessionId },
@@ -118,14 +121,7 @@ export const commitAiParsingResults = async (params: {
 
   const items = await prisma.stagingImportItem.findMany({
     where: { sessionId: importSessionId },
-    select: { id: true, rawRow: true, transformedRow: true },
-  });
-
-  const rawValueByItem = new Map<string, string>();
-
-  items.forEach((item) => {
-    const rawValue = getRawValue(item.rawRow, sourceColIndex);
-    rawValueByItem.set(item.id, String(rawValue ?? ""));
+    select: { id: true, transformedRow: true },
   });
 
   const grouped = new Map<string, Map<string, string>>();
@@ -156,9 +152,9 @@ export const commitAiParsingResults = async (params: {
   const result = await executeUpdatePipeline({
     items,
     colIndex: sourceColIndex,
+    subIndex,
     targets,
     updatedValuesByItem,
-    rawValueByItem,
   });
 
   if (!result.issues.length) {

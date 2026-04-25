@@ -21,16 +21,24 @@ import { getRawValue } from "../../helpers/getRawValue";
 import { StagingImportItemStatus } from "../../types";
 import { ApiError } from "../../exceptions/api-error";
 import { normalizeSingleImport } from "../NormalizationService/service";
+import { TransformedRow } from "../NormalizationService/types";
 
 export const processAiParsing = async (data: {
   importSessionId: string;
   parsingSessionId?: string;
   colIndex: number;
+  subIndex?: number;
   targets: AIParseTarget[];
   testRowIds: string[];
 }) => {
-  const { importSessionId, parsingSessionId, colIndex, targets, testRowIds } =
-    data;
+  const {
+    importSessionId,
+    parsingSessionId,
+    colIndex,
+    subIndex,
+    targets,
+    testRowIds,
+  } = data;
 
   let sessionId;
   const isTestRun = !parsingSessionId;
@@ -75,14 +83,22 @@ export const processAiParsing = async (data: {
       id: true,
       rawRow: true,
       rowIndex: true,
+      transformedRow: true,
     },
   });
 
   const linesToParse = rows
-    .map((r) => ({
-      id: r.id,
-      text: getRawValue(r.rawRow, colIndex),
-    }))
+    .map((r) => {
+      let text = "";
+      if (subIndex !== undefined) {
+        const mappedCol = (r.transformedRow as TransformedRow)[colIndex];
+        text = mappedCol?.[subIndex]?.normalized?.valueString ?? "";
+      } else {
+        text = String(getRawValue(r.rawRow, colIndex) ?? "");
+      }
+
+      return { id: r.id, text };
+    })
     .filter((line) => !!line.text);
 
   const chunks = chunkArray(linesToParse, CHUNK_SIZE);
@@ -145,7 +161,9 @@ export const processAiParsing = async (data: {
     if (!groupedMap.has(res.sourceItemId)) {
       groupedMap.set(res.sourceItemId, {
         id: res.sourceItemId,
-        sourceString: getRawValue(res.sourceItem.rawRow, colIndex),
+        sourceString: String(
+          getRawValue(res.sourceItem.rawRow, colIndex) ?? "",
+        ),
         valuesMap: {},
       });
     }

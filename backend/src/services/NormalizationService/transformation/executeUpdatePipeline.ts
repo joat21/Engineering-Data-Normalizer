@@ -8,23 +8,14 @@ export const executeUpdatePipeline = async (params: {
   subIndex?: number;
   targets: (MappingTarget | null)[];
   updatedValuesByItem: Map<string, string[]>;
-  rawValueByItem: Map<string, string>;
 }) => {
-  const {
-    items,
-    colIndex,
-    subIndex,
-    targets,
-    updatedValuesByItem,
-    rawValueByItem,
-  } = params;
+  const { items, colIndex, subIndex, targets, updatedValuesByItem } = params;
 
   const { transformedRows, issues: rawIssues } = await buildTransformedRows({
     items,
     colIndex,
     subIndex,
     updatedValuesByItem,
-    rawValueByItem,
     targets,
   });
 

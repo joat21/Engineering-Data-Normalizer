@@ -1,5 +1,5 @@
+import { TransformPayload } from "@engineering-data-normalizer/shared";
 import { JsonValue } from "@prisma/client/runtime/client";
-import { TransformPayload } from "../services/NormalizationService/types";
 
 export const getRawValue = (
   rawRow: JsonValue,

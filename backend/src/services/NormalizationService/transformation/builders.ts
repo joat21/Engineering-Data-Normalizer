@@ -39,7 +39,6 @@ export const buildTransformedRows = async (params: {
   subIndex?: number;
   targets: (MappingTarget | null)[];
   updatedValuesByItem: Map<string, string[]>;
-  rawValueByItem: Map<string, string>;
 }) => {
   const { items, colIndex, subIndex, targets, updatedValuesByItem } = params;
 
