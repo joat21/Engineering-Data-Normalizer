@@ -48,6 +48,7 @@ export const applyTransformSchema = z.object({
   }),
   body: z.object({
     colIndex: z.number(),
+    subIndex: z.number().optional(),
     transform: transformConfigSchema,
     targets: z.array(mappingTargetSchema.nullable()),
   }),

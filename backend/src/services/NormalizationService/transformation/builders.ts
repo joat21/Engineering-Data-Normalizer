@@ -11,8 +11,7 @@ import { getTargetKey } from "../../../helpers/getTargetKey";
 import { aggregateNormalizedParts } from "../../../helpers/aggregateNormalizedParts";
 
 const buildColumnMappings = (
-  rawValue: any,
-  values: any[],
+  values: string[],
   mappingPlans: (MappingPlan | null)[],
   cacheMap: Map<string, JsonValue>,
 ) => {
@@ -23,7 +22,7 @@ const buildColumnMappings = (
       const valueToNormalize = String(values[i] ?? "");
       return {
         target: plan.target,
-        rawValue: String(rawValue),
+        rawValue: valueToNormalize,
         normalized: plan.normalizer(valueToNormalize, cacheMap),
       };
     })
@@ -37,12 +36,12 @@ export const buildTransformedRows = async (params: {
     transformedRow: JsonValue;
   }[];
   colIndex: number;
+  subIndex?: number;
   targets: (MappingTarget | null)[];
   updatedValuesByItem: Map<string, string[]>;
   rawValueByItem: Map<string, string>;
 }) => {
-  const { items, colIndex, targets, updatedValuesByItem, rawValueByItem } =
-    params;
+  const { items, colIndex, subIndex, targets, updatedValuesByItem } = params;
 
   const issuesMap = new Map<
     string,
@@ -56,15 +55,8 @@ export const buildTransformedRows = async (params: {
     await buildBatchNormalizationContext(targets, updatedValuesByItem);
 
   const transformedRows = items.map((item) => {
-    const rawValue = rawValueByItem.get(item.id) || "";
     const values = updatedValuesByItem.get(item.id) || [];
-
-    const columnMappings = buildColumnMappings(
-      rawValue,
-      values,
-      mappingPlans,
-      cacheMap,
-    );
+    const columnMappings = buildColumnMappings(values, mappingPlans, cacheMap);
 
     // в columnMappings[i].normalized лежит Array<NormalizedValue | UnnormalizedValue>
     // из него собираем issues
@@ -104,12 +96,21 @@ export const buildTransformedRows = async (params: {
       };
     });
 
-    const existingRow =
-      (item.transformedRow as unknown as TransformedRow) || {};
+    const existingRow = (item.transformedRow as TransformedRow) || {};
+    const existingColumnMappings = existingRow[colIndex.toString()] || [];
+
+    let newMappingsForColumn;
+
+    if (subIndex !== undefined) {
+      newMappingsForColumn = [...existingColumnMappings];
+      newMappingsForColumn.splice(subIndex, 1, ...finalColumnMappings);
+    } else {
+      newMappingsForColumn = finalColumnMappings;
+    }
 
     const newData: TransformedRow = {
       ...existingRow,
-      [colIndex.toString()]: finalColumnMappings,
+      [colIndex.toString()]: newMappingsForColumn,
     };
 
     return {

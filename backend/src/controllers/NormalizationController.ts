@@ -30,6 +30,7 @@ export const applyTransformHandler: HandlerFromSchema<
     const result = await applyColumnTransformation({
       sessionId: req.params.sessionId,
       colIndex: req.body.colIndex,
+      subIndex: req.body.subIndex,
       targets: req.body.targets,
       transform,
     });

@@ -5,16 +5,24 @@ import { buildTransformedRows, saveTransformedRows } from "./builders";
 export const executeUpdatePipeline = async (params: {
   items: any[];
   colIndex: number;
+  subIndex?: number;
   targets: (MappingTarget | null)[];
   updatedValuesByItem: Map<string, string[]>;
   rawValueByItem: Map<string, string>;
 }) => {
-  const { items, colIndex, targets, updatedValuesByItem, rawValueByItem } =
-    params;
+  const {
+    items,
+    colIndex,
+    subIndex,
+    targets,
+    updatedValuesByItem,
+    rawValueByItem,
+  } = params;
 
   const { transformedRows, issues: rawIssues } = await buildTransformedRows({
     items,
     colIndex,
+    subIndex,
     updatedValuesByItem,
     rawValueByItem,
     targets,

@@ -6,7 +6,7 @@ import {
   TransformConfig,
 } from "@engineering-data-normalizer/shared";
 import { applyTransform } from "./transformation/transformers";
-import { NormalizeSingleEntity } from "./types";
+import { NormalizeSingleEntity, TransformedRow } from "./types";
 import { prisma } from "../../prisma";
 import { getRawValue } from "../../helpers/getRawValue";
 import { buildSingleNormalizationContext } from "./normalization/context";
@@ -20,11 +20,13 @@ import { aggregateNormalizedParts } from "../../helpers/aggregateNormalizedParts
 export const mapColumnToAttribute = async (params: {
   sessionId: string;
   colIndex: number;
+  subIndex?: number;
   target: MappingTarget;
 }) =>
   updateColumn({
     sessionId: params.sessionId,
     colIndex: params.colIndex,
+    subIndex: params.subIndex,
     targets: [params.target],
     getUpdatedData: (rawValue) => [rawValue],
   });
@@ -32,12 +34,14 @@ export const mapColumnToAttribute = async (params: {
 export const applyColumnTransformation = async (params: {
   sessionId: string;
   colIndex: number;
+  subIndex?: number;
   transform: TransformConfig;
   targets: (MappingTarget | null)[];
 }) =>
   updateColumn({
     sessionId: params.sessionId,
     colIndex: params.colIndex,
+    subIndex: params.subIndex,
     targets: params.targets,
     getUpdatedData: (rawValue) => applyTransform(rawValue, params.transform),
   });
@@ -45,10 +49,11 @@ export const applyColumnTransformation = async (params: {
 const updateColumn = async (params: {
   sessionId: string;
   colIndex: number;
+  subIndex?: number;
   targets: (MappingTarget | null)[];
   getUpdatedData: (rawValue: any) => any[];
 }) => {
-  const { sessionId, colIndex, targets, getUpdatedData } = params;
+  const { sessionId, colIndex, subIndex, targets, getUpdatedData } = params;
 
   const items = await prisma.stagingImportItem.findMany({
     where: { sessionId },
@@ -63,7 +68,18 @@ const updateColumn = async (params: {
   const rawValueByItem = new Map<string, string>();
 
   items.forEach((item) => {
-    const rawValue = getRawValue(item.rawRow, colIndex);
+    let rawValue = "";
+
+    if (subIndex !== undefined) {
+      const mappedCol = (item.transformedRow as TransformedRow)[colIndex];
+
+      if (mappedCol[subIndex]) {
+        rawValue = mappedCol[subIndex].normalized.valueString;
+      }
+    } else {
+      rawValue = getRawValue(item.rawRow, colIndex);
+    }
+
     const updated = getUpdatedData(rawValue);
 
     updatedValuesByItem.set(
@@ -77,6 +93,7 @@ const updateColumn = async (params: {
   return executeUpdatePipeline({
     items,
     colIndex,
+    subIndex,
     targets,
     updatedValuesByItem,
     rawValueByItem,
