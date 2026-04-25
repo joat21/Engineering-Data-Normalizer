@@ -25,6 +25,7 @@ export const saveAiParseSchema = z.object({
   body: z.object({
     importSessionId: z.uuid(),
     sourceColIndex: z.number(),
+    subIndex: z.number().optional(),
     targets: z.array(mappingTargetSchema),
   }),
 });

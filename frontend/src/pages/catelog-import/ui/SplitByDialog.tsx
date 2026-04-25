@@ -64,6 +64,7 @@ export const SplitByDialog = ({
     const payload = {
       sessionId,
       colIndex: column.originIndex,
+      subIndex: column.subIndex,
       transform: {
         type: TransformType.SPLIT_BY,
         payload: { separator: selectedSeparator },

@@ -47,7 +47,12 @@ export const TableHeader = ({
           : { type: MappingTargetType.SYSTEM, field: attr.id as any };
 
       mappingMutation.mutate(
-        { sessionId, colIndex: col.originIndex, target },
+        {
+          sessionId,
+          colIndex: col.originIndex,
+          subIndex: col.subIndex,
+          target,
+        },
         {
           onSuccess: (data, variables) => {
             if (data.issues.length === 0) return;

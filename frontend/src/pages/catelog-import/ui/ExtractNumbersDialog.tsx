@@ -52,6 +52,7 @@ export const ExtractNumbersDialog = ({
     const payload = {
       sessionId,
       colIndex: column.originIndex,
+      subIndex: column.subIndex,
       transform: { type: TransformType.EXTRACT_NUMBERS },
       targets: targets,
     };

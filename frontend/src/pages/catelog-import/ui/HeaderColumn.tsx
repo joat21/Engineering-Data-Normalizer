@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Label, type Key } from "@heroui/react";
 import type {
   CategoryAttribute,
@@ -7,6 +7,7 @@ import type {
 import { TransformationDropdown } from "./TransformationDropdown";
 import type { TransformationType } from "../model/types";
 import { AppSelect } from "@/shared/ui";
+import { getSelectedAttrId } from "../model/utils";
 
 interface ColumnHeaderProps {
   col: StagingColumn;
@@ -27,6 +28,19 @@ export const HeaderColumn = memo(
     onSelectTransformation,
     isAttributesPending,
   }: ColumnHeaderProps) => {
+    const [selectedAttrId, setSelectedAttrId] = useState<string | null>(() =>
+      getSelectedAttrId(attributes, col),
+    );
+
+    useEffect(() => {
+      setSelectedAttrId(getSelectedAttrId(attributes, col));
+    }, [getSelectedAttrId, attributes, col]);
+
+    const handleSelectAttribute = (col: StagingColumn, value: Key | null) => {
+      setSelectedAttrId(String(value));
+      onSelectAttribute(col, value);
+    };
+
     const handleSelectTransformation = useCallback(
       (type: Key) => {
         onSelectTransformation(col, type as TransformationType);
@@ -46,7 +60,8 @@ export const HeaderColumn = memo(
             aria-label="Атрибуты"
             isPending={isAttributesPending}
             placeholder="Атрибут"
-            onChange={(value) => onSelectAttribute(col, value)}
+            value={selectedAttrId}
+            onChange={(value) => handleSelectAttribute(col, value)}
           />
           <TransformationDropdown onAction={handleSelectTransformation} />
         </div>

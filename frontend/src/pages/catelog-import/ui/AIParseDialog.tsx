@@ -89,6 +89,7 @@ export const AIParseDialog = ({
     const payload = {
       importSessionId: sessionId,
       colIndex: column.originIndex,
+      subIndex: column.subIndex,
       testRowIds: Object.keys(selectedRowIds),
       targets,
     };
@@ -113,6 +114,7 @@ export const AIParseDialog = ({
       importSessionId: sessionId,
       parsingSessionId,
       colIndex: column.originIndex,
+      subIndex: column.subIndex,
       testRowIds: Object.keys(selectedRowIds),
       targets,
     };
@@ -142,6 +144,7 @@ export const AIParseDialog = ({
       importSessionId: sessionId,
       sessionId: parsingSessionId,
       sourceColIndex: column.originIndex,
+      subIndex: column.subIndex,
       targets,
     };
 

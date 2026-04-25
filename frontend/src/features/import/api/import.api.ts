@@ -76,10 +76,10 @@ export const useStagingTable = (data: GetStagingTableParams) =>
 
 export const mapping = (data: MapColToAttrParams & MapColToAttrBody) =>
   api
-    .post<MapTransformResult>(`/import-sessions/${data.sessionId}/mapping`, {
-      colIndex: data.colIndex,
-      target: data.target,
-    })
+    .post<MapTransformResult>(
+      `/import-sessions/${data.sessionId}/mapping`,
+      data,
+    )
     .then((r) => r.data);
 
 export const useMappingMutation = () => {
@@ -100,11 +100,10 @@ export const applyTransform = (
   data: ApplyTransformParams & ApplyTransformBody,
 ) =>
   api
-    .post<MapTransformResult>(`/import-sessions/${data.sessionId}/transform`, {
-      colIndex: data.colIndex,
-      transform: data.transform,
-      targets: data.targets,
-    })
+    .post<MapTransformResult>(
+      `/import-sessions/${data.sessionId}/transform`,
+      data,
+    )
     .then((r) => r.data);
 
 export const useApplyTransformMutation = () => {

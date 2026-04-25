@@ -142,6 +142,7 @@ export const processAiParsing = async (data: {
         select: {
           rawRow: true,
           rowIndex: true,
+          transformedRow: true,
         },
       },
     },
@@ -159,11 +160,22 @@ export const processAiParsing = async (data: {
 
   for (const res of allResults) {
     if (!groupedMap.has(res.sourceItemId)) {
+      // TODO: в идеале сохранять sourceString в таблицу AiParseResult
+      let sourceString = "";
+      if (subIndex !== undefined) {
+        const mappedCol = (res.sourceItem.transformedRow as TransformedRow)[
+          colIndex
+        ];
+        sourceString = mappedCol?.[subIndex]?.normalized?.valueString ?? "";
+      } else {
+        sourceString = String(
+          getRawValue(res.sourceItem.rawRow, colIndex) ?? "",
+        );
+      }
+
       groupedMap.set(res.sourceItemId, {
         id: res.sourceItemId,
-        sourceString: String(
-          getRawValue(res.sourceItem.rawRow, colIndex) ?? "",
-        ),
+        sourceString,
         valuesMap: {},
       });
     }

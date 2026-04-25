@@ -74,9 +74,7 @@ export const saveAiParseHandler: HandlerFromSchema<
   try {
     const result = await commitAiParsingResults({
       parsingSessionId: req.params.sessionId,
-      importSessionId: req.body.importSessionId,
-      sourceColIndex: req.body.sourceColIndex,
-      targets: req.body.targets,
+      ...req.body,
     });
     res.json(result);
   } catch (error) {

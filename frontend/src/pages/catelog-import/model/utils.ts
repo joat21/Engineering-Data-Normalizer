@@ -1,5 +1,9 @@
 import * as XLSX from "xlsx";
 import type { SelectionRange } from "./types";
+import type {
+  CategoryAttribute,
+  StagingColumn,
+} from "@engineering-data-normalizer/shared";
 
 export const getWorkbook = (file: File): Promise<XLSX.WorkBook> => {
   return new Promise((resolve, reject) => {
@@ -88,4 +92,21 @@ const isInRange = (r: number, c: number, range: SelectionRange | null) => {
   const minC = Math.min(range.start.c, range.end.c);
   const maxC = Math.max(range.start.c, range.end.c);
   return r >= minR && r <= maxR && c >= minC && c <= maxC;
+};
+
+export const getSelectedAttrId = (
+  attributes: CategoryAttribute[],
+  col: StagingColumn,
+) => {
+  const selectedAttr = attributes.find((attr) => {
+    // костыль: если колонка еще не обрабатывалась пользователем,
+    // в ней не будет subIndex
+    // лейбл такой колонки не используем в качестве выбранного атрибута
+    // TODO: в идеале добавить какой нибудь флаг isRaw на бэке, надежнее будет
+    if (col.subIndex === undefined) return;
+
+    if (attr.label === col.label) return attr;
+  });
+
+  return selectedAttr ? selectedAttr.id : null;
 };
