@@ -25,6 +25,7 @@ export type ProjectItem = {
   externalCode: string | null;
   price: string;
   priceInRub: string;
+  currencyCode: string | undefined;
 };
 
 export type ProjectDetails = Project & {

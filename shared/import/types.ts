@@ -15,6 +15,7 @@ export type SourceType = (typeof SourceType)[keyof typeof SourceType];
 export type StagingColumn = {
   id: string;
   label: string;
+  unit?: string | null;
   originIndex: number;
   subIndex?: number;
 };

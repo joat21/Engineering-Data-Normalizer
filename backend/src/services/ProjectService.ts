@@ -47,6 +47,10 @@ export const getProjectById = async (projectId: string) => {
     throw ApiError.NotFound("Проект не найден");
   }
 
+  const currencies = await prisma.currency.findMany({
+    select: { id: true, code: true },
+  });
+
   return {
     ...project,
     items: project.items.map((item) => {
@@ -64,6 +68,9 @@ export const getProjectById = async (projectId: string) => {
         externalCode: equipment.externalCode,
         price: equipment.price,
         priceInRub: equipment.priceInRub,
+        currencyCode: currencies.find(
+          (curr) => curr.id === equipment.currencyId,
+        )?.code,
       };
     }),
   };

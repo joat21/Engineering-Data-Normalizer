@@ -1,4 +1,5 @@
 import {
+  getSystemFields,
   MappingTarget,
   MappingTargetType,
   SYSTEM_FIELDS_CONFIG,
@@ -31,4 +32,15 @@ export const getTargetLabel = (
     return SYSTEM_FIELDS_CONFIG[target.field]?.label || target.field;
   }
   return attributeInfoMap.get(target.id)?.label || `Атрибут ${target.id}`;
+};
+
+export const getTargetUnit = (
+  target: MappingTarget,
+  attributeInfoMap: Map<string, AttributeInfo>,
+): string => {
+  if (target.type === MappingTargetType.SYSTEM) {
+    return getSystemFields()[target.field]?.unit || target.field;
+  }
+
+  return attributeInfoMap.get(target.id)?.unit || "";
 };

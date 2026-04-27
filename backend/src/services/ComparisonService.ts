@@ -83,11 +83,13 @@ export const getComparisonTable = async (userId: string) => {
           ([key, config]) => ({
             key,
             label: config.label,
+            unit: config.unit,
           }),
         ),
         ...category.attributes.map((attr) => ({
           key: attr.id,
           label: attr.label,
+          unit: attr.unit,
         })),
       ];
 

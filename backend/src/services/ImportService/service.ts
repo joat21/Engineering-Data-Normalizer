@@ -11,7 +11,11 @@ import { createSource } from "../SourceService";
 import { TransformedRow } from "../NormalizationService/types";
 import { getAttributeInfoMap } from "../../db/categoryAttribute";
 import { isSubColumn } from "./types";
-import { getTargetLabel, processFileForPreview } from "./helpers";
+import {
+  getTargetLabel,
+  getTargetUnit,
+  processFileForPreview,
+} from "./helpers";
 import { ApiError } from "../../exceptions/api-error";
 import { CONVERTIBLE_EXTENSIONS } from "../../config";
 
@@ -165,6 +169,7 @@ export const getStagingTable = async (sessionId: string) => {
     return mappings.map((mapping, subIndex) => ({
       id: `c${index}_v${subIndex}`,
       label: getTargetLabel(mapping.target, attributeInfoMap),
+      unit: getTargetUnit(mapping.target, attributeInfoMap),
       originIndex: index,
       subIndex,
     }));

@@ -40,6 +40,7 @@ export interface AttributeInfo {
   dataType: DataType;
   label: string;
   key: string;
+  unit?: string | null;
 }
 
 export const isNormalizedValue = (
