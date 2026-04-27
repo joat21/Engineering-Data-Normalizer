@@ -17,7 +17,8 @@ import {
   processFileForPreview,
 } from "./helpers";
 import { ApiError } from "../../exceptions/api-error";
-import { CONVERTIBLE_EXTENSIONS } from "../../config";
+import { CONVERTIBLE_EXTENSIONS, SYSTEM_FIELDS } from "../../config";
+import { getTargetKey } from "../../helpers/getTargetKey";
 
 export const createSession = async (data: {
   categoryId: string;
@@ -128,7 +129,12 @@ export const addItemsToStaging = async (data: {
 export const getStagingTable = async (sessionId: string) => {
   const session = await prisma.importSession.findUnique({
     where: { id: sessionId },
-    select: { originHeader: true },
+    select: {
+      originHeader: true,
+      currency: {
+        select: { symbol: true },
+      },
+    },
   });
 
   if (!session) {
@@ -166,13 +172,21 @@ export const getStagingTable = async (sessionId: string) => {
       ];
     }
 
-    return mappings.map((mapping, subIndex) => ({
-      id: `c${index}_v${subIndex}`,
-      label: getTargetLabel(mapping.target, attributeInfoMap),
-      unit: getTargetUnit(mapping.target, attributeInfoMap),
-      originIndex: index,
-      subIndex,
-    }));
+    return mappings.map((mapping, subIndex) => {
+      const targetKey = getTargetKey(mapping.target);
+      const unit =
+        targetKey === SYSTEM_FIELDS.PRICE
+          ? session.currency?.symbol
+          : getTargetUnit(mapping.target, attributeInfoMap);
+
+      return {
+        id: `c${index}_v${subIndex}`,
+        label: getTargetLabel(mapping.target, attributeInfoMap),
+        unit,
+        originIndex: index,
+        subIndex,
+      };
+    });
   });
 
   const rows: StagingRow[] = items.map((item) => {

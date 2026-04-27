@@ -7,12 +7,12 @@ import {
   useImportStore,
   useInitImportMutation,
 } from "@/features/import";
-import { useCategoryAttributes } from "@/entities/category-attribute";
+import { useAttributesForImport } from "@/entities/category-attribute";
 
 export const SingleImportPage = () => {
   const step = useImportStore((s) => s.step);
   const setStep = useImportStore((s) => s.setStep);
-  const categoryId = useImportStore((s) => s.categoryId);
+  const sessionId = useImportStore((s) => s.sessionId);
   const setCategoryName = useImportStore((s) => s.setCategoryName);
   const setInitialData = useImportStore((s) => s.setInitialData);
   const setSessionId = useImportStore((s) => s.setSessionId);
@@ -22,7 +22,7 @@ export const SingleImportPage = () => {
 
   const [fileUrl, setFileUrl] = useState("");
 
-  const { data: categoryAttributes } = useCategoryAttributes(categoryId ?? "");
+  const { data: categoryAttributes } = useAttributesForImport(sessionId ?? "");
 
   useEffect(() => {
     return () => resetImport();

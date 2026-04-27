@@ -12,7 +12,7 @@ import {
   useImportStore,
   useStagingTable,
 } from "@/features/import";
-import { useCategoryAttributes } from "@/entities/category-attribute";
+import { useAttributesForImport } from "@/entities/category-attribute";
 import { CreateCategoryAttributeModal } from "@/features/create-category-attibute";
 import { PageLoader, ImportSuccessModal } from "@/shared/ui";
 
@@ -38,7 +38,7 @@ export const MapColumns = ({ sessionId, categoryId }: MapColumnsProps) => {
   });
 
   const { data: attributes, isPending: isAttributesPending } =
-    useCategoryAttributes(categoryId);
+    useAttributesForImport(sessionId);
 
   if (isTablePending || isAttributesPending) return <PageLoader />;
   if (!table || !attributes) return "Произошла ошибка";
