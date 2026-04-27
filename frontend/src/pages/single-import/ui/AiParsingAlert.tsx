@@ -4,13 +4,17 @@ interface AiParsingAlertProps {
   isLoading: boolean;
   count: number;
   onFillFromAi: () => void;
+  isVisible: boolean;
 }
 
 export const AiParsingAlert = ({
   isLoading,
   count,
   onFillFromAi,
+  isVisible,
 }: AiParsingAlertProps) => {
+  if (!isVisible) return null;
+
   return (
     <>
       {isLoading ? (
@@ -40,7 +44,7 @@ const LoadingAlert = () => {
 const SuccessAlert = ({
   count,
   onFillFromAi,
-}: Omit<AiParsingAlertProps, "isLoading">) => {
+}: Omit<AiParsingAlertProps, "isLoading" | "isVisible">) => {
   return (
     <Alert className="border-2 border-success rounded-2xl" status="success">
       <Alert.Indicator />

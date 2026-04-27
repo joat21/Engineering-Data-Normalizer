@@ -54,6 +54,7 @@ export const SingleImportCreate = ({
   const createCategoryAttributeModal = useOverlayState();
 
   const [formKey, setFormKey] = useState(0);
+  const [isAiParsingAlertVisible, setIsAiParsingAlertVisible] = useState(true);
   const formRef = useRef<{ fillFromAi: () => void }>(null);
 
   const { data: aiParseResult, isLoading: isAiParseResultLoading } =
@@ -127,6 +128,11 @@ export const SingleImportCreate = ({
     });
   };
 
+  const handleFillFromAi = () => {
+    formRef?.current?.fillFromAi();
+    setIsAiParsingAlertVisible(false);
+  };
+
   return (
     <>
       <div className="flex flex-col w-full">
@@ -167,8 +173,10 @@ export const SingleImportCreate = ({
                     (val) => val.valueString,
                   ).length
                 }
-                onFillFromAi={() => formRef.current?.fillFromAi()}
+                onFillFromAi={handleFillFromAi}
+                isVisible={isAiParsingAlertVisible}
               />
+
               <SingleImportForm
                 ref={formRef}
                 key={formKey}
