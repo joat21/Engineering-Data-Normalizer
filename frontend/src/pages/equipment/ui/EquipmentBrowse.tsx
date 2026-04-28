@@ -23,6 +23,7 @@ import { useCategoryFilters } from "@/entities/category-filters";
 import { useAddToComparisonMutation } from "@/entities/comparison";
 import { useEquipmentTable } from "@/entities/equipment";
 import { PageLoader } from "@/shared/ui";
+import { useLocalStorage } from "@/shared/lib";
 
 interface EquipmentBrowseProps {
   categoryId: string;
@@ -117,14 +118,19 @@ export const EquipmentBrowse = ({ categoryId }: EquipmentBrowseProps) => {
     handleAddToComparison,
   ]);
 
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(
+  const [columnVisibility, setColumnVisibility] =
+    useLocalStorage<VisibilityState>(`table-visibility-${categoryId}`, {});
+  const [columnOrder, setColumnOrder] = useLocalStorage<ColumnOrderState>(
+    `table-order-${categoryId}`,
     columns.map((c) => c.id!),
   );
-  const [columnPinning, setColumnPinning] = useState<ColumnPinningState>({
-    left: [],
-    right: ["actions"],
-  });
+  const [columnPinning, setColumnPinning] = useLocalStorage<ColumnPinningState>(
+    `table-pinning-${categoryId}`,
+    {
+      left: [],
+      right: ["actions"],
+    },
+  );
 
   useEffect(() => {
     if (columns.length > 0 && columnOrder.length === 0) {
