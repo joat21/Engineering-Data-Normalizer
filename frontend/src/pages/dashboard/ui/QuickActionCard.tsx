@@ -13,7 +13,7 @@ export const QuickActionCard = ({
   icon: Icon,
 }: QuickActionCardProps) => {
   return (
-    <Card className="flex-row items-center gap-4 p-6 w-full min-h-28 border-2 border-default/50 group hover:border-accent hover:bg-accent/5 transition-all">
+    <Card className="flex-row items-center gap-4 p-6 rounded-2xl w-full min-h-28 border-2 border-default/50 group hover:border-accent hover:bg-accent/5 transition-all">
       <span className="p-3 rounded-xl bg-accent-soft">
         <Icon className="text-accent" />
       </span>

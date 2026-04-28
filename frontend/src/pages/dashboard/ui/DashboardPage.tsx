@@ -1,5 +1,6 @@
 import { Statistics } from "./Statistics";
 import { QuickActions } from "./QuickActions";
+import { TopCategories } from "./TopCategories";
 import { useStatistics } from "../api/dashboard.api";
 import { PageLoader } from "@/shared/ui";
 
@@ -19,6 +20,7 @@ export const DashboardPage = () => {
 
       <QuickActions />
       <Statistics data={statistics} />
+      <TopCategories topCategories={statistics?.topCategories} />
     </div>
   );
 };

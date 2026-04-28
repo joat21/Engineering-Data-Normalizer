@@ -39,7 +39,7 @@ export const getTargetUnit = (
   attributeInfoMap: Map<string, AttributeInfo>,
 ): string => {
   if (target.type === MappingTargetType.SYSTEM) {
-    return getSystemFields()[target.field]?.unit || target.field;
+    return getSystemFields()[target.field]?.unit || "";
   }
 
   return attributeInfoMap.get(target.id)?.unit || "";
