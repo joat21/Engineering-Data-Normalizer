@@ -7,17 +7,20 @@ import type {
   TransformConfig,
 } from "@engineering-data-normalizer/shared";
 
+type SelectionContext = "delete" | "ai_parse" | null;
+
 interface SelectionStore {
-  isSelecting: boolean;
+  activeContext: SelectionContext;
   selectedRowIds: Record<string, boolean>;
   count: number;
-  setIsSelecting: (isSelecting: boolean) => void;
+
+  setContext: (context: SelectionContext) => void;
   toggleRow: (id: string) => void;
   clear: () => void;
 }
 
 export const useSelectionStore = create<SelectionStore>((set) => ({
-  isSelecting: false,
+  activeContext: null,
   selectedRowIds: {},
   count: 0,
 
@@ -36,7 +39,12 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
       };
     }),
 
-  setIsSelecting: (isSelecting) => set({ isSelecting }),
+  setContext: (context) =>
+    set({
+      activeContext: context,
+      selectedRowIds: {},
+      count: 0,
+    }),
 
   clear: () => set({ selectedRowIds: {}, count: 0 }),
 }));

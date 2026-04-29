@@ -10,7 +10,7 @@ interface TableBodyProps {
 export const TableBody = ({ table }: TableBodyProps) => {
   const { columns, rows } = table;
 
-  const isSelecting = useSelectionStore((s) => s.isSelecting);
+  const isSelecting = useSelectionStore((s) => !!s.activeContext);
 
   const columnKeys = useMemo(() => columns.map((c) => c.id), [columns]);
 

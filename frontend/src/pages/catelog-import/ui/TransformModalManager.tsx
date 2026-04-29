@@ -24,20 +24,24 @@ export const TransformModalManager = ({
   attributes,
   sessionId,
 }: TransformModalManagerProps) => {
-  const setIsSelecting = useSelectionStore((s) => s.setIsSelecting);
-  const activeContext = useTransformationContextStore((s) => s.activeContext);
-  const setContext = useTransformationContextStore((s) => s.setContext);
+  const setSelectionContext = useSelectionStore((s) => s.setContext);
+  const transformationContext = useTransformationContextStore(
+    (s) => s.activeContext,
+  );
+  const setTransformationContext = useTransformationContextStore(
+    (s) => s.setContext,
+  );
 
   const handleClose = () => {
-    setIsSelecting(false);
-    setContext(null);
+    setSelectionContext(null);
+    setTransformationContext(null);
   };
 
   let isOpen = false;
-  if (activeContext?.type === TransformationType.AI_PARSE) {
-    isOpen = activeContext.step === "CONFIG_MODAL";
+  if (transformationContext?.type === TransformationType.AI_PARSE) {
+    isOpen = transformationContext.step === "CONFIG_MODAL";
   } else {
-    isOpen = activeContext !== null;
+    isOpen = transformationContext !== null;
   }
 
   return (
@@ -48,7 +52,7 @@ export const TransformModalManager = ({
       <Modal.Container>
         {isOpen && (
           <ModalContentRouter
-            activeContext={activeContext}
+            activeContext={transformationContext}
             rows={rows}
             attributes={attributes}
             sessionId={sessionId}

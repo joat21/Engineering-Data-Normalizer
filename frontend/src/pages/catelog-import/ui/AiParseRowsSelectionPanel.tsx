@@ -6,22 +6,29 @@ import {
 import { TransformationType } from "../model/types";
 
 export const AiParseRowsSelectionPanel = () => {
-  const activeContext = useTransformationContextStore((s) => s.activeContext);
-  const setContext = useTransformationContextStore((s) => s.setContext);
-  const isSelecting = useSelectionStore((s) => s.isSelecting);
-  const setIsSelecting = useSelectionStore((s) => s.setIsSelecting);
+  const trnasformationContext = useTransformationContextStore(
+    (s) => s.activeContext,
+  );
+  const setTransformationContext = useTransformationContextStore(
+    (s) => s.setContext,
+  );
+  const isSelecting = useSelectionStore((s) => !!s.activeContext);
+  const setSelectionContext = useSelectionStore((s) => s.setContext);
   const count = useSelectionStore((s) => s.count);
 
   if (!isSelecting) return null;
 
   const handleCancel = () => {
-    setIsSelecting(false);
-    setContext(null);
+    setSelectionContext(null);
+    setTransformationContext(null);
     useSelectionStore.getState().clear();
   };
   const handleContinue = () => {
-    if (activeContext?.type !== TransformationType.AI_PARSE) return;
-    setContext({ ...activeContext, step: "CONFIG_MODAL" });
+    if (trnasformationContext?.type !== TransformationType.AI_PARSE) return;
+    setTransformationContext({
+      ...trnasformationContext,
+      step: "CONFIG_MODAL",
+    });
   };
 
   return (
