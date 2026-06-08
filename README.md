@@ -25,7 +25,7 @@
 
 ## 🎥 Демо
 
-Демонстрация основных возможностей системы
+[Демонстрация](https://drive.google.com/file/d/1T_Zrrj7XZh7SwN1jCgMlrryyAkieclwN/view?usp=drive_link) основных возможностей системы
 
 ## 📸 Скриншоты
 
