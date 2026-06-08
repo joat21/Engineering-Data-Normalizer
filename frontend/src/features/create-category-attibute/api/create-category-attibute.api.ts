@@ -7,7 +7,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const createCategoryAttribute = (
   data: CreateCategoryAttributeParams & CreateCategoryAttributeBody,
-) => api.post(`/categories/${data.id}/attributes`, data).then((r) => r.data);
+) => {
+  console.log(data);
+  return api
+    .post(`/categories/${data.id}/attributes`, data)
+    .then((r) => r.data);
+};
 
 export const useCreateCategoryAttributeMutation = () => {
   const queryClient = useQueryClient();
@@ -15,14 +20,14 @@ export const useCreateCategoryAttributeMutation = () => {
   return useMutation({
     mutationFn: createCategoryAttribute,
     onSuccess: (_data, variables) => {
-      const categoryId = variables.id;
+      const sessionId = variables.sessionId;
 
       queryClient.invalidateQueries({
-        queryKey: ["category-with-attributes", categoryId],
+        queryKey: ["category-with-attributes", sessionId],
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["categories", categoryId, "attributes"],
+        queryKey: ["categories", sessionId, "attributes"],
       });
     },
     meta: {

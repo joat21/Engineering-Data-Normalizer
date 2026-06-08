@@ -30,6 +30,7 @@ export const createCategoryAttributeSchema = z.object({
     id: z.uuid(),
   }),
   body: z.object({
+    sessionId: z.uuid(),
     label: z.string().min(1),
     unit: z.string().optional(),
     dataType: z.enum(DataType),

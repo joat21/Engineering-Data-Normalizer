@@ -6,10 +6,13 @@ import { AppModal, AppSelect, type AppModalProps } from "@/shared/ui";
 
 interface CreateCategoryAttributeModalProps extends AppModalProps {
   categoryId: string | null;
+  // костыльный костыль
+  sessionId: string | null;
 }
 
 export const CreateCategoryAttributeModal = ({
   categoryId,
+  sessionId,
   state,
   ...props
 }: CreateCategoryAttributeModalProps) => {
@@ -20,17 +23,20 @@ export const CreateCategoryAttributeModal = ({
   ) => {
     e.preventDefault();
 
-    if (!categoryId) return;
+    if (!categoryId || !sessionId) return;
 
     const formData = new FormData(e.currentTarget);
 
     const payload = {
       id: categoryId,
+      sessionId,
       label: String(formData.get("label") ?? ""),
       dataType: (formData.get("dataType") as DataType) ?? DataType.STRING,
       unit: String(formData.get("unit") ?? ""),
       isFilterable: formData.get("isFilterable") === "on",
     };
+
+    console.log(payload, "СОЗДАЮ АТРИБУТ");
 
     await createCategoryAttributeMutation.mutateAsync(payload);
     state.close();

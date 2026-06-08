@@ -93,6 +93,8 @@ export const CategoryPage = () => {
 
       <CreateCategoryAttributeModal
         categoryId={id}
+        // костыльный костыль
+        sessionId={id}
         state={createCategoryAttributeModal}
       />
 

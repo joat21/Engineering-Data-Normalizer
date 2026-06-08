@@ -194,6 +194,7 @@ export const SingleImportCreate = ({
 
       <CreateCategoryAttributeModal
         categoryId={categoryId}
+        sessionId={useImportStore.getState().sessionId}
         state={createCategoryAttributeModal}
       />
 

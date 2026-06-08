@@ -196,8 +196,16 @@ export const createEquipmentFromStaging = (
     .post(`/equipment/staging?sessionId=${data.sessionId}`)
     .then((r) => r.data);
 
-export const useCreateEquipmentFromStagingMutation = () =>
-  useMutation({
+export const useCreateEquipmentFromStagingMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationKey: ["staging", "equipment"],
     mutationFn: createEquipmentFromStaging,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["statistics"],
+      });
+    },
   });
+};

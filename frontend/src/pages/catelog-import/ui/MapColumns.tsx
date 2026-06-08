@@ -193,6 +193,7 @@ export const MapColumns = ({ sessionId, categoryId }: MapColumnsProps) => {
 
       <CreateCategoryAttributeModal
         categoryId={categoryId}
+        sessionId={sessionId}
         state={createCategoryAttributeModal}
       />
     </>
